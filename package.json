@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "webpack": "webpack",
-    "build": "npx tsc && copyfiles src/client/*.html src/client/*.css src/client/assets/* dist --up 1 --error --verbose",
+    "build": "webpack",
     "start": "node dist/server/index.js",
     "dev": "nodemon src/server/index.ts"
   },

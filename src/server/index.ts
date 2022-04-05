@@ -26,6 +26,18 @@ interface SocketData {
   age: number;
 }
 
+enum GameState {
+  Unknown = 0,
+  Lobby,
+  Playing,
+  Ended,
+}
+class Game {
+  name: string;
+  dailyRoomUrl: string;
+  hasStarted: GameState;
+}
+
 const io = new Server<
   ClientToServerEvents,
   ServerToClientEvents,

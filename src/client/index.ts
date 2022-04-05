@@ -2,7 +2,7 @@ import { Call } from "./daily";
 
 // These imports are here to ensure they're bundled into
 // the final distribution.
-import "./index.html";
+import "./html/index.html";
 import "./style.css";
 import "./assets/favicon.ico";
 import "./assets/daily.svg";
@@ -13,13 +13,10 @@ import "./assets/microphone-off.svg";
 import "./assets/microphone.svg";
 import "./assets/screen-off.svg";
 import "./assets/screen-on.svg";
+import { Game } from "./game";
 
-const world = "world";
-
-export function initCall(name: string, url: string) {
-  // We will do this in rooms, in case we want to implement
-  // breakout rooms later. Each room will have its own instance of
-  // the daily call object. There is one "global" room. Note that Daily
-  // only supports one call object instance at a time.
-  const globalRoom = new Call(url, name, true);
+export function initGame() {
+  const game = new Game();
 }
+
+initGame();
