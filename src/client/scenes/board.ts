@@ -15,13 +15,27 @@ type Word = {
   kind: WordKind;
 };
 
-class Board extends Phaser.Scene {
+export interface BoardData {
+  roomUrl: string;
+  playerName: string;
+}
+
+export class Board extends Phaser.Scene {
   words: Word[];
   call: Call;
 
   constructor() {
     super("Board");
   }
+
+  initialize() {
+    Phaser.Scene.call(this, { key: "Board" });
+  }
+
+  init(data: BoardData) {
+    this.call = new Call(data.roomUrl, data.playerName);
+  }
+
   preload() {}
 
   create() {
