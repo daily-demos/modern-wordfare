@@ -1,12 +1,16 @@
-enum GameState {
+import { Word } from "../shared/types";
+
+export enum GameState {
   Unknown = 0,
   Pending,
   Playing,
   Ended,
 }
 
-class Game {
+export class Game {
   name: string;
   dailyRoomUrl: string;
+  dailyRoomName: string;
   state: GameState;
+  wordSet: Word[];
 }

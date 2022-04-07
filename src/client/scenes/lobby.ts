@@ -1,7 +1,12 @@
-import { ICreateGameRequest, ICreateGameResponse } from "../../shared/types";
+import {
+  ICreateGameRequest,
+  ICreateGameResponse,
+  Word,
+} from "../../shared/types";
 import "../html/lobby.html";
 import axios from "axios";
 import { BoardData } from "./board";
+import { createWordSet } from "../word";
 
 export class Lobby extends Phaser.Scene {
   initialize() {
@@ -16,6 +21,7 @@ export class Lobby extends Phaser.Scene {
   }
 
   create() {
+    console.log("this:", this);
     const text = this.add.text(10, 10, "Start a new game", {
       color: "white",
       fontFamily: "Arial",
@@ -30,6 +36,7 @@ export class Lobby extends Phaser.Scene {
 
     createGameDOM.addListener("click");
 
+    const lobbyScene = this.scene;
     createGameDOM.on("click", function (event: any) {
       event.preventDefault();
       if (event.target.id !== "create-game") return;
@@ -57,18 +64,26 @@ export class Lobby extends Phaser.Scene {
           createGameDOM.setVisible(false);
         },
       });
-      createGame(inputGameName)
-        .then((roomUrl) => {
+      console.log("scene:", lobbyScene);
+
+      const wordSet = createWordSet();
+
+      createGame(inputGameName, wordSet)
+        .then((gameData) => {
           console.log("game created!");
-          this.scene.start("Board", <BoardData>{
-            roomUrl: roomUrl,
+          console.log(this.scene);
+          lobbyScene.start("Board", <BoardData>{
+            roomUrl: gameData.roomUrl,
             gameName: inputGameName,
             playerName: inputPlayerName,
+            meetingToken: gameData.meetingToken,
+            wordSet: wordSet,
           });
         })
         .catch((error) => {
           console.error("failed to create game", error);
-          this.scene.reload();
+          console.log(this.scene);
+          lobbyScene.restart();
         });
     });
   }
@@ -76,10 +91,14 @@ export class Lobby extends Phaser.Scene {
   update() {}
 }
 
-async function createGame(gameName: string): Promise<string> {
+async function createGame(
+  gameName: string,
+  wordSet: Word[]
+): Promise<ICreateGameResponse> {
   // Create the game here
   const req = <ICreateGameRequest>{
     gameName: gameName,
+    wordSet: wordSet,
   };
 
   const headers = {
@@ -88,10 +107,11 @@ async function createGame(gameName: string): Promise<string> {
 
   const url = "/create";
   const data = JSON.stringify(req);
+
   let res = await axios.post(url, data, { headers }).catch((error) => {
     throw new Error(`failed to create room: ${error})`);
   });
 
   const gameData = <ICreateGameResponse>res.data;
-  return gameData.roomUrl;
+  return gameData;
 }

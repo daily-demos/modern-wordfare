@@ -1,5 +1,7 @@
 import { DAILY_API_KEY, DAILY_DOMAIN } from "./env";
 import axios from "axios";
+import { Game, GameState } from "./game";
+import { Word } from "../shared/types";
 
 const dailyAPIURL = "https://api.daily.co/v1";
 
@@ -10,11 +12,11 @@ interface ICreatedDailyRoomData {
 }
 
 export class GameOrchestrator {
-  games: Game[];
+  games: Game[] = [];
 
   constructor() {}
 
-  async createGame(name: string): Promise<string> {
+  async createGame(name: string, wordSet: Word[]): Promise<Game> {
     console.log("createGame()", name);
     const apiKey = DAILY_API_KEY;
 
@@ -49,37 +51,36 @@ export class GameOrchestrator {
 
     const game = new Game();
     game.name = name;
-    game.dailyRoomUrl = roomData.url;
     game.state = GameState.Pending;
+    game.dailyRoomUrl = roomData.url;
+    game.dailyRoomName = roomData.name;
+    game.wordSet = wordSet;
     this.games.push(game);
-    return game.dailyRoomUrl;
+    return game;
   }
 
-  async getMeetingToken(): Promise<string> {
+  async getMeetingToken(roomName: string): Promise<string> {
     const api = DAILY_API_KEY;
     const req = {
       properties: {
+        room_name: roomName,
         exp: Math.floor(Date.now() / 1000) + 3600,
         is_owner: true,
       },
     };
 
-    const body = JSON.stringify(req);
-    console.log("meeting token request body:", body, dailyAPIURL);
-    let res = await axios
-      .post(`${dailyAPIURL}/meeting-tokens`, {
-        method: "POST",
-        body: body,
-        headers: {
-          Authorization: `Bearer ${api}`,
-          "Content-Type": "application/json",
-        },
-      })
-      .catch((error) => {
-        throw new Error(`failed to get meeting token: ${error})`);
-      });
+    const data = JSON.stringify(req);
+    const headers = {
+      Authorization: `Bearer ${api}`,
+      "Content-Type": "application/json",
+    };
 
-    const data = res.data;
-    return data.token;
+    const url = `${dailyAPIURL}/meeting-tokens/`;
+    console.log("headers:", url, headers, data);
+    let res = await axios.post(url, data, { headers }).catch((error) => {
+      throw new Error(`failed to create meeting token: ${error})`);
+    });
+
+    return res.data?.token;
   }
 }
