@@ -39,7 +39,7 @@ export class GameOrchestrator {
     let res = await axios.post(url, data, { headers }).catch((error) => {
       throw new Error(`failed to create room: ${error})`);
     });
-    
+
     if (res.status !== 200 || !res.data) {
       console.error("failed to create room2:", res);
       throw new Error("failed to create room");

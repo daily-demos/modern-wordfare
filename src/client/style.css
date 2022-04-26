@@ -127,7 +127,7 @@ body {
 }
 
 #game {
-  top: 52px;
+  margin-top: 52px;
 }
 
 #call {
@@ -284,7 +284,6 @@ body {
   border-width: 0px;
   cursor: pointer;
 }
-
 
 .invisible {
   display: none;

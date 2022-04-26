@@ -26,6 +26,12 @@ export enum WordKind {
   Assassin,
 }
 
+export enum Team {
+  None = 0,
+  Team1,
+  Team2,
+}
+
 export type Word = {
   word: string;
   kind: WordKind;

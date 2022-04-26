@@ -1,6 +1,6 @@
 import defaultWordlist from "./dictionaries/default.json";
 import { wordCount } from "./config";
-import { rand } from "./util";
+import { rand } from "./util/math";
 import { Word, WordKind } from "../shared/types";
 
 export function createWordSet(): Word[] {
@@ -25,20 +25,17 @@ export function createWordSet(): Word[] {
     };
     neutralWordSet.push(word);
   }
-  console.log("createWordSet() neutral: ", neutralWordSet);
 
   const wordSet = team1WordSet
     .concat(team2WordSet)
     .concat(neutralWordSet)
     .concat(assassinWord);
 
-  console.log("createWordSet() final wordSet:", wordSet);
   return wordSet;
 }
 
 function buildWordSet(words: string[], count: Number, kind: WordKind): Word[] {
   const chosenWords = chooseRandomWords(words, count);
-  console.log("buildWordSet() chosenWords:", chosenWords, words, kind);
   let wordSet: Word[] = [];
   for (const w of chosenWords) {
     const idx = words.indexOf(w);
@@ -46,20 +43,17 @@ function buildWordSet(words: string[], count: Number, kind: WordKind): Word[] {
       throw new Error(`word "${w}" not in list of available words: ${words}`);
     }
     words.splice(idx, 1);
-    console.log("bulidWordSet() new words:", words);
     const word = {
       word: w,
       kind: kind,
     };
     wordSet.push(word);
   }
-  console.log("bulidWordSet wordset:", wordSet);
   return wordSet;
 }
 
 function chooseRandomWords(allWords: string[], count: Number): string[] {
   const l = allWords.length;
-  console.log("chooseRandomWords allWords:", l, allWords);
   if (l < count) {
     throw new Error(
       `world list needs at least ${count}, but only contains ${l}`

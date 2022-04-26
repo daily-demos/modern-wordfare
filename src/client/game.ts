@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { Board } from "./scenes/board";
+import { Board } from "./scenes/board/board";
 import { Lobby } from "./scenes/lobby";
 
 export class Game {
@@ -27,25 +27,30 @@ export class Game {
     window.addEventListener(
       "resize",
       () => {
-        this.game.scale.resize(
-          this.getWidth(),
-          this.getHeight(),
-        );
+        this.game.scale.resize(this.getWidth(), this.getHeight());
       },
       false
     );
   }
 
   getWidth(): number {
-    console.log("getWidth: ", document.body.clientWidth, this.zoom, document.body.clientWidth / this.zoom)
+    console.log(
+      "getWidth: ",
+      document.body.clientWidth,
+      this.zoom,
+      document.body.clientWidth / this.zoom
+    );
 
     return document.body.clientWidth / this.zoom;
   }
 
   getHeight(): number {
-    console.log("getHeight: ", document.body.clientHeight, this.zoom, (document.body.clientWidth - 52) / this.zoom)
+    console.log(
+      "getHeight: ",
+      document.body.clientHeight,
+      this.zoom,
+      (document.body.clientWidth - 52) / this.zoom
+    );
     return (document.body.clientHeight - 52) / this.zoom;
   }
-  
 }
-

@@ -16,7 +16,12 @@ export class Game {
   state: GameState;
   readonly wordSet: Word[];
 
-  constructor(name: string, roomURL: string, roomName: string, wordSet: Word[]) {
+  constructor(
+    name: string,
+    roomURL: string,
+    roomName: string,
+    wordSet: Word[]
+  ) {
     this.state = GameState.Pending;
     this.name = name;
     this.dailyRoomURL = roomURL;
@@ -24,6 +29,4 @@ export class Game {
     this.dailyRoomName = roomName;
     this.id = `${DAILY_DOMAIN}-${roomName}`;
   }
-
 }
-

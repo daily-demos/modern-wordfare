@@ -50,7 +50,7 @@ app.use(express.json());
 app.post("/join", function (req: Request, res: Response) {
   console.log("attempting game join", req.body);
   const body = <IJoinGameRequest>req.body;
-  const gameID = body.gameID
+  const gameID = body.gameID;
   console.log("game iD:", gameID);
   if (!gameID) {
     const err = "request must contain game ID";
@@ -65,7 +65,7 @@ app.post("/join", function (req: Request, res: Response) {
     res.status(404).send(`{"error":"${err}}`);
     return;
   }
-  console.log("found game:", game)
+  console.log("found game:", game);
   const data = <IJoinGameResponse>{
     roomURL: game.dailyRoomURL,
     gameName: game.name,
@@ -74,43 +74,43 @@ app.post("/join", function (req: Request, res: Response) {
   res.send(data);
 });
 
-  app.post("/create", function (req: Request, res: Response) {
-    console.log("/create");
-    const body = <ICreateGameRequest>req.body;
-    console.log("/create body:", body, req.body);
-    if (!body.wordSet) {
-      const err = "word set must be defined";
-      res.status(400).send(`{"error":"${err}}`);
-      return;
-    }
-    if (!body.gameName) {
-      const err = "game name must be defined";
-      res.status(400).send(`{"error":"${err}}`);
-      return;
-    }
-    orchestrator
-      .createGame(body.gameName, body.wordSet)
-      .then((game) => {
-        orchestrator
-          .getMeetingToken(game.dailyRoomName)
-          .then((token) => {
-            const data = <ICreateGameResponse>{
-              roomURL: game.dailyRoomURL,
-              meetingToken: token,
-              gameID: game.id,
-            };
-            res.send(data);
-          })
-          .catch((error) => {
-            console.error("failed to get meeting token", error);
-            res.sendStatus(500);
-          });
-      })
-      .catch((error) => {
-        console.error("failed to create room:", error);
-        res.sendStatus(500);
-      });
-  });
+app.post("/create", function (req: Request, res: Response) {
+  console.log("/create");
+  const body = <ICreateGameRequest>req.body;
+  console.log("/create body:", body, req.body);
+  if (!body.wordSet) {
+    const err = "word set must be defined";
+    res.status(400).send(`{"error":"${err}}`);
+    return;
+  }
+  if (!body.gameName) {
+    const err = "game name must be defined";
+    res.status(400).send(`{"error":"${err}}`);
+    return;
+  }
+  orchestrator
+    .createGame(body.gameName, body.wordSet)
+    .then((game) => {
+      orchestrator
+        .getMeetingToken(game.dailyRoomName)
+        .then((token) => {
+          const data = <ICreateGameResponse>{
+            roomURL: game.dailyRoomURL,
+            meetingToken: token,
+            gameID: game.id,
+          };
+          res.send(data);
+        })
+        .catch((error) => {
+          console.error("failed to get meeting token", error);
+          res.sendStatus(500);
+        });
+    })
+    .catch((error) => {
+      console.error("failed to create room:", error);
+      res.sendStatus(500);
+    });
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);

@@ -7,7 +7,7 @@ import {
 } from "../../shared/types";
 import "../html/lobby.html";
 import axios from "axios";
-import { BoardData } from "./board";
+import { BoardData } from "./board/board";
 import { createWordSet } from "../word";
 
 export class Lobby extends Phaser.Scene {
@@ -24,6 +24,7 @@ export class Lobby extends Phaser.Scene {
 
   create() {
     const lobbyDOM = this.add.dom(400, 100).createFromCache("lobby-dom");
+    const lobbyScene = this.scene.scene;
 
     // See if we have any query parameters indicating the user
     // is joining an existing game
@@ -42,11 +43,11 @@ export class Lobby extends Phaser.Scene {
     lobbyDOM.on("click", function (event: any) {
       event.preventDefault();
 
-      var inputPlayerName = this.getChildByID("player-name")?.value;
-
       const lobbyScene = this.scene.scene;
 
       if (event.target.id === "join-game") {
+        const inputPlayerName = this.getChildByID("join-player-name")?.value;
+        console.log("input player name:", inputPlayerName);
         this.removeListener("click");
 
         // Make get request for game data
@@ -69,13 +70,10 @@ export class Lobby extends Phaser.Scene {
       }
 
       if (event.target.id === "create-game") {
-        const text = this.scene.add.text(400, 50, "Start a new game", {
-          color: "white",
-          fontFamily: "Arial",
-          fontSize: "32px ",
-        });
-
         var inputGameName = this.getChildByID("game-name")?.value;
+        console.log("input game name:", inputGameName);
+        const inputPlayerName = this.getChildByID("create-player-name")?.value;
+        console.log("input player name:", inputPlayerName);
         this.removeListener("click");
 
         //  Tween the login form out

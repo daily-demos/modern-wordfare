@@ -1,23 +1,36 @@
 <style>
-  #create-game-form {
-    display: block;
-    width: 200px;
-  }
-
-  #create-game-form input {
-    display: block;
+  #tiles video {
     width: 100%;
+    height: 150px;
+    object-fit: cover;
   }
 
-  #invite {
-    top: 0px;
-    left: 0px;
+  #scene {
+    height: 90vh;
+    width: 100vh;
+  }
+
+  #tiles .tile {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    background-color: aqua;
+    width: 150px;
+    margin-bottom: 15px;
+  }
+
+  #tiles .tile .name {
+    position: absolute;
+    top: 145px;
+    z-index: 1;
   }
 </style>
-<div>
-  <div id="invite">
-    <h2>Invite</h2>
-    <span id="invite-url"></span>
-  </div>
+<div id="scene">
   <div id="tiles"></div>
+  <div id="controls">
+    <button id="toggleCam" aria-label="Toggle camera">Toggle Cam</button>
+    <button id="toggleMic" aria-label="Toggle microphone">Toggle Mic</button>
+    <button id="invite" aria-label="Invite">Invite</button>
+    <button id="leave">Leave Call</button>
+  </div>
 </div>
