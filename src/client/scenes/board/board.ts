@@ -80,7 +80,7 @@ export class Board extends Phaser.Scene {
       );
     });
 
-    this.wordGrid.drawGrid(175, 100);
+    this.wordGrid.drawGrid(175, 75);
   }
 
   createTile(p: DailyParticipant) {

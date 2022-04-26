@@ -37,11 +37,16 @@ export class RenderedWord {
 
   renderWordObject(x: number, y: number) {
     const wordStyle = this.wordStyle;
-    console.log("neutral config", this.neutralConfig);
     wordStyle.backgroundColor = this.neutralConfig.backgroundColor;
     if (this.word.word.length > 10) {
       wordStyle.fontSize = "20px";
     }
-    this.scene.add.text(x, y, this.word.word, wordStyle);
+    let text = this.scene.add.text(x, y, this.word.word, wordStyle);
+    text.setInteractive();
+    //  text.input.alwaysEnabled = true;
+    text.on("pointerdown", () => {
+      console.log("clicked on word: ", this.word.word);
+    });
+    this.object = text;
   }
 }
