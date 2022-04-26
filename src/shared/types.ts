@@ -4,8 +4,19 @@ export interface ICreateGameRequest {
 }
 
 export interface ICreateGameResponse {
-  roomUrl: string;
+  roomURL: string;
+  gameID: string;
   meetingToken: string;
+}
+
+export interface IJoinGameRequest {
+  gameID: string;
+}
+
+export interface IJoinGameResponse {
+  gameName: string;
+  roomURL: string;
+  wordSet: Word[];
 }
 
 export enum WordKind {

@@ -4,17 +4,17 @@ import { Lobby } from "./scenes/lobby";
 
 export class Game {
   private game: Phaser.Game;
+  private zoom: number = 1;
 
   constructor() {
     console.log("constructing game");
-    const zoom = 1;
 
     let config = {
       type: Phaser.AUTO,
       mode: Phaser.Scale.NONE,
-      width: document.body.clientWidth / zoom,
-      height: document.body.clientHeight / zoom,
-      zoom: zoom,
+      width: this.getWidth(),
+      height: this.getHeight(),
+      zoom: this.zoom,
       parent: "game",
       backgroundColor: "#2b3f56",
       scene: [Lobby, Board],
@@ -28,11 +28,24 @@ export class Game {
       "resize",
       () => {
         this.game.scale.resize(
-          document.body.clientWidth / zoom,
-          document.body.clientHeight / zoom
+          this.getWidth(),
+          this.getHeight(),
         );
       },
       false
     );
   }
+
+  getWidth(): number {
+    console.log("getWidth: ", document.body.clientWidth, this.zoom, document.body.clientWidth / this.zoom)
+
+    return document.body.clientWidth / this.zoom;
+  }
+
+  getHeight(): number {
+    console.log("getHeight: ", document.body.clientHeight, this.zoom, (document.body.clientWidth - 52) / this.zoom)
+    return (document.body.clientHeight - 52) / this.zoom;
+  }
+  
 }
+

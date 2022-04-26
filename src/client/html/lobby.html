@@ -4,13 +4,26 @@
     width: 200px;
   }
 
-  #create-game-form input {
+  #join-game-form {
+    display: block;
+    width: 200px;
+  }
+
+  input {
     display: block;
     width: 100%;
   }
+
+  .hidden {
+    visibility: hidden;
+  }
 </style>
 <div>
-  <form id="create-game-form">
+  <form id="join-game-form" class="hidden">
+    <input type="text" placeholder="Your Name" id="player-name" required />
+    <button type="submit" id="join-game">Start demo</button>
+  </form>
+  <form id="create-game-form" class="hidden">
     <input type="text" placeholder="Game Name" id="game-name" required />
     <input type="text" placeholder="Your Name" id="player-name" required />
     <button type="submit" id="create-game">Start demo</button>

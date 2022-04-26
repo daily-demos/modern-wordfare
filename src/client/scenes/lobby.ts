@@ -1,6 +1,8 @@
 import {
   ICreateGameRequest,
   ICreateGameResponse,
+  IJoinGameRequest,
+  IJoinGameResponse,
   Word,
 } from "../../shared/types";
 import "../html/lobby.html";
@@ -17,74 +19,104 @@ export class Lobby extends Phaser.Scene {
   }
 
   preload() {
-    this.load.html("create-game-dom", "../lobby.html");
+    this.load.html("lobby-dom", "../lobby.html");
   }
 
   create() {
-    console.log("this:", this);
-    const text = this.add.text(10, 10, "Start a new game", {
-      color: "white",
-      fontFamily: "Arial",
-      fontSize: "32px ",
-    });
+    const lobbyDOM = this.add.dom(400, 100).createFromCache("lobby-dom");
 
-    let createGameDOM = this.add
-      .dom(400, 100)
-      .createFromCache("create-game-dom");
+    // See if we have any query parameters indicating the user
+    // is joining an existing game
+    const usp = new URLSearchParams(window.location.search);
+    const params = Object.fromEntries(usp.entries());
+    if (params.gameID) {
+      const joinForm = lobbyDOM.getChildByID("join-game-form");
+      joinForm.classList.remove("hidden");
+    } else {
+      const createForm = lobbyDOM.getChildByID("create-game-form");
+      createForm.classList.remove("hidden");
+    }
 
-    // createGameDOM.setPerspective(100);
+    lobbyDOM.addListener("click");
 
-    createGameDOM.addListener("click");
-
-    const lobbyScene = this.scene;
-    createGameDOM.on("click", function (event: any) {
+    lobbyDOM.on("click", function (event: any) {
       event.preventDefault();
-      if (event.target.id !== "create-game") return;
-      var inputGameName = this.getChildByID("game-name")?.value;
+
       var inputPlayerName = this.getChildByID("player-name")?.value;
-      this.removeListener("click");
 
-      //  Tween the login form out
-      this.scene.tweens.add({
-        targets: createGameDOM.rotate3d,
-        x: 1,
-        w: 90,
-        duration: 3000,
-        ease: "Power3",
-      });
+      const lobbyScene = this.scene.scene;
 
-      this.scene.tweens.add({
-        targets: createGameDOM,
-        scaleX: 2,
-        scaleY: 2,
-        y: 700,
-        duration: 3000,
-        ease: "Power3",
-        onComplete: function () {
-          createGameDOM.setVisible(false);
-        },
-      });
-      console.log("scene:", lobbyScene);
+      if (event.target.id === "join-game") {
+        this.removeListener("click");
 
-      const wordSet = createWordSet();
-
-      createGame(inputGameName, wordSet)
-        .then((gameData) => {
-          console.log("game created!");
-          console.log(this.scene);
-          lobbyScene.start("Board", <BoardData>{
-            roomUrl: gameData.roomUrl,
-            gameName: inputGameName,
-            playerName: inputPlayerName,
-            meetingToken: gameData.meetingToken,
-            wordSet: wordSet,
+        // Make get request for game data
+        joinGame(params.gameID)
+          .then((gameData) => {
+            lobbyScene.start("Board", <BoardData>{
+              roomURL: gameData.roomURL,
+              gameID: params.id,
+              gameName: gameData.gameName,
+              playerName: inputPlayerName,
+              wordSet: gameData.wordSet,
+            });
+          })
+          .catch((error) => {
+            console.error("failed to create game", error);
+            console.log(this.scene);
+            lobbyScene.restart();
           });
-        })
-        .catch((error) => {
-          console.error("failed to create game", error);
-          console.log(this.scene);
-          lobbyScene.restart();
+        return;
+      }
+
+      if (event.target.id === "create-game") {
+        const text = this.scene.add.text(400, 50, "Start a new game", {
+          color: "white",
+          fontFamily: "Arial",
+          fontSize: "32px ",
         });
+
+        var inputGameName = this.getChildByID("game-name")?.value;
+        this.removeListener("click");
+
+        //  Tween the login form out
+        this.scene.tweens.add({
+          targets: lobbyDOM.rotate3d,
+          x: 1,
+          w: 90,
+          duration: 3000,
+          ease: "Power3",
+        });
+
+        this.scene.tweens.add({
+          targets: lobbyDOM,
+          scaleX: 2,
+          scaleY: 2,
+          y: 700,
+          duration: 3000,
+          ease: "Power3",
+          onComplete: function () {
+            lobbyDOM.setVisible(false);
+          },
+        });
+
+        const wordSet = createWordSet();
+
+        createGame(inputGameName, wordSet)
+          .then((gameData) => {
+            lobbyScene.start("Board", <BoardData>{
+              roomURL: gameData.roomURL,
+              gameName: inputGameName,
+              gameID: gameData.gameID,
+              playerName: inputPlayerName,
+              meetingToken: gameData.meetingToken,
+              wordSet: wordSet,
+            });
+          })
+          .catch((error) => {
+            console.error(error);
+            lobbyScene.restart();
+          });
+      }
     });
   }
 
@@ -109,9 +141,29 @@ async function createGame(
   const data = JSON.stringify(req);
 
   let res = await axios.post(url, data, { headers }).catch((error) => {
-    throw new Error(`failed to create room: ${error})`);
+    throw new Error(`failed to create game: ${error})`);
   });
 
   const gameData = <ICreateGameResponse>res.data;
+  return gameData;
+}
+
+async function joinGame(gameID: string): Promise<IJoinGameResponse> {
+  const req = <IJoinGameRequest>{
+    gameID: gameID,
+  };
+
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  const url = "/join";
+  const data = JSON.stringify(req);
+  console.log("join data: ", data);
+
+  let res = await axios.post(url, data, { headers }).catch((error) => {
+    throw new Error(`failed to join game: ${error})`);
+  });
+
+  const gameData = <IJoinGameResponse>res.data;
   return gameData;
 }

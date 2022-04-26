@@ -11,6 +11,10 @@ import {
   DailyRoomInfo,
 } from "@daily-co/daily-js";
 
+export type joinHandler = (e: DailyEventObjectParticipants) => void
+export type leaveHandler = (e: DailyEventObjectParticipant) => void
+
+
 export class Call {
   private url: string;
   private userName: string;
@@ -28,10 +32,21 @@ export class Call {
         experimentalChromeVideoMuteLightOff: true,
         camSimulcastEncodings: [{ maxBitrate: 600000, maxFramerate: 30 }],
       },
-    }).on("joined-meeting", (e) => {
-      console.log("hellooo", e);
+    })
+  }
+
+  registerJoinedMeetingHandler(h: joinHandler) {
+    this.callObject.on("joined-meeting", (e) => {
+      h(e);
     });
   }
+
+  registerParticipantLeftHandler(h: leaveHandler) {
+    this.callObject.on("participant-left", (e) => {
+      h(e);
+    });
+  }
+  
 
   join() {
     let params: { [k: string]: string } = {

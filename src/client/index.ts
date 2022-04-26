@@ -19,4 +19,6 @@ export function initGame() {
   const game = new Game();
 }
 
-initGame();
+window.addEventListener("DOMContentLoaded", () => {
+  initGame();
+});

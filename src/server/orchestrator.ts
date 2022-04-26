@@ -1,4 +1,4 @@
-import { DAILY_API_KEY, DAILY_DOMAIN } from "./env";
+import { DAILY_API_KEY } from "./env";
 import axios from "axios";
 import { Game, GameState } from "./game";
 import { Word } from "../shared/types";
@@ -12,7 +12,7 @@ interface ICreatedDailyRoomData {
 }
 
 export class GameOrchestrator {
-  games: Game[] = [];
+  games: Map<string, Game> = new Map();
 
   constructor() {}
 
@@ -39,8 +39,7 @@ export class GameOrchestrator {
     let res = await axios.post(url, data, { headers }).catch((error) => {
       throw new Error(`failed to create room: ${error})`);
     });
-    console.log("RES:", res);
-
+    
     if (res.status !== 200 || !res.data) {
       console.error("failed to create room2:", res);
       throw new Error("failed to create room");
@@ -49,13 +48,8 @@ export class GameOrchestrator {
     const roomData = <ICreatedDailyRoomData>body;
     console.log("gamedata:", roomData);
 
-    const game = new Game();
-    game.name = name;
-    game.state = GameState.Pending;
-    game.dailyRoomUrl = roomData.url;
-    game.dailyRoomName = roomData.name;
-    game.wordSet = wordSet;
-    this.games.push(game);
+    const game = new Game(name, roomData.url, roomData.name, wordSet);
+    this.games.set(game.id, game);
     return game;
   }
 
@@ -82,5 +76,9 @@ export class GameOrchestrator {
     });
 
     return res.data?.token;
+  }
+
+  getGame(gameID: string): Game {
+    return this.games.get(gameID);
   }
 }

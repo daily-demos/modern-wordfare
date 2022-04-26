@@ -8,11 +8,16 @@
     display: block;
     width: 100%;
   }
+
+  #invite {
+    top: 0px;
+    left: 0px;
+  }
 </style>
 <div>
-  <form id="create-game-form">
-    <input type="text" placeholder="Game Name" id="game-name" required />
-    <input type="text" placeholder="Your Name" id="player-name" required />
-    <button type="submit" id="create-game">Start demo</button>
-  </form>
+  <div id="invite">
+    <h2>Invite</h2>
+    <span id="invite-url"></span>
+  </div>
+  <div id="tiles"></div>
 </div>
