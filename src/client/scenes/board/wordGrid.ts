@@ -16,7 +16,6 @@ export class WordGrid {
     let y = startY;
 
     const wordsPerRow = Math.sqrt(this.renderedWords.length);
-    console.log("words per row:", wordsPerRow);
     const wordWidth = textWidth;
     const wordHeight = textHeight;
 

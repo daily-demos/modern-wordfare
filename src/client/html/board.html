@@ -10,7 +10,7 @@
     width: 100vh;
   }
 
-  #tiles .tile {
+  #teams .tiles .tile {
     position: relative;
     display: flex;
     justify-content: center;
@@ -19,15 +19,41 @@
     margin-bottom: 15px;
   }
 
-  #tiles .tile .name {
+  #teams .tiles .tile .name {
     position: absolute;
     top: 145px;
     z-index: 1;
   }
+
+  #teams {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  #team1 {
+  }
+
+  #team2 {
+  }
+
+  .hidden {
+    visibility: hidden;
+  }
 </style>
 <div id="scene">
-  <div id="tiles"></div>
-  <div id="controls">
+  <div id="teams">
+    <div id="team1" class="hidden">
+      <h2>Team 1</h2>
+      <div class="tiles"></div>
+      <button class="join">Join</button>
+    </div>
+    <div id="team2" class="hidden">
+      <h2>Team 2</h2>
+      <div class="tiles"></div>
+      <button class="join">Join</button>
+    </div>
+  </div>
+  <div id="controls" class="hidden">
     <button id="toggleCam" aria-label="Toggle camera">Toggle Cam</button>
     <button id="toggleMic" aria-label="Toggle microphone">Toggle Mic</button>
     <button id="invite" aria-label="Invite">Invite</button>

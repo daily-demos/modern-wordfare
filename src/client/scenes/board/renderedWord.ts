@@ -43,7 +43,6 @@ export class RenderedWord {
     }
     let text = this.scene.add.text(x, y, this.word.word, wordStyle);
     text.setInteractive();
-    //  text.input.alwaysEnabled = true;
     text.on("pointerdown", () => {
       console.log("clicked on word: ", this.word.word);
     });

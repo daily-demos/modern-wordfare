@@ -27,7 +27,7 @@ export class Board extends Phaser.Scene {
   call: Call;
   gameID: string;
   boardDOM: Phaser.GameObjects.DOMElement;
-  team: Team.None;
+  team = Team.None;
 
   constructor() {
     super("Board");
@@ -48,8 +48,17 @@ export class Board extends Phaser.Scene {
   }
 
   create() {
-    this.call.registerJoinedMeetingHandlers((p) => {
-      this.createTile(p);
+    this.call.registerParticipantJoinedHandler((p) => {
+      // this.createTile(p);
+    });
+
+    this.call.registerJoinedMeetingHandler((p) => {
+      this.showTeams(p);
+    });
+
+    this.call.registerJoinedTeamHandler((p: DailyParticipant, team: Team) => {
+      console.log("joined team!");
+      this.createTile(p, team);
     });
 
     this.call.registerTrackStartedHandler((e) => {
@@ -83,7 +92,35 @@ export class Board extends Phaser.Scene {
     this.wordGrid.drawGrid(175, 75);
   }
 
-  createTile(p: DailyParticipant) {
+  showTeams(p: DailyParticipant) {
+    const team1 = <HTMLDivElement>this.boardDOM.getChildByID("team1");
+    team1.classList.remove("hidden");
+
+    const team1JoinBtn = team1.getElementsByTagName("button")[0];
+    team1JoinBtn.onclick = () => {
+      this.team = Team.Team1;
+      this.call.joinTeam(Team.Team1);
+      this.createTile(p, Team.Team1);
+      team1JoinBtn.classList.add("hidden");
+    };
+
+    const team2 = this.boardDOM.getChildByID("team2");
+    team2.classList.remove("hidden");
+
+    const team2JoinBtn = team2.getElementsByTagName("button")[0];
+    team2JoinBtn.onclick = () => {
+      this.team = Team.Team2;
+      this.call.joinTeam(Team.Team2);
+      this.createTile(p, Team.Team2);
+      team2JoinBtn.classList.add("hidden");
+    };
+
+    const controls = this.boardDOM.getChildByID("controls");
+    controls.classList.remove("hidden");
+  }
+
+  createTile(p: DailyParticipant, team: Team) {
+    console.log("CREATING TILE:", p.session_id, team);
     const name = p.user_name;
     const id = p.session_id;
     // See if there is already an existing tile by this ID, error out if so
@@ -92,8 +129,17 @@ export class Board extends Phaser.Scene {
       throw new Error(`tile for participant ID ${id} already exists`);
     }
 
+    let teamDivID = null;
+    if (team === Team.Team1) {
+      teamDivID = "team1";
+    } else if (team === Team.Team2) {
+      teamDivID = "team2";
+    }
+
+    const teamDiv = <HTMLDivElement>this.boardDOM.getChildByID(teamDivID);
+
     // Create participant tile with the video and name tags within
-    const tiles = this.boardDOM.getChildByID("tiles");
+    const tiles = teamDiv.getElementsByClassName("tiles")[0];
     participantTile = document.createElement("div");
     participantTile.id = this.getParticipantTileID(id);
     participantTile.className = "tile";
