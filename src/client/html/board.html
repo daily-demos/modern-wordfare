@@ -1,5 +1,5 @@
 <style>
-  #tiles video {
+  #teams .tiles .tile video {
     width: 100%;
     height: 150px;
     object-fit: cover;
@@ -31,26 +31,44 @@
   }
 
   #team1 {
+    display: flex;
+    flex-direction: column;
   }
 
   #team2 {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .spymaster {
+    border-color: blue;
+    border-width: 5px;
   }
 
   .hidden {
     visibility: hidden;
   }
+
+  #teams h2 {
+    color: red;
+  }
+  #teams .active h2 {
+    color: green;
+  }
 </style>
 <div id="scene">
   <div id="teams">
     <div id="team1" class="hidden">
-      <h2>Team 1</h2>
+      <h2>Team 1 <span name="score"></span></h2>
       <div class="tiles"></div>
-      <button class="join">Join</button>
+      <button id="join-team1" class="join">Join</button>
+      <button id="join-spymaster-team1" class="hidden">Become spymaster</button>
     </div>
     <div id="team2" class="hidden">
-      <h2>Team 2</h2>
+      <h2>Team 2 <span name="score"></span></h2>
       <div class="tiles"></div>
-      <button class="join">Join</button>
+      <button id="join-team2" class="join">Join</button>
+      <button id="join-spymaster-team2" class="hidden">Become spymaster</button>
     </div>
   </div>
   <div id="controls" class="hidden">

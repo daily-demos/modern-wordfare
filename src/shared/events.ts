@@ -25,3 +25,23 @@ export interface JoinGameData {
   socketID: string;
   gameID: string;
 }
+
+export const becomeSpymasterEventName = "become-spymaster";
+export interface BecomeSpymasterData {
+  socketID: string;
+  gameID: string;
+  sessionID: string;
+}
+
+export const newSpymasterEventName = "new-spymaster";
+export interface SpymasterData {
+  spymasterID: string;
+  teamID: Team;
+}
+
+export const nextTurnEventName = "next-turn";
+export interface TurnData {
+  currentTurn: Team;
+}
+
+export const errorEventName = "srv-error";

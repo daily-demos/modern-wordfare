@@ -15,7 +15,6 @@ import { Data } from "phaser";
 import { Team } from "../shared/types";
 
 export type joinHandler = (e: DailyParticipant) => void;
-export type joinTeamHandler = (p: DailyParticipant, team: Team) => void;
 export type dataDumpHandler = (
   p: DailyParticipant,
   team: Team,
@@ -53,9 +52,6 @@ export class Call {
   private callObject: DailyCall;
   private meetingToken: string;
 
-  private onJoinTeam: joinTeamHandler;
-  private onDataDump: joinTeamHandler;
-
   constructor(url: string, userName: string, meetingToken: string = null) {
     console.log("daily loading", userName);
     this.url = url;
@@ -67,39 +63,7 @@ export class Call {
         experimentalChromeVideoMuteLightOff: true,
         camSimulcastEncodings: [{ maxBitrate: 600000, maxFramerate: 30 }],
       },
-    }).on("app-message", (e) => {
-      this.handleAppMessage(e);
     });
-  }
-
-  private handleAppMessage(e: DailyEventObjectAppMessage) {
-    const data = e.data;
-    switch (data.kind) {
-      case messageKindJoinedteam:
-        console.log("onjointeam:", this.onJoinTeam);
-        if (this.onJoinTeam) {
-          const msg = <JoinTeamMessage>data.data;
-          console.log("msg, data:", msg, data.data);
-          const team: Team = msg.teamID;
-          console.log("team equals:", team === Team.Team2);
-          const p = this.callObject.participants()[e.fromId];
-          this.onJoinTeam(p, team);
-        }
-        break;
-      default:
-        console.error("unrecognized app message received:", e);
-    }
-  }
-
-  joinTeam(team: Team) {
-    const data = <AppMessageData>{
-      kind: messageKindJoinedteam,
-      data: {
-        teamID: team,
-      },
-    };
-    console.log("sending join team data:", data);
-    this.callObject.sendAppMessage(data, "*");
   }
 
   getPlayerId(): string {
@@ -160,11 +124,6 @@ export class Call {
       console.log("track stopped", e);
       h(e);
     });
-  }
-
-  registerJoinedTeamHandler(h: joinTeamHandler) {
-    console.log("registering onjointeam handler");
-    this.onJoinTeam = h;
   }
 
   getParticipantTracks(p: DailyParticipant): MediaStreamTrack[] {

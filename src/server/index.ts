@@ -6,6 +6,8 @@ import { dirname, basename, join } from "path";
 import { Server } from "socket.io";
 import { fileURLToPath } from "url";
 import {
+  BecomeSpymasterData,
+  becomeSpymasterEventName,
   GameData,
   gameDataDumpEventName,
   JoinedTeamData,
@@ -14,12 +16,18 @@ import {
   joinGameEventName,
   JoinTeamData,
   joinTeamEventName,
+  newSpymasterEventName,
+  TurnData,
+  nextTurnEventName,
+  SpymasterData,
+  errorEventName,
 } from "../shared/events";
 import {
   ICreateGameRequest,
   ICreateGameResponse,
   IJoinGameRequest,
   IJoinGameResponse,
+  Team,
 } from "../shared/types";
 import { GameOrchestrator } from "./orchestrator";
 
@@ -104,7 +112,6 @@ const io = new Server(server);
 io.on("connection", (socket) => {
   console.log("a user connected");
   socket.on(joinGameEventName, function (data: JoinGameData) {
-    console.log("socket joined room name: ", data.gameID);
     socket.join(data.gameID);
     // Send game data back:
     const game = orchestrator.getGame(data.gameID);
@@ -112,7 +119,8 @@ io.on("connection", (socket) => {
       gameID: data.gameID,
       players: game.players,
     };
-    socket.to(data.socketID).emit(gameDataDumpEventName, gameDataDump);
+    console.log("sending data dump", data.socketID, gameDataDump);
+    io.to(data.socketID).emit(gameDataDumpEventName, gameDataDump);
   });
 
   socket.on("disconnect", () => {
@@ -124,7 +132,10 @@ io.on("connection", (socket) => {
     if (!game) {
       socket
         .to(data.socketID)
-        .emit("error", new Error(`failed to find game by id ${data.gameID}`));
+        .emit(
+          errorEventName,
+          new Error(`failed to find game by id ${data.gameID}`)
+        );
       return;
     }
     try {
@@ -138,9 +149,39 @@ io.on("connection", (socket) => {
       io.to(data.gameID).emit(joinedTeamEventName, joinedData);
     } catch (e) {
       console.error(e);
-      socket.to(data.socketID).emit("error", e);
+
+      io.to(data.socketID).emit(errorEventName, <Error>e);
     }
   });
+  socket.on(becomeSpymasterEventName, (data: BecomeSpymasterData) => {
+    const game = orchestrator.getGame(data.gameID);
+    if (!game) {
+      io.to(data.socketID).emit(
+        "error",
+        new Error(`failed to find game by id ${data.gameID}`)
+      );
+      return;
+    }
+    try {
+      const spymaster = game.setSpymaster(data.sessionID);
+      const spymasterData = <SpymasterData>{
+        spymasterID: data.sessionID,
+        teamID: spymaster.team,
+      };
+      io.to(data.gameID).emit(newSpymasterEventName, spymasterData);
+      if (game.spymastersReady()) {
+        game.nextTurn();
+        const turnData = <TurnData>{
+          currentTurn: game.currentTurn,
+        };
+        io.to(data.gameID).emit(nextTurnEventName, turnData);
+      }
+    } catch (e) {
+      io.to(data.socketID).emit(errorEventName, <Error>e);
+      return;
+    }
+  });
+
   socket.on("hello", () => {
     console.log("hi!");
   });

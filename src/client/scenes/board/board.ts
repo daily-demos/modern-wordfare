@@ -1,27 +1,31 @@
-import { Team, Word, WordKind } from "../../../shared/types";
+import { Team, Word } from "../../../shared/types";
 import { Call } from "../../daily";
 import "../../html/board.html";
-import {
-  DailyEventObjectParticipants,
-  DailyParticipant,
-} from "@daily-co/daily-js";
+import { DailyParticipant } from "@daily-co/daily-js";
 import {
   registerCamBtnListener,
   registerInviteBtnListener,
   registerMicBtnListener,
 } from "../../util/nav";
-import { wordCount } from "../../config";
-import { RenderedWord } from "./renderedWord";
 import { WordGrid } from "./wordGrid";
 import { io, Socket } from "socket.io-client";
 import { DuplicatePlayer } from "../../../shared/error";
 import {
+  BecomeSpymasterData,
+  becomeSpymasterEventName,
   GameData,
   gameDataDumpEventName,
   JoinedTeamData,
   joinedTeamEventName,
+  JoinGameData,
+  joinGameEventName,
   JoinTeamData,
   joinTeamEventName,
+  newSpymasterEventName,
+  TurnData,
+  nextTurnEventName,
+  SpymasterData,
+  errorEventName,
 } from "../../../shared/events";
 
 export interface BoardData {
@@ -39,6 +43,7 @@ export class Board extends Phaser.Scene {
   boardDOM: Phaser.GameObjects.DOMElement;
   team = Team.None;
   socket: Socket;
+  pendingTiles: { [key: string]: ReturnType<typeof setInterval> } = {};
 
   constructor() {
     super("Board");
@@ -49,40 +54,105 @@ export class Board extends Phaser.Scene {
   }
 
   init(data: BoardData) {
-    console.log("init with board data:", data);
     this.call = new Call(data.roomURL, data.playerName, data.meetingToken);
     this.gameID = data.gameID;
     this.wordGrid = new WordGrid(this, data.wordSet);
     const socket: Socket = io();
     this.socket = socket;
     socket.connect();
-    socket.emit("hello");
 
-    socket.on("error", (err: Error) => {
+    socket.on(errorEventName, (err: Error) => {
       console.error("received error from socket: ", err);
-      if (err instanceof DuplicatePlayer) {
-        console.log("dupe player!");
-      }
     });
 
     socket.on(joinedTeamEventName, (data: JoinedTeamData) => {
-      console.log("joined team!", data);
       const p = this.call.getParticipant(data.sessionID);
       if (!p) {
         console.error(`failed to find participant with ID ${data.sessionID}`);
         return;
       }
+      if (p.session_id === this.call.getPlayerId()) {
+        this.team = data.teamID;
+      }
       this.createTile(p, data.teamID);
     });
 
     socket.on(gameDataDumpEventName, (data: GameData) => {
-      console.log("got data dump", data);
       for (let i = 0; i < data.players.length; i++) {
         const player = data.players[i];
-        const participant = this.call.getParticipant(player.id);
-        this.createTile(participant, player.team);
+        this.pendingTiles[player.id] = setInterval(() => {
+          const participant = this.call.getParticipant(player.id);
+          if (!participant) {
+            console.log("participant does not yet exist");
+            return;
+          }
+          this.clearPendingTile(player.id);
+          this.createTile(participant, player.team);
+          if (player.isSpymaster) {
+            this.makeSpymaster(player.id, player.team);
+          }
+        }, 1000);
       }
     });
+
+    socket.on(newSpymasterEventName, (data: SpymasterData) => {
+      this.makeSpymaster(data.spymasterID, data.teamID);
+    });
+
+    socket.on(nextTurnEventName, (data: TurnData) => {
+      const teams = this.getTeamDivs(data.currentTurn);
+      teams.activeTeam.classList.add("active");
+      teams.otherTeam.classList.remove("active");
+
+      if (!this.team) {
+        return;
+      }
+
+      if (data.currentTurn === this.team) {
+        this.wordGrid.enableInteraction();
+        return;
+      }
+      this.wordGrid.disableInteraction();
+    });
+  }
+
+  private getTeamDivs(activeTeam: Team): {
+    activeTeam: HTMLDivElement;
+    otherTeam: HTMLDivElement;
+  } {
+    const t1 = <HTMLDivElement>this.boardDOM.getChildByID("team1");
+    const t2 = <HTMLDivElement>this.boardDOM.getChildByID("team2");
+
+    if (activeTeam === Team.Team1) {
+      return {
+        activeTeam: t1,
+        otherTeam: t2,
+      };
+    }
+    if (activeTeam === Team.Team2) {
+      return {
+        activeTeam: t2,
+        otherTeam: t1,
+      };
+    }
+    throw new Error(`invalid active team requested: ${activeTeam}`);
+  }
+
+  private getTeamDiv(team: Team): HTMLDivElement {
+    let teamDivID = null;
+    if (team === Team.Team1) {
+      teamDivID = "team1";
+    }
+    if (team === Team.Team2) {
+      teamDivID = "team2";
+    }
+    const div = this.boardDOM.getChildByID(teamDivID);
+    return <HTMLDivElement>div;
+  }
+
+  private clearPendingTile(sessionID: string) {
+    clearInterval(this.pendingTiles[sessionID]);
+    delete this.pendingTiles[sessionID];
   }
 
   preload() {
@@ -90,18 +160,16 @@ export class Board extends Phaser.Scene {
   }
 
   create() {
-    this.call.registerParticipantJoinedHandler((p) => {
-      // this.createTile(p);
-    });
+    this.boardDOM = this.add.dom(500, 450).createFromCache("board-dom");
 
     this.call.registerJoinedMeetingHandler((p) => {
-      this.socket.emit("room", { room_name: this.gameID });
-      this.showTeams(p);
-    });
-
-    this.call.registerJoinedTeamHandler((p: DailyParticipant, team: Team) => {
-      console.log("joined team!");
-      this.createTile(p, team);
+      const data = <JoinGameData>{
+        socketID: this.socket.id,
+        gameID: this.gameID,
+      };
+      console.log("joining game", data);
+      this.socket.emit(joinGameEventName, data);
+      this.showTeams();
     });
 
     this.call.registerTrackStartedHandler((e) => {
@@ -116,7 +184,6 @@ export class Board extends Phaser.Scene {
     });
 
     this.call.join();
-    this.boardDOM = this.add.dom(500, 450).createFromCache("board-dom");
 
     registerCamBtnListener(() => {
       this.call.toggleLocalVideo();
@@ -135,50 +202,80 @@ export class Board extends Phaser.Scene {
     this.wordGrid.drawGrid(175, 75);
   }
 
-  showTeams(p: DailyParticipant) {
-    const team1 = <HTMLDivElement>this.boardDOM.getChildByID("team1");
-    team1.classList.remove("hidden");
-
-    const team1JoinBtn = team1.getElementsByTagName("button")[0];
-    team1JoinBtn.onclick = () => {
-      const data = <JoinTeamData>{
-        socketID: this.socket.id,
-        gameID: this.gameID,
-        sessionID: this.call.getPlayerId(),
-        teamID: Team.Team1,
-      };
-
-      this.socket.emit(joinTeamEventName, data);
-      /* this.team = Team.Team1;
-      this.call.joinTeam(Team.Team1);
-      this.createTile(p, Team.Team1); */
-      team1JoinBtn.classList.add("hidden");
-    };
-
-    const team2 = this.boardDOM.getChildByID("team2");
-    team2.classList.remove("hidden");
-
-    const team2JoinBtn = team2.getElementsByTagName("button")[0];
-    team2JoinBtn.onclick = () => {
-      const data = <JoinTeamData>{
-        gameID: this.gameID,
-        sessionID: this.call.getPlayerId(),
-        teamID: Team.Team2,
-      };
-      this.socket.emit(joinTeamEventName, data);
-
-      /* this.team = Team.Team2;
-      this.call.joinTeam(Team.Team2);
-      this.createTile(p, Team.Team2);  */
-      team2JoinBtn.classList.add("hidden");
-    };
+  showTeams() {
+    this.showTeam(Team.Team1);
+    this.showTeam(Team.Team2);
 
     const controls = this.boardDOM.getChildByID("controls");
     controls.classList.remove("hidden");
   }
 
+  private showTeam(team: Team) {
+    let teamDivID: string = null;
+    if (team === Team.Team1) {
+      teamDivID = "team1";
+    } else if (team === Team.Team2) {
+      teamDivID = "team2";
+    }
+    console.log("showing team ", teamDivID, team);
+
+    const teamDiv = <HTMLDivElement>this.boardDOM.getChildByID(teamDivID);
+    teamDiv.classList.remove("hidden");
+
+    const teamJoinBtn = document.getElementById(`join-${teamDivID}`);
+    teamJoinBtn.onclick = () => {
+      const data = <JoinTeamData>{
+        socketID: this.socket.id,
+        gameID: this.gameID,
+        sessionID: this.call.getPlayerId(),
+        teamID: team,
+      };
+
+      this.socket.emit(joinTeamEventName, data);
+      const joinButtons = document.getElementsByClassName("join");
+      for (let i = 0; i < joinButtons.length; i++) {
+        const btn = joinButtons[i];
+        btn.classList.add("hidden");
+      }
+
+      const beSpymasterButton = document.getElementById(
+        `join-spymaster-${teamDivID}`
+      );
+      beSpymasterButton.classList.remove("hidden");
+      beSpymasterButton.onclick = () => {
+        console.log("becoming spymaster!");
+        beSpymasterButton.classList.add("hidden");
+        const data = <BecomeSpymasterData>{
+          socketID: this.socket.id,
+          gameID: this.gameID,
+          sessionID: this.call.getPlayerId(),
+        };
+        this.socket.emit(becomeSpymasterEventName, data);
+        beSpymasterButton.classList.add("hidden");
+      };
+    };
+  }
+
+  private makeSpymaster(id: string, team: Team) {
+    const participantTile = this.getTile(id);
+    participantTile.classList.add("spymaster");
+
+    if (this.team === team) {
+      const teamDiv = this.getTeamDiv(this.team);
+      const btns = teamDiv.getElementsByTagName("button");
+      for (let i = 0; i < btns.length; i++) {
+        const btn = btns[i];
+        btn.classList.add("hidden");
+      }
+    }
+
+    if (id === this.call.getPlayerId()) {
+      // Show word colors in grid
+      this.wordGrid.revealAllWords(this.team);
+    }
+  }
+
   createTile(p: DailyParticipant, team: Team) {
-    console.log("CREATING TILE:", p.session_id, team);
     const name = p.user_name;
     const id = p.session_id;
     // See if there is already an existing tile by this ID, error out if so

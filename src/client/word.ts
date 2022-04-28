@@ -1,6 +1,6 @@
 import defaultWordlist from "./dictionaries/default.json";
 import { wordCount } from "./config";
-import { rand } from "./util/math";
+import { rand, shuffle } from "./util/math";
 import { Word, WordKind } from "../shared/types";
 
 export function createWordSet(): Word[] {
@@ -31,6 +31,7 @@ export function createWordSet(): Word[] {
     .concat(neutralWordSet)
     .concat(assassinWord);
 
+  shuffle(wordSet);
   return wordSet;
 }
 

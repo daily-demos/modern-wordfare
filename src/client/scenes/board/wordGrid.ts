@@ -1,4 +1,5 @@
-import { Word } from "../../../shared/types";
+import { Team, Word } from "../../../shared/types";
+import { shuffle } from "../../util/math";
 import { RenderedWord, textHeight, textWidth } from "./renderedWord";
 
 export class WordGrid {
@@ -29,6 +30,27 @@ export class WordGrid {
       } else {
         x += wordWidth;
       }
+    }
+  }
+
+  revealAllWords(ownTeam: Team) {
+    for (let i = 0; i < this.renderedWords.length; i++) {
+      const word = this.renderedWords[i];
+      word.colorize(ownTeam);
+    }
+  }
+
+  enableInteraction() {
+    for (let i = 0; i < this.renderedWords.length; i++) {
+      const word = this.renderedWords[i];
+      word.enableInteraction();
+    }
+  }
+
+  disableInteraction() {
+    for (let i = 0; i < this.renderedWords.length; i++) {
+      const word = this.renderedWords[i];
+      word.disableInteraction();
     }
   }
 }
