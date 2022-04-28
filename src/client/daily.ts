@@ -16,6 +16,13 @@ import { Team } from "../shared/types";
 
 export type joinHandler = (e: DailyParticipant) => void;
 export type joinTeamHandler = (p: DailyParticipant, team: Team) => void;
+export type dataDumpHandler = (
+  p: DailyParticipant,
+  team: Team,
+  team1Score: number,
+  team2Score: number
+) => void;
+
 export type leaveHandler = (e: DailyEventObjectParticipant) => void;
 export type trackStartedHandler = (e: DailyEventObjectTrack) => void;
 export type trackStoppedHandler = (e: DailyEventObjectTrack) => void;
@@ -26,12 +33,19 @@ interface JoinTeamMessage {
   teamID: Team;
 }
 
+interface DataDumpMessage {
+  teamID: Team;
+  team1Score: number;
+  team2Score: number;
+}
+
 interface AppMessageData {
-  kind: string;
+  kind: "joined-team" | "data-dump" | "ack";
   data: JoinTeamMessage;
 }
 
 const messageKindJoinedteam = "joined-team";
+const messageKindDataDump = "data-dump";
 
 export class Call {
   private url: string;
@@ -40,6 +54,7 @@ export class Call {
   private meetingToken: string;
 
   private onJoinTeam: joinTeamHandler;
+  private onDataDump: joinTeamHandler;
 
   constructor(url: string, userName: string, meetingToken: string = null) {
     console.log("daily loading", userName);
@@ -85,6 +100,17 @@ export class Call {
     };
     console.log("sending join team data:", data);
     this.callObject.sendAppMessage(data, "*");
+  }
+
+  getPlayerId(): string {
+    return this.callObject.participants().local.session_id;
+  }
+  getParticipant(sessionID: string): DailyParticipant {
+    const participants = this.callObject.participants();
+    if (participants.local.session_id === sessionID) {
+      return participants.local;
+    }
+    return participants[sessionID];
   }
 
   toggleLocalVideo() {

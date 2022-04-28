@@ -55,7 +55,7 @@ export class Lobby extends Phaser.Scene {
           .then((gameData) => {
             lobbyScene.start("Board", <BoardData>{
               roomURL: gameData.roomURL,
-              gameID: params.id,
+              gameID: params.gameID,
               gameName: gameData.gameName,
               playerName: inputPlayerName,
               wordSet: gameData.wordSet,

@@ -1,8 +1,20 @@
 import express, { Express, Request, Response } from "express";
-import { Server } from "socket.io";
+import { createServer } from "http";
+import { createSecureServer } from "http2";
 
 import { dirname, basename, join } from "path";
+import { Server } from "socket.io";
 import { fileURLToPath } from "url";
+import {
+  GameData,
+  gameDataDumpEventName,
+  JoinedTeamData,
+  joinedTeamEventName,
+  JoinGameData,
+  joinGameEventName,
+  JoinTeamData,
+  joinTeamEventName,
+} from "../shared/events";
 import {
   ICreateGameRequest,
   ICreateGameResponse,
@@ -14,32 +26,6 @@ import { GameOrchestrator } from "./orchestrator";
 var app = express();
 const port = 3000;
 const orchestrator = new GameOrchestrator();
-
-interface ServerToClientEvents {
-  noArg: () => void;
-  basicEmit: (a: number, b: string, c: Buffer) => void;
-  withAck: (d: string, callback: (e: number) => void) => void;
-}
-
-interface ClientToServerEvents {
-  hello: () => void;
-}
-
-interface InterServerEvents {
-  ping: () => void;
-}
-
-interface SocketData {
-  name: string;
-  age: number;
-}
-
-const io = new Server<
-  ClientToServerEvents,
-  ServerToClientEvents,
-  InterServerEvents,
-  SocketData
->();
 
 const clientPath = getClientPath();
 
@@ -112,8 +98,56 @@ app.post("/create", function (req: Request, res: Response) {
     });
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+const server = createServer(app);
+
+const io = new Server(server);
+io.on("connection", (socket) => {
+  console.log("a user connected");
+  socket.on(joinGameEventName, function (data: JoinGameData) {
+    console.log("socket joined room name: ", data.gameID);
+    socket.join(data.gameID);
+    // Send game data back:
+    const game = orchestrator.getGame(data.gameID);
+    const gameDataDump = <GameData>{
+      gameID: data.gameID,
+      players: game.players,
+    };
+    socket.to(data.socketID).emit(gameDataDumpEventName, gameDataDump);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+  });
+  socket.on(joinTeamEventName, (data: JoinTeamData) => {
+    console.log("joining team");
+    const game = orchestrator.getGame(data.gameID);
+    if (!game) {
+      socket
+        .to(data.socketID)
+        .emit("error", new Error(`failed to find game by id ${data.gameID}`));
+      return;
+    }
+    try {
+      game.addPlayer(data.sessionID, data.teamID);
+      const joinedData = <JoinedTeamData>{
+        sessionID: data.sessionID,
+        teamID: data.teamID,
+      };
+      console.log("emitting to room:", data.gameID);
+      // using "io" here to emit to the whole room including the sender
+      io.to(data.gameID).emit(joinedTeamEventName, joinedData);
+    } catch (e) {
+      console.error(e);
+      socket.to(data.socketID).emit("error", e);
+    }
+  });
+  socket.on("hello", () => {
+    console.log("hi!");
+  });
+});
+
+server.listen(port, () => {
+  console.log(`listening on port ${port}`);
 });
 
 function getClientPath(): string {

@@ -36,3 +36,13 @@ export type Word = {
   word: string;
   kind: WordKind;
 };
+
+export class Player {
+  id: string;
+  team: Team = Team.None;
+
+  constructor(id: string, team: Team) {
+    this.id = id;
+    this.team = team;
+  }
+}

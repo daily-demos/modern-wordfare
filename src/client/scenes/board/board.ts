@@ -13,6 +13,16 @@ import {
 import { wordCount } from "../../config";
 import { RenderedWord } from "./renderedWord";
 import { WordGrid } from "./wordGrid";
+import { io, Socket } from "socket.io-client";
+import { DuplicatePlayer } from "../../../shared/error";
+import {
+  GameData,
+  gameDataDumpEventName,
+  JoinedTeamData,
+  joinedTeamEventName,
+  JoinTeamData,
+  joinTeamEventName,
+} from "../../../shared/events";
 
 export interface BoardData {
   roomURL: string;
@@ -28,6 +38,7 @@ export class Board extends Phaser.Scene {
   gameID: string;
   boardDOM: Phaser.GameObjects.DOMElement;
   team = Team.None;
+  socket: Socket;
 
   constructor() {
     super("Board");
@@ -38,9 +49,40 @@ export class Board extends Phaser.Scene {
   }
 
   init(data: BoardData) {
+    console.log("init with board data:", data);
     this.call = new Call(data.roomURL, data.playerName, data.meetingToken);
     this.gameID = data.gameID;
     this.wordGrid = new WordGrid(this, data.wordSet);
+    const socket: Socket = io();
+    this.socket = socket;
+    socket.connect();
+    socket.emit("hello");
+
+    socket.on("error", (err: Error) => {
+      console.error("received error from socket: ", err);
+      if (err instanceof DuplicatePlayer) {
+        console.log("dupe player!");
+      }
+    });
+
+    socket.on(joinedTeamEventName, (data: JoinedTeamData) => {
+      console.log("joined team!", data);
+      const p = this.call.getParticipant(data.sessionID);
+      if (!p) {
+        console.error(`failed to find participant with ID ${data.sessionID}`);
+        return;
+      }
+      this.createTile(p, data.teamID);
+    });
+
+    socket.on(gameDataDumpEventName, (data: GameData) => {
+      console.log("got data dump", data);
+      for (let i = 0; i < data.players.length; i++) {
+        const player = data.players[i];
+        const participant = this.call.getParticipant(player.id);
+        this.createTile(participant, player.team);
+      }
+    });
   }
 
   preload() {
@@ -53,6 +95,7 @@ export class Board extends Phaser.Scene {
     });
 
     this.call.registerJoinedMeetingHandler((p) => {
+      this.socket.emit("room", { room_name: this.gameID });
       this.showTeams(p);
     });
 
@@ -98,9 +141,17 @@ export class Board extends Phaser.Scene {
 
     const team1JoinBtn = team1.getElementsByTagName("button")[0];
     team1JoinBtn.onclick = () => {
-      this.team = Team.Team1;
+      const data = <JoinTeamData>{
+        socketID: this.socket.id,
+        gameID: this.gameID,
+        sessionID: this.call.getPlayerId(),
+        teamID: Team.Team1,
+      };
+
+      this.socket.emit(joinTeamEventName, data);
+      /* this.team = Team.Team1;
       this.call.joinTeam(Team.Team1);
-      this.createTile(p, Team.Team1);
+      this.createTile(p, Team.Team1); */
       team1JoinBtn.classList.add("hidden");
     };
 
@@ -109,9 +160,16 @@ export class Board extends Phaser.Scene {
 
     const team2JoinBtn = team2.getElementsByTagName("button")[0];
     team2JoinBtn.onclick = () => {
-      this.team = Team.Team2;
+      const data = <JoinTeamData>{
+        gameID: this.gameID,
+        sessionID: this.call.getPlayerId(),
+        teamID: Team.Team2,
+      };
+      this.socket.emit(joinTeamEventName, data);
+
+      /* this.team = Team.Team2;
       this.call.joinTeam(Team.Team2);
-      this.createTile(p, Team.Team2);
+      this.createTile(p, Team.Team2);  */
       team2JoinBtn.classList.add("hidden");
     };
 
