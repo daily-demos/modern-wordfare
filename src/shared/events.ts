@@ -1,4 +1,4 @@
-import { Player, Team } from "./types";
+import { Player, Team, Word, WordKind } from "./types";
 
 export const joinTeamEventName = "join-team";
 export interface JoinTeamData {
@@ -12,12 +12,14 @@ export const joinedTeamEventName = "joined-team";
 export interface JoinedTeamData {
   sessionID: string;
   teamID: Team;
+  currentTurn: Team;
 }
 
 export const gameDataDumpEventName = "game-data-dump";
 export interface GameData {
   gameID: string;
   players: Player[];
+  currentTurn: Team;
 }
 
 export const joinGameEventName = "join-game";
@@ -45,3 +47,18 @@ export interface TurnData {
 }
 
 export const errorEventName = "srv-error";
+
+export const wordSelectedEventName = "word-selected";
+export interface SelectedWordData {
+  socketID: string;
+  gameID: string;
+  wordValue: string;
+  playerID: string;
+}
+
+export const resultEventName = "result-data";
+export interface TeamResultData {
+  team: Team;
+  score: number;
+  revealedWordCount: number;
+}

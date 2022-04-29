@@ -22,6 +22,7 @@ export function createWordSet(): Word[] {
     const word = {
       word: w,
       kind: WordKind.Neutral,
+      isRevealed: false,
     };
     neutralWordSet.push(word);
   }
@@ -47,6 +48,7 @@ function buildWordSet(words: string[], count: Number, kind: WordKind): Word[] {
     const word = {
       word: w,
       kind: kind,
+      isRevealed: false,
     };
     wordSet.push(word);
   }

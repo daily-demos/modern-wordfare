@@ -144,7 +144,6 @@ export class Call {
   }
 
   join() {
-    console.log("joining with username: ", this.userName);
     let params: { [k: string]: string } = {
       url: this.url,
       userName: this.userName,

@@ -9,7 +9,6 @@ import {
 } from "../../util/nav";
 import { WordGrid } from "./wordGrid";
 import { io, Socket } from "socket.io-client";
-import { DuplicatePlayer } from "../../../shared/error";
 import {
   BecomeSpymasterData,
   becomeSpymasterEventName,
@@ -26,6 +25,10 @@ import {
   nextTurnEventName,
   SpymasterData,
   errorEventName,
+  resultEventName,
+  TeamResultData,
+  wordSelectedEventName,
+  SelectedWordData,
 } from "../../../shared/events";
 
 export interface BoardData {
@@ -53,10 +56,23 @@ export class Board extends Phaser.Scene {
     Phaser.Scene.call(this, { key: "Board" });
   }
 
+  private clickWord(word: Word) {
+    console.log("clicked word, emitting")
+    const data = <SelectedWordData>{
+      socketID: this.socket.id,
+      gameID: this.gameID,
+      wordValue: word.word,
+      playerID: this.call.getPlayerId(),
+    }
+    this.socket.emit(wordSelectedEventName, data);
+  }
+
   init(data: BoardData) {
     this.call = new Call(data.roomURL, data.playerName, data.meetingToken);
     this.gameID = data.gameID;
-    this.wordGrid = new WordGrid(this, data.wordSet);
+    this.wordGrid = new WordGrid(this, data.wordSet, (w: Word) => {
+      this.clickWord(w);
+    });
     const socket: Socket = io();
     this.socket = socket;
     socket.connect();
@@ -75,11 +91,17 @@ export class Board extends Phaser.Scene {
         this.team = data.teamID;
       }
       this.createTile(p, data.teamID);
+      if (data.currentTurn && data.currentTurn !== Team.None) {
+        this.toggleCurrentTurn(data.currentTurn);
+      }
     });
 
     socket.on(gameDataDumpEventName, (data: GameData) => {
       for (let i = 0; i < data.players.length; i++) {
         const player = data.players[i];
+        if (data.currentTurn && data.currentTurn !== Team.None) {
+          this.toggleCurrentTurn(data.currentTurn);
+        }
         this.pendingTiles[player.id] = setInterval(() => {
           const participant = this.call.getParticipant(player.id);
           if (!participant) {
@@ -100,20 +122,31 @@ export class Board extends Phaser.Scene {
     });
 
     socket.on(nextTurnEventName, (data: TurnData) => {
-      const teams = this.getTeamDivs(data.currentTurn);
-      teams.activeTeam.classList.add("active");
-      teams.otherTeam.classList.remove("active");
-
-      if (!this.team) {
-        return;
-      }
-
-      if (data.currentTurn === this.team) {
-        this.wordGrid.enableInteraction();
-        return;
-      }
-      this.wordGrid.disableInteraction();
+      this.toggleCurrentTurn(data.currentTurn);
     });
+
+    socket.on(resultEventName, (data: TeamResultData) => {
+      const team = this.getTeamDiv(data.team);
+      const score = <HTMLSpanElement>team.getElementsByClassName("score")[0];
+      score.innerText = data.score.toString();
+    });
+  }
+
+  private toggleCurrentTurn(currentTurn: Team) {
+    const teams = this.getTeamDivs(currentTurn);
+    teams.activeTeam.classList.add("active");
+    teams.otherTeam.classList.remove("active");
+
+    if (!this.team) {
+      return;
+    }
+
+    if (currentTurn === this.team) {
+      this.wordGrid.enableInteraction();
+      return;
+    }
+    this.wordGrid.disableInteraction();
+
   }
 
   private getTeamDivs(activeTeam: Team): {
@@ -161,6 +194,7 @@ export class Board extends Phaser.Scene {
 
   create() {
     this.boardDOM = this.add.dom(500, 450).createFromCache("board-dom");
+    Phaser.Display.Align.In.Center(this.boardDOM, this.add.zone(400, 300, 800, 600));
 
     this.call.registerJoinedMeetingHandler((p) => {
       const data = <JoinGameData>{

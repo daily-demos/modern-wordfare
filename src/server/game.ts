@@ -1,9 +1,13 @@
 import {
   DuplicatePlayer,
+  InvalidTurn,
+  InvalidWord,
   PlayerNotFound,
   SpymasterExists,
+  WordAlreadyRevealed,
 } from "../shared/error";
-import { Player, Team, Word } from "../shared/types";
+import { TeamResultData } from "../shared/events";
+import { Player, Team, Word, WordKind } from "../shared/types";
 import { DAILY_DOMAIN } from "./env";
 
 export enum GameState {
@@ -12,6 +16,8 @@ export enum GameState {
   Playing,
   Ended,
 }
+
+const assassinatedScore = -100000;
 
 export class Game {
   readonly id: string;
@@ -24,6 +30,18 @@ export class Game {
   private team1SpymasterID: string;
   private team2SpymasterID: string;
   currentTurn: Team;
+  teamResults: { [key in Team]?: TeamResultData } = {
+    team1: {
+      team: Team.Team1,
+      score: 0,
+      revealedWordCount: 0,
+    },
+    team2: {
+      team: Team.Team2,
+      score: 0,
+      revealedWordCount: 0,
+    },
+  };
 
   constructor(
     name: string,
@@ -96,5 +114,61 @@ export class Game {
       return;
     }
     this.currentTurn = Team.Team2;
+  }
+
+  selectWord(wordVal: string, playerID: string): TeamResultData {
+    // Check if user selected word on their own team
+    let word: Word;
+
+    // First, confirm that this is actually a valid word in our game
+    for (let i = 0; i < this.wordSet.length; i++) {
+      const w = this.wordSet[i];
+      if (wordVal === w.word) {
+        if (w.isRevealed) {
+          throw new WordAlreadyRevealed(w.word);
+        }
+        word = w;
+        break;
+      }
+    }
+
+    if (!word) {
+      throw new InvalidWord(wordVal);
+    }
+
+    // Find the given player:
+    let player: Player;
+    for (let i = 0; i < this.players.length; i++) {
+      const p = this.players[i];
+      if (p.id === playerID) {
+        player = p;
+        break;
+      }
+    }
+    if (!player) {
+      throw new PlayerNotFound(playerID);
+    }
+
+    word.isRevealed = true;
+
+    // Check if this player is allowed to even select a word
+    if (player.team !== this.currentTurn) {
+      throw new InvalidTurn();
+    }
+
+    const teamRes = this.teamResults[player.team];
+
+    if (
+      (word.kind === WordKind.Team1 && player.team === Team.Team1) ||
+      (word.kind === WordKind.Team2 && player.team === Team.Team2)
+    ) {
+      teamRes.score += 2;
+    } else if (word.kind === WordKind.Assassin) {
+      teamRes.score = assassinatedScore;
+    } else if (word.kind !== WordKind.Neutral) {
+      teamRes.score -= 1;
+    }
+
+    return teamRes;
   }
 }

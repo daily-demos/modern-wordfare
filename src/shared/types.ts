@@ -27,14 +27,15 @@ export enum WordKind {
 }
 
 export enum Team {
-  None = 0,
-  Team1,
-  Team2,
+  None = "none",
+  Team1 = "team1",
+  Team2 = "team2",
 }
 
 export type Word = {
   word: string;
   kind: WordKind;
+  isRevealed: boolean;
 };
 
 export class Player {

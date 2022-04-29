@@ -9,6 +9,7 @@ const padding = 5;
 export class RenderedWord {
   word: Word;
   object: Phaser.GameObjects.Text;
+  private onClick: (w: Word) => void;
   scene: Phaser.Scene;
   neutralConfig = {
     backgroundColor: "#cccccc",
@@ -33,9 +34,10 @@ export class RenderedWord {
     align: align,
   };
 
-  constructor(scene: Phaser.Scene, word: Word) {
+  constructor(scene: Phaser.Scene, word: Word, onClick: (w: Word) => void) {
     this.word = word;
     this.scene = scene;
+    this.onClick = onClick;
   }
 
   colorize(ownTeam: Team) {
@@ -64,13 +66,14 @@ export class RenderedWord {
     }
     let text = this.scene.add.text(x, y, this.word.word, wordStyle);
     this.object = text;
+    this.object.on("pointerdown", () => {
+      console.log("clicked on word: ", this.word.word);
+      this.onClick(this.word);
+    });
   }
 
   enableInteraction() {
     this.object.setInteractive();
-    this.object.on("pointerdown", () => {
-      console.log("clicked on word: ", this.word.word);
-    });
   }
 
   disableInteraction() {

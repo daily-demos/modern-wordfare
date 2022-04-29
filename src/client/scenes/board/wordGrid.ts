@@ -5,10 +5,10 @@ import { RenderedWord, textHeight, textWidth } from "./renderedWord";
 export class WordGrid {
   private renderedWords: RenderedWord[] = [];
 
-  constructor(scene: Phaser.Scene, words: Word[]) {
+  constructor(scene: Phaser.Scene, words: Word[], onClick: (w: Word) => void) {
     for (let i = 0; i < words.length; i++) {
       const word = words[i];
-      this.renderedWords.push(new RenderedWord(scene, word));
+      this.renderedWords.push(new RenderedWord(scene, word, onClick));
     }
   }
 

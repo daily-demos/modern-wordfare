@@ -64,3 +64,69 @@ export class SpymasterExists extends Error {
     };
   }
 }
+
+export class InvalidTurn extends Error {
+  name = "invalid-turn";
+  msg: string;
+
+  constructor() {
+    const msg = "it is not your turn!";
+    super(msg);
+    this.msg = msg;
+
+    Object.setPrototypeOf(this, InvalidTurn.prototype);
+  }
+
+  toJSON() {
+    return {
+      error: {
+        name: this.name,
+        message: this.msg,
+      },
+    };
+  }
+}
+
+export class WordAlreadyRevealed extends Error {
+  name = "word-already-reveled";
+  msg: string;
+
+  constructor(word: string) {
+    const msg = `word "${word}" already revealed`;
+    super(msg);
+    this.msg = msg;
+
+    Object.setPrototypeOf(this, WordAlreadyRevealed.prototype);
+  }
+
+  toJSON() {
+    return {
+      error: {
+        name: this.name,
+        message: this.msg,
+      },
+    };
+  }
+}
+
+export class InvalidWord extends Error {
+  name = "invalid-word";
+  msg: string;
+
+  constructor(word: string) {
+    const msg = `word "${word}" is invalid`;
+    super(msg);
+    this.msg = msg;
+
+    Object.setPrototypeOf(this, InvalidWord.prototype);
+  }
+
+  toJSON() {
+    return {
+      error: {
+        name: this.name,
+        message: this.msg,
+      },
+    };
+  }
+}

@@ -21,6 +21,9 @@ import {
   nextTurnEventName,
   SpymasterData,
   errorEventName,
+  wordSelectedEventName,
+  SelectedWordData,
+  resultEventName,
 } from "../shared/events";
 import {
   ICreateGameRequest,
@@ -118,6 +121,7 @@ io.on("connection", (socket) => {
     const gameDataDump = <GameData>{
       gameID: data.gameID,
       players: game.players,
+      currentTurn: game.currentTurn,
     };
     console.log("sending data dump", data.socketID, gameDataDump);
     io.to(data.socketID).emit(gameDataDumpEventName, gameDataDump);
@@ -143,6 +147,7 @@ io.on("connection", (socket) => {
       const joinedData = <JoinedTeamData>{
         sessionID: data.sessionID,
         teamID: data.teamID,
+        currentTurn: game.currentTurn,
       };
       console.log("emitting to room:", data.gameID);
       // using "io" here to emit to the whole room including the sender
@@ -157,7 +162,7 @@ io.on("connection", (socket) => {
     const game = orchestrator.getGame(data.gameID);
     if (!game) {
       io.to(data.socketID).emit(
-        "error",
+        errorEventName,
         new Error(`failed to find game by id ${data.gameID}`)
       );
       return;
@@ -182,9 +187,28 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("hello", () => {
-    console.log("hi!");
+  socket.on(wordSelectedEventName, (data: SelectedWordData) => {
+    const game = orchestrator.getGame(data.gameID);
+    if (!game) {
+      io.to(data.socketID).emit(
+        errorEventName,
+        new Error(`failed to find game by id ${data.gameID}`)
+      );
+      return;
+    }
+    try {
+      const res = game.selectWord(data.wordValue, data.playerID);
+      io.to(data.gameID).emit(resultEventName, res);
+      game.nextTurn();
+        const turnData = <TurnData>{
+          currentTurn: game.currentTurn,
+        };
+        io.to(data.gameID).emit(nextTurnEventName, turnData);
+    } catch (e) {
+      io.to(data.socketID).emit(errorEventName, e);
+    }
   });
+
 });
 
 server.listen(port, () => {
