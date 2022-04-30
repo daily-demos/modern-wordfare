@@ -1,6 +1,7 @@
 import { Team, Word } from "../../../shared/types";
 import { Call } from "../../daily";
 import "../../html/board.html";
+import "../../html/callControls.html";
 import { DailyParticipant } from "@daily-co/daily-js";
 import {
   registerCamBtnListener,
@@ -30,6 +31,8 @@ import {
   wordSelectedEventName,
   SelectedWordData,
 } from "../../../shared/events";
+import { timeStamp } from "console";
+import { join } from "path";
 
 export interface BoardData {
   roomURL: string;
@@ -43,7 +46,13 @@ export class Board extends Phaser.Scene {
   private wordGrid: WordGrid;
   call: Call;
   gameID: string;
-  boardDOM: Phaser.GameObjects.DOMElement;
+  // boardDOM: Phaser.GameObjects.DOMElement;
+  teamDOMs: { [key in Team]?: Phaser.GameObjects.DOMElement } = {
+    team1: null,
+    team2: null,
+  };
+  /* team1DOM: Phaser.GameObjects.DOMElement;
+  team2DOM: Phaser.GameObjects.DOMElement; */
   team = Team.None;
   socket: Socket;
   pendingTiles: { [key: string]: ReturnType<typeof setInterval> } = {};
@@ -57,13 +66,13 @@ export class Board extends Phaser.Scene {
   }
 
   private clickWord(word: Word) {
-    console.log("clicked word, emitting")
+    console.log("clicked word, emitting");
     const data = <SelectedWordData>{
       socketID: this.socket.id,
       gameID: this.gameID,
       wordValue: word.word,
       playerID: this.call.getPlayerId(),
-    }
+    };
     this.socket.emit(wordSelectedEventName, data);
   }
 
@@ -127,8 +136,8 @@ export class Board extends Phaser.Scene {
 
     socket.on(resultEventName, (data: TeamResultData) => {
       const team = this.getTeamDiv(data.team);
-      const score = <HTMLSpanElement>team.getElementsByClassName("score")[0];
-      score.innerText = data.score.toString();
+      const score = this.teamDOMs[data.team].getChildByID("score");
+      score.innerHTML = data.score.toString();
     });
   }
 
@@ -146,15 +155,14 @@ export class Board extends Phaser.Scene {
       return;
     }
     this.wordGrid.disableInteraction();
-
   }
 
   private getTeamDivs(activeTeam: Team): {
     activeTeam: HTMLDivElement;
     otherTeam: HTMLDivElement;
   } {
-    const t1 = <HTMLDivElement>this.boardDOM.getChildByID("team1");
-    const t2 = <HTMLDivElement>this.boardDOM.getChildByID("team2");
+    const t1 = <HTMLDivElement>this.teamDOMs[Team.Team1].getChildByID("team");
+    const t2 = <HTMLDivElement>this.teamDOMs[Team.Team2].getChildByID("team");
 
     if (activeTeam === Team.Team1) {
       return {
@@ -172,14 +180,14 @@ export class Board extends Phaser.Scene {
   }
 
   private getTeamDiv(team: Team): HTMLDivElement {
-    let teamDivID = null;
+    let dom: Phaser.GameObjects.DOMElement;
     if (team === Team.Team1) {
-      teamDivID = "team1";
+      dom = this.teamDOMs[Team.Team1];
     }
     if (team === Team.Team2) {
-      teamDivID = "team2";
+      dom = this.teamDOMs[Team.Team2];
     }
-    const div = this.boardDOM.getChildByID(teamDivID);
+    const div = dom.getChildByID("team");
     return <HTMLDivElement>div;
   }
 
@@ -189,12 +197,27 @@ export class Board extends Phaser.Scene {
   }
 
   preload() {
-    this.load.html("board-dom", "../board.html");
+    this.load.html("team-dom", "../board.html");
+    this.load.html("call-controls-dom", "../callControls.html");
   }
 
   create() {
-    this.boardDOM = this.add.dom(500, 450).createFromCache("board-dom");
-    Phaser.Display.Align.In.Center(this.boardDOM, this.add.zone(400, 300, 800, 600));
+    /* this.boardDOM = this.add.dom(0, 0).createFromCache("board-dom");
+    let x = window.innerWidth / 2 - this.boardDOM.width / 2
+    let y = window.innerHeight / 2 - this.boardDOM.height / 2
+    console.log("old pos:", this.boardDOM.x, this.boardDOM.y)
+
+    this.boardDOM.setPosition(x, y);
+    console.log("new pos:", this.boardDOM.x, this.boardDOM.y) */
+
+    const callControlsDom = this.add
+      .dom(0, 0)
+      .createFromCache("call-controls-dom");
+
+    const x = this.cameras.main.worldView.x + this.cameras.main.width / 2;
+    const y = this.cameras.main.worldView.y + this.cameras.main.height - 100;
+
+    callControlsDom.setPosition(x, y).setOrigin(0.5, 1);
 
     this.call.registerJoinedMeetingHandler((p) => {
       const data = <JoinGameData>{
@@ -206,16 +229,37 @@ export class Board extends Phaser.Scene {
       this.showTeams();
     });
 
-    this.call.registerTrackStartedHandler((e) => {
-      const p = e.participant;
+    this.call.registerTrackStartedHandler((p) => {
+      const tracks = this.call.getParticipantTracks(p.participant);
+      try {
+        this.updateMedia(p.participant.session_id, tracks);
+      } catch (e) {
+        console.warn(e);
+      }
+    });
+
+    this.call.registerTrackStoppedHandler((p) => {
+      const tracks = this.call.getParticipantTracks(p.participant);
+      try {
+        this.updateMedia(p.participant.session_id, tracks);
+      } catch (e) {
+        console.warn(e);
+      }
+    });
+    /*
+    this.call.registerParticipantUpdatedHandler((p) => {
       const tracks = this.call.getParticipantTracks(p);
       console.log(
-        "trackStarted session ID and participant:",
+        "partiicipant updated session ID and participant:",
         p.session_id,
         tracks
       );
-      this.updateMedia(p.session_id, tracks);
-    });
+      try {
+        this.updateMedia(p.session_id, tracks);
+      } catch (e) {
+        console.warn(e);
+      }
+    }); */
 
     this.call.join();
 
@@ -232,31 +276,43 @@ export class Board extends Phaser.Scene {
         `${window.location.host}?gameID=${this.gameID}`
       );
     });
-
-    this.wordGrid.drawGrid(175, 75);
+    this.wordGrid.drawGrid(this.cameras.main.worldView);
   }
 
   showTeams() {
     this.showTeam(Team.Team1);
     this.showTeam(Team.Team2);
 
-    const controls = this.boardDOM.getChildByID("controls");
+    const controls = document.getElementById("controls");
     controls.classList.remove("hidden");
   }
 
   private showTeam(team: Team) {
-    let teamDivID: string = null;
-    if (team === Team.Team1) {
-      teamDivID = "team1";
-    } else if (team === Team.Team2) {
-      teamDivID = "team2";
-    }
-    console.log("showing team ", teamDivID, team);
+    console.log("showing team", team);
+    const teamDOM = this.add.dom(0, 0).createFromCache("team-dom", null);
 
-    const teamDiv = <HTMLDivElement>this.boardDOM.getChildByID(teamDivID);
+    let x = this.cameras.main.worldView.x;
+    const y = this.cameras.main.worldView.y + 50;
+
+    const teamNameSpan = teamDOM.getChildByID("teamName");
+
+    if (team === Team.Team1) {
+      this.teamDOMs[Team.Team1] = teamDOM;
+      teamNameSpan.innerHTML = "Team 1";
+    } else if (team === Team.Team2) {
+      this.teamDOMs[Team.Team2] = teamDOM;
+      teamNameSpan.innerHTML = "Team 2";
+
+      x =
+        this.cameras.main.worldView.x + this.cameras.main.width - teamDOM.width;
+    }
+
+    teamDOM.setPosition(x, y).setOrigin(0);
+
+    const teamDiv = <HTMLDivElement>teamDOM.getChildByID("team");
     teamDiv.classList.remove("hidden");
 
-    const teamJoinBtn = document.getElementById(`join-${teamDivID}`);
+    const teamJoinBtn = <HTMLButtonElement>teamDOM.getChildByID("join");
     teamJoinBtn.onclick = () => {
       const data = <JoinTeamData>{
         socketID: this.socket.id,
@@ -267,13 +323,14 @@ export class Board extends Phaser.Scene {
 
       this.socket.emit(joinTeamEventName, data);
       const joinButtons = document.getElementsByClassName("join");
+      console.log("all join buttons:", joinButtons.length);
       for (let i = 0; i < joinButtons.length; i++) {
         const btn = joinButtons[i];
         btn.classList.add("hidden");
       }
 
-      const beSpymasterButton = document.getElementById(
-        `join-spymaster-${teamDivID}`
+      const beSpymasterButton = <HTMLButtonElement>(
+        teamDOM.getChildByID("join-spymaster")
       );
       beSpymasterButton.classList.remove("hidden");
       beSpymasterButton.onclick = () => {
@@ -312,23 +369,19 @@ export class Board extends Phaser.Scene {
   createTile(p: DailyParticipant, team: Team) {
     const name = p.user_name;
     const id = p.session_id;
+    const dom = this.teamDOMs[team];
+
     // See if there is already an existing tile by this ID, error out if so
     let participantTile = this.getTile(id);
     if (participantTile) {
       throw new Error(`tile for participant ID ${id} already exists`);
     }
 
-    let teamDivID = null;
-    if (team === Team.Team1) {
-      teamDivID = "team1";
-    } else if (team === Team.Team2) {
-      teamDivID = "team2";
-    }
-
-    const teamDiv = <HTMLDivElement>this.boardDOM.getChildByID(teamDivID);
-
+    const teamDiv = this.getTeamDiv(team);
+    console.log("teamDIV:", teamDiv);
     // Create participant tile with the video and name tags within
-    const tiles = teamDiv.getElementsByClassName("tiles")[0];
+    const tiles = dom.getChildByID("tiles");
+
     participantTile = document.createElement("div");
     participantTile.id = this.getParticipantTileID(id);
     participantTile.className = "tile";
@@ -375,8 +428,9 @@ export class Board extends Phaser.Scene {
   private getTile(participantID: string): HTMLDivElement {
     const participantTileID = this.getParticipantTileID(participantID);
     const participantTile = <HTMLDivElement>(
-      this.boardDOM.getChildByID(participantTileID)
+      document.getElementById(participantTileID)
     );
+    console.log("participant tile:", participantTileID, participantTile);
     return participantTile;
   }
 }

@@ -24,10 +24,7 @@ body {
   font-family: "Roboto", sans-serif;
   margin: 0px;
   padding: 0px;
-}
-
-[draggable] {
-  cursor: grab;
+  overflow: hidden;
 }
 
 .header {
@@ -146,10 +143,6 @@ body {
   align-items: center;
 
   height: 56px;
-
-  left: calc(50% - 265px / 2);
-  top: calc(100% - 60px);
-
   background: rgb(230 234 239);
   border: 0.5px solid rgba(0, 0, 0, 0.38);
   box-sizing: border-box;

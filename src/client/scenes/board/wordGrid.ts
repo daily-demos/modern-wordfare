@@ -12,23 +12,26 @@ export class WordGrid {
     }
   }
 
-  drawGrid(startX: number, startY: number) {
-    let x = startX;
-    let y = startY;
-
+  drawGrid(space: Phaser.Geom.Rectangle) {
     const wordsPerRow = Math.sqrt(this.renderedWords.length);
+
     const wordWidth = textWidth;
     const wordHeight = textHeight;
+    const wordBuffer = 10;
 
+    console.log("wordsPerRow", wordsPerRow);
+    const startX = space.x + space.width / 2 - (wordWidth * wordsPerRow) / 2;
+    const startY = space.y + 50;
+
+    let x = startX;
+    let y = startY;
     for (let i = 0; i < this.renderedWords.length; i++) {
       const word = this.renderedWords[i];
       word.renderWordObject(x, y);
-      x += wordWidth;
+      x += wordWidth + wordBuffer;
       if (x >= wordWidth * wordsPerRow + startX) {
-        y += wordHeight + 5;
+        y += wordHeight + wordBuffer;
         x = startX;
-      } else {
-        x += wordWidth;
       }
     }
   }

@@ -23,9 +23,11 @@ export class Lobby extends Phaser.Scene {
   }
 
   create() {
-    const lobbyDOM = this.add.dom(400, 100).createFromCache("lobby-dom");
-    const lobbyScene = this.scene.scene;
+    const lobbyDOM = this.add.dom(0, 0).createFromCache("lobby-dom");
+    const x = this.cameras.main.worldView.x + this.cameras.main.width / 2;
 
+    const y = this.cameras.main.worldView.y + this.cameras.main.height / 2;
+    lobbyDOM.setPosition(x, y).setOrigin(0.5);
     // See if we have any query parameters indicating the user
     // is joining an existing game
     const usp = new URLSearchParams(window.location.search);

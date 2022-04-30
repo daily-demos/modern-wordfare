@@ -25,26 +25,8 @@ export type dataDumpHandler = (
 export type leaveHandler = (e: DailyEventObjectParticipant) => void;
 export type trackStartedHandler = (e: DailyEventObjectTrack) => void;
 export type trackStoppedHandler = (e: DailyEventObjectTrack) => void;
-
+export type participantUpdatedHandler = (e: DailyParticipant) => void;
 const playableState = "playable";
-
-interface JoinTeamMessage {
-  teamID: Team;
-}
-
-interface DataDumpMessage {
-  teamID: Team;
-  team1Score: number;
-  team2Score: number;
-}
-
-interface AppMessageData {
-  kind: "joined-team" | "data-dump" | "ack";
-  data: JoinTeamMessage;
-}
-
-const messageKindJoinedteam = "joined-team";
-const messageKindDataDump = "data-dump";
 
 export class Call {
   private url: string;
@@ -58,7 +40,7 @@ export class Call {
     this.userName = userName;
     this.meetingToken = meetingToken;
     this.callObject = DailyIframe.createCallObject({
-      subscribeToTracksAutomatically: false,
+      subscribeToTracksAutomatically: true,
       dailyConfig: {
         experimentalChromeVideoMuteLightOff: true,
         camSimulcastEncodings: [{ maxBitrate: 600000, maxFramerate: 30 }],
@@ -109,24 +91,26 @@ export class Call {
     });
   }
 
-  registerTrackStartedHandler(h: trackStartedHandler) {
+  registerParticipantUpdatedHandler(h: participantUpdatedHandler) {
     this.callObject.on("participant-updated", (e) => {
-      console.log("PARTICIPANT UPDATED!", e.participant.session_id);
+      h(e.participant);
     });
+  }
+
+  registerTrackStartedHandler(h: trackStartedHandler) {
     this.callObject.on("track-started", (e) => {
-      console.log("track started", e);
       h(e);
     });
   }
 
-  registerTrackStoppedHandler(h: trackStartedHandler) {
+  registerTrackStoppedHandler(h: trackStoppedHandler) {
     this.callObject.on("track-stopped", (e) => {
-      console.log("track stopped", e);
       h(e);
     });
   }
 
   getParticipantTracks(p: DailyParticipant): MediaStreamTrack[] {
+    console.log("tracks:", p?.tracks);
     const tracks = p?.tracks;
     if (!tracks) return null;
 
@@ -134,10 +118,10 @@ export class Call {
     const at = tracks.audio;
 
     let mediaTracks: MediaStreamTrack[] = [];
-    if (vt?.state === playableState) {
+    if (vt?.state === playableState || vt?.state === "loading") {
       mediaTracks.push(vt.persistentTrack);
     }
-    if (at?.state === playableState) {
+    if (at?.state === playableState || at?.state === "loading") {
       mediaTracks.push(at.persistentTrack);
     }
     return mediaTracks;

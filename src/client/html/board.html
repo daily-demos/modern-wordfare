@@ -1,42 +1,35 @@
 <style>
-  #teams .tiles .tile video {
+  #team #tiles .tile video {
     width: 100%;
     height: 150px;
     object-fit: cover;
   }
 
-  #scene {
-    height: 90vh;
-    width: 100vh;
-  }
-
-  #teams .tiles .tile {
+  #team #tiles .tile {
     position: relative;
     display: flex;
     justify-content: center;
     background-color: aqua;
     width: 150px;
     margin-bottom: 15px;
+    border-radius: 25px;
+    border: 0.5px solid rgba(0, 0, 0, 0.1);
+    background-image: linear-gradient(45deg, #121a24, #2b3f56);
   }
 
-  #teams .tiles .tile .name {
+  .name {
     position: absolute;
     top: 145px;
     z-index: 1;
     color: white;
   }
 
-  #teams {
+  /*  #teams {
     display: flex;
     justify-content: space-between;
-  }
+  } */
 
-  #team1 {
-    display: flex;
-    flex-direction: column;
-  }
-
-  #team2 {
+  #team {
     display: flex;
     flex-direction: column;
   }
@@ -50,32 +43,39 @@
     visibility: hidden;
   }
 
-  #teams h2 {
+  #team h2 {
     color: red;
   }
-  #teams .active h2 {
+  .active {
     color: green;
   }
+
+  button {
+    justify-content: center;
+    align-items: center;
+    padding: 8px 16px;
+    /* width: calc(50% - 5px); */
+    height: auto;
+    cursor: pointer;
+    margin: 1px;
+
+    /* Light UI/accent */
+    background: #1bebb9;
+    opacity: 0.6;
+    border-radius: 8px;
+    border: none;
+  }
+
+  button:hover:enabled {
+    opacity: 1;
+    cursor: pointer;
+  }
 </style>
-<div id="scene">
-  <div id="teams">
-    <div id="team1" class="hidden">
-      <h2>Team 1 <span class="score"></span></h2>
-      <div class="tiles"></div>
-      <button id="join-team1" class="join">Join</button>
-      <button id="join-spymaster-team1" class="hidden">Become spymaster</button>
-    </div>
-    <div id="team2" class="hidden">
-      <h2>Team 2 <span class="score"></span></h2>
-      <div class="tiles"></div>
-      <button id="join-team2" class="join">Join</button>
-      <button id="join-spymaster-team2" class="hidden">Become spymaster</button>
-    </div>
-  </div>
-  <div id="controls" class="hidden">
-    <button id="toggleCam" aria-label="Toggle camera">Toggle Cam</button>
-    <button id="toggleMic" aria-label="Toggle microphone">Toggle Mic</button>
-    <button id="invite" aria-label="Invite">Invite</button>
-    <button id="leave">Leave Call</button>
-  </div>
+
+<div id="team" class="hidden">
+  <h2 id="teamName"></h2>
+  <h3 id="score"></h3>
+  <div id="tiles"></div>
+  <button id="join" class="join">Join</button>
+  <button id="join-spymaster" class="hidden">Become spymaster</button>
 </div>

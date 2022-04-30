@@ -64,7 +64,9 @@ export class RenderedWord {
     if (this.word.word.length > 10) {
       wordStyle.fontSize = "20px";
     }
-    let text = this.scene.add.text(x, y, this.word.word, wordStyle);
+    let text = this.scene.add
+      .text(x, y, this.word.word, wordStyle)
+      .setOrigin(0.5);
     this.object = text;
     this.object.on("pointerdown", () => {
       console.log("clicked on word: ", this.word.word);

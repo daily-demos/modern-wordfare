@@ -200,15 +200,14 @@ io.on("connection", (socket) => {
       const res = game.selectWord(data.wordValue, data.playerID);
       io.to(data.gameID).emit(resultEventName, res);
       game.nextTurn();
-        const turnData = <TurnData>{
-          currentTurn: game.currentTurn,
-        };
-        io.to(data.gameID).emit(nextTurnEventName, turnData);
+      const turnData = <TurnData>{
+        currentTurn: game.currentTurn,
+      };
+      io.to(data.gameID).emit(nextTurnEventName, turnData);
     } catch (e) {
       io.to(data.socketID).emit(errorEventName, e);
     }
   });
-
 });
 
 server.listen(port, () => {
