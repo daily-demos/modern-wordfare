@@ -43,10 +43,26 @@ export class WordGrid {
     }
   }
 
+  revealWord(wordVal: string, ownTeam: Team) {
+    if (!ownTeam || ownTeam === Team.None) {
+      ownTeam = Team.Team1;
+    }
+    for (let i = 0; i < this.renderedWords.length; i++) {
+      const word = this.renderedWords[i];
+      if (word.word.word === wordVal) {
+        word.colorize(ownTeam);
+        return;
+      }
+    }
+    throw new Error(`word "${wordVal}" not found in grid`);
+  }
+
   enableInteraction() {
     for (let i = 0; i < this.renderedWords.length; i++) {
       const word = this.renderedWords[i];
-      word.enableInteraction();
+      if (!word.word.isRevealed) {
+        word.enableInteraction();
+      }
     }
   }
 

@@ -3,6 +3,7 @@ import { createServer } from "http";
 import { createSecureServer } from "http2";
 
 import { dirname, basename, join } from "path";
+import { Data } from "phaser";
 import { Server } from "socket.io";
 import { fileURLToPath } from "url";
 import {
@@ -23,7 +24,8 @@ import {
   errorEventName,
   wordSelectedEventName,
   SelectedWordData,
-  resultEventName,
+  turnResultEventName,
+  TurnResultData,
 } from "../shared/events";
 import {
   ICreateGameRequest,
@@ -122,6 +124,8 @@ io.on("connection", (socket) => {
       gameID: data.gameID,
       players: game.players,
       currentTurn: game.currentTurn,
+      revealedWordVals: game.getRevealedWordVals(),
+      scores: game.teamResults,
     };
     console.log("sending data dump", data.socketID, gameDataDump);
     io.to(data.socketID).emit(gameDataDumpEventName, gameDataDump);
@@ -197,8 +201,12 @@ io.on("connection", (socket) => {
       return;
     }
     try {
-      const res = game.selectWord(data.wordValue, data.playerID);
-      io.to(data.gameID).emit(resultEventName, res);
+      const teamRes = game.selectWord(data.wordValue, data.playerID);
+      const resData = <TurnResultData>{
+        teamResult: teamRes,
+        revealedWordVal: data.wordValue,
+      };
+      io.to(data.gameID).emit(turnResultEventName, resData);
       game.nextTurn();
       const turnData = <TurnData>{
         currentTurn: game.currentTurn,

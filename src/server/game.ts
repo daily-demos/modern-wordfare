@@ -6,8 +6,7 @@ import {
   SpymasterExists,
   WordAlreadyRevealed,
 } from "../shared/error";
-import { TeamResultData } from "../shared/events";
-import { Player, Team, Word, WordKind } from "../shared/types";
+import { Player, Team, TeamResult, Word, WordKind } from "../shared/types";
 import { DAILY_DOMAIN } from "./env";
 
 export enum GameState {
@@ -30,7 +29,7 @@ export class Game {
   private team1SpymasterID: string;
   private team2SpymasterID: string;
   currentTurn: Team;
-  teamResults: { [key in Team]?: TeamResultData } = {
+  teamResults: { [key in Team]?: TeamResult } = {
     team1: {
       team: Team.Team1,
       score: 0,
@@ -116,7 +115,7 @@ export class Game {
     this.currentTurn = Team.Team2;
   }
 
-  selectWord(wordVal: string, playerID: string): TeamResultData {
+  selectWord(wordVal: string, playerID: string): TeamResult {
     // Check if user selected word on their own team
     let word: Word;
 
@@ -170,5 +169,16 @@ export class Game {
     }
 
     return teamRes;
+  }
+
+  getRevealedWordVals(): string[] {
+    const revealed: string[] = [];
+    for (let i = 0; i < this.wordSet.length; i++) {
+      const w = this.wordSet[i];
+      if (w.isRevealed) {
+        revealed.push(w.word);
+      }
+    }
+    return revealed;
   }
 }

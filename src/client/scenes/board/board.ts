@@ -1,7 +1,8 @@
-import { Team, Word } from "../../../shared/types";
+import { Team, TeamResult, Word } from "../../../shared/types";
 import { Call } from "../../daily";
 import "../../html/board.html";
 import "../../html/callControls.html";
+import "../../assets/flare.png";
 import { DailyParticipant } from "@daily-co/daily-js";
 import {
   registerCamBtnListener,
@@ -26,10 +27,10 @@ import {
   nextTurnEventName,
   SpymasterData,
   errorEventName,
-  resultEventName,
-  TeamResultData,
+  turnResultEventName,
   wordSelectedEventName,
   SelectedWordData,
+  TurnResultData,
 } from "../../../shared/events";
 import { timeStamp } from "console";
 import { join } from "path";
@@ -56,7 +57,9 @@ export class Board extends Phaser.Scene {
   team = Team.None;
   socket: Socket;
   pendingTiles: { [key: string]: ReturnType<typeof setInterval> } = {};
-
+  private particleManager: Phaser.GameObjects.Particles.ParticleEmitterManager;
+  private turnParticleEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
+  private isSpymaster: boolean;
   constructor() {
     super("Board");
   }
@@ -111,6 +114,14 @@ export class Board extends Phaser.Scene {
         if (data.currentTurn && data.currentTurn !== Team.None) {
           this.toggleCurrentTurn(data.currentTurn);
         }
+
+        for (let i = 0; i < data.revealedWordVals.length; i++) {
+          const val = data.revealedWordVals[i];
+          this.wordGrid.revealWord(val, this.team);
+        }
+        this.updateScore(data.scores.team1);
+        this.updateScore(data.scores.team2);
+
         this.pendingTiles[player.id] = setInterval(() => {
           const participant = this.call.getParticipant(player.id);
           if (!participant) {
@@ -134,11 +145,48 @@ export class Board extends Phaser.Scene {
       this.toggleCurrentTurn(data.currentTurn);
     });
 
-    socket.on(resultEventName, (data: TeamResultData) => {
-      const team = this.getTeamDiv(data.team);
-      const score = this.teamDOMs[data.team].getChildByID("score");
-      score.innerHTML = data.score.toString();
+    socket.on(turnResultEventName, (data: TurnResultData) => {
+      this.updateScore(data.teamResult);
+      // Reveal the word;
+      this.wordGrid.revealWord(data.revealedWordVal, this.team);
     });
+  }
+
+  private updateScore(teamRes: TeamResult) {
+    const teamDOM = this.teamDOMs[teamRes.team];
+    const score = teamDOM.getChildByID("score");
+    const currentScore: number = +score.innerHTML;
+    score.innerHTML = teamRes.score.toString();
+
+    // If the score increased and this is the player's team,
+    // show a nice effect
+    if (currentScore < teamRes.score && teamRes.team === this.team) {
+      const effectShape = new Phaser.Geom.Rectangle(
+        teamDOM.x,
+        teamDOM.y,
+        teamDOM.width,
+        teamDOM.height
+      );
+
+      /*   this.particleManager.createEmitter({
+        x: teamDOM.x,
+        y: teamDOM.y,
+        scale: { start: 0.5, end: 0 },
+        blendMode: "ADD",
+        emitZone: {
+          type: "edge",
+          source: effectShape,
+          quantity: 48,
+          yoyo: false,
+        },
+      }); */
+      /* emitter.setEmitZone({
+        type: "edge",
+        source: effectShape,
+        quantity: 48,
+        yoyo: false,
+      }); */
+    }
   }
 
   private toggleCurrentTurn(currentTurn: Team) {
@@ -146,7 +194,37 @@ export class Board extends Phaser.Scene {
     teams.activeTeam.classList.add("active");
     teams.otherTeam.classList.remove("active");
 
-    if (!this.team) {
+    const teamDOM = this.teamDOMs[currentTurn];
+    const tiles = <HTMLDivElement>teamDOM.getChildByID("teamName");
+    const effectShape = new Phaser.Geom.Rectangle(
+      this.cameras.main.x + teamDOM.x,
+      this.cameras.main.y + teamDOM.y,
+      tiles.clientWidth,
+      tiles.clientHeight
+    );
+    console.log("effectSHape:", effectShape, this.cameras.main.y, teamDOM.y);
+
+    if (!this.turnParticleEmitter) {
+      this.turnParticleEmitter = this.particleManager.createEmitter({
+        scale: { start: 0.25, end: 0 },
+        blendMode: "ADD",
+        emitZone: {
+          type: "edge",
+          source: effectShape,
+          quantity: 48,
+          yoyo: false,
+        },
+      });
+    } else {
+      this.turnParticleEmitter.setEmitZone({
+        type: "edge",
+        source: effectShape,
+        quantity: 48,
+        yoyo: false,
+      });
+    }
+
+    if (!this.team || this.isSpymaster) {
       return;
     }
 
@@ -199,17 +277,10 @@ export class Board extends Phaser.Scene {
   preload() {
     this.load.html("team-dom", "../board.html");
     this.load.html("call-controls-dom", "../callControls.html");
+    this.load.image("yellow", "../assets/flare.png");
   }
 
   create() {
-    /* this.boardDOM = this.add.dom(0, 0).createFromCache("board-dom");
-    let x = window.innerWidth / 2 - this.boardDOM.width / 2
-    let y = window.innerHeight / 2 - this.boardDOM.height / 2
-    console.log("old pos:", this.boardDOM.x, this.boardDOM.y)
-
-    this.boardDOM.setPosition(x, y);
-    console.log("new pos:", this.boardDOM.x, this.boardDOM.y) */
-
     const callControlsDom = this.add
       .dom(0, 0)
       .createFromCache("call-controls-dom");
@@ -218,7 +289,7 @@ export class Board extends Phaser.Scene {
     const y = this.cameras.main.worldView.y + this.cameras.main.height - 100;
 
     callControlsDom.setPosition(x, y).setOrigin(0.5, 1);
-
+    this.particleManager = this.add.particles("yellow");
     this.call.registerJoinedMeetingHandler((p) => {
       const data = <JoinGameData>{
         socketID: this.socket.id,
@@ -329,6 +400,11 @@ export class Board extends Phaser.Scene {
         btn.classList.add("hidden");
       }
 
+      const hasSpymaster = teamDOM.getChildByProperty("class", "spymaster");
+      if (hasSpymaster) {
+        // Team already has spymaster, don't set up the button
+        return;
+      }
       const beSpymasterButton = <HTMLButtonElement>(
         teamDOM.getChildByID("join-spymaster")
       );
@@ -363,6 +439,7 @@ export class Board extends Phaser.Scene {
     if (id === this.call.getPlayerId()) {
       // Show word colors in grid
       this.wordGrid.revealAllWords(this.team);
+      this.isSpymaster = true;
     }
   }
 

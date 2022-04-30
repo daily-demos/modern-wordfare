@@ -48,3 +48,9 @@ export class Player {
     this.team = team;
   }
 }
+
+export interface TeamResult {
+  team: Team;
+  score: number;
+  revealedWordCount: number;
+}
