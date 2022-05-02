@@ -11,10 +11,13 @@ export class Game {
 
     let config = {
       type: Phaser.AUTO,
-      mode: Phaser.Scale.NONE,
-      width: this.getWidth(),
-      height: this.getHeight(),
-      zoom: this.zoom,
+      width: 1200,
+      height: 900,
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+      },
+      // zoom: this.zoom,
       parent: "game",
       backgroundColor: "#2b3f56",
       scene: [Lobby, Board],
@@ -23,34 +26,5 @@ export class Game {
       },
     };
     this.game = new Phaser.Game(config);
-
-    window.addEventListener(
-      "resize",
-      () => {
-        this.game.scale.resize(this.getWidth(), this.getHeight());
-      },
-      false
-    );
-  }
-
-  getWidth(): number {
-    console.log(
-      "getWidth: ",
-      document.body.clientWidth,
-      this.zoom,
-      document.body.clientWidth / this.zoom
-    );
-
-    return document.body.clientWidth / this.zoom;
-  }
-
-  getHeight(): number {
-    console.log(
-      "getHeight: ",
-      document.body.clientHeight,
-      this.zoom,
-      (document.body.clientWidth - 52) / this.zoom
-    );
-    return (document.body.clientHeight - 52) / this.zoom;
   }
 }

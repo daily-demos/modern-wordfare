@@ -51,6 +51,6 @@ export class Player {
 
 export interface TeamResult {
   team: Team;
-  score: number;
-  revealedWordCount: number;
+  wordsLeft: number;
+  isAssassinated: boolean;
 }

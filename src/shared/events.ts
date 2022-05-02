@@ -2,7 +2,6 @@ import { Player, Team, TeamResult, Word, WordKind } from "./types";
 
 export const joinTeamEventName = "join-team";
 export interface JoinTeamData {
-  socketID: string;
   gameID: string;
   sessionID: string;
   teamID: Team;
@@ -26,13 +25,11 @@ export interface GameData {
 
 export const joinGameEventName = "join-game";
 export interface JoinGameData {
-  socketID: string;
   gameID: string;
 }
 
 export const becomeSpymasterEventName = "become-spymaster";
 export interface BecomeSpymasterData {
-  socketID: string;
   gameID: string;
   sessionID: string;
 }
@@ -52,14 +49,20 @@ export const errorEventName = "srv-error";
 
 export const wordSelectedEventName = "word-selected";
 export interface SelectedWordData {
-  socketID: string;
   gameID: string;
   wordValue: string;
   playerID: string;
 }
 
 export const turnResultEventName = "turn-result";
+/*export interface TurnResultData {
+  turnResult: TurnResult;
+} */
 export interface TurnResultData {
-  teamResult: TeamResult;
-  revealedWordVal: string;
+  team: Team;
+  lastRevealedWord: Word;
+  /* wordsLeft: number; */
+  /* isAssassinated: boolean; */
 }
+
+export const leaveGameEventName = "leave-game";

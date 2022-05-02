@@ -26,6 +26,7 @@ import {
   SelectedWordData,
   turnResultEventName,
   TurnResultData,
+  leaveGameEventName,
 } from "../shared/events";
 import {
   ICreateGameRequest,
@@ -64,7 +65,6 @@ app.post("/join", function (req: Request, res: Response) {
     res.status(404).send(`{"error":"${err}}`);
     return;
   }
-  console.log("found game:", game);
   const data = <IJoinGameResponse>{
     roomURL: game.dailyRoomURL,
     gameName: game.name,
@@ -74,9 +74,7 @@ app.post("/join", function (req: Request, res: Response) {
 });
 
 app.post("/create", function (req: Request, res: Response) {
-  console.log("/create");
   const body = <ICreateGameRequest>req.body;
-  console.log("/create body:", body, req.body);
   if (!body.wordSet) {
     const err = "word set must be defined";
     res.status(400).send(`{"error":"${err}}`);
@@ -115,7 +113,7 @@ const server = createServer(app);
 
 const io = new Server(server);
 io.on("connection", (socket) => {
-  console.log("a user connected");
+  console.log("a user connected", socket.id);
   socket.on(joinGameEventName, function (data: JoinGameData) {
     socket.join(data.gameID);
     // Send game data back:
@@ -127,45 +125,53 @@ io.on("connection", (socket) => {
       revealedWordVals: game.getRevealedWordVals(),
       scores: game.teamResults,
     };
-    console.log("sending data dump", data.socketID, gameDataDump);
-    io.to(data.socketID).emit(gameDataDumpEventName, gameDataDump);
+    console.log("sending data dump", socket.id, gameDataDump);
+    io.to(socket.id).emit(gameDataDumpEventName, gameDataDump);
   });
 
   socket.on("disconnect", () => {
     console.log("user disconnected");
-  });
-  socket.on(joinTeamEventName, (data: JoinTeamData) => {
-    console.log("joining team");
-    const game = orchestrator.getGame(data.gameID);
-    if (!game) {
-      socket
-        .to(data.socketID)
-        .emit(
-          errorEventName,
-          new Error(`failed to find game by id ${data.gameID}`)
-        );
-      return;
-    }
     try {
-      game.addPlayer(data.sessionID, data.teamID);
+      orchestrator.ejectPlayer(socket.id);
+    } catch (e) {
+      console.error(e);
+    }
+  });
+
+  socket.on(leaveGameEventName, () => {
+    try {
+      orchestrator.ejectPlayer(socket.id);
+    } catch (e) {
+      console.error(e);
+    }
+  });
+
+  socket.on(joinTeamEventName, (data: JoinTeamData) => {
+    console.log("joining team", socket.id);
+    try {
+      const game = orchestrator.joinGame(
+        data.gameID,
+        data.sessionID,
+        data.teamID,
+        socket.id
+      );
       const joinedData = <JoinedTeamData>{
         sessionID: data.sessionID,
         teamID: data.teamID,
         currentTurn: game.currentTurn,
       };
-      console.log("emitting to room:", data.gameID);
       // using "io" here to emit to the whole room including the sender
       io.to(data.gameID).emit(joinedTeamEventName, joinedData);
     } catch (e) {
       console.error(e);
-
-      io.to(data.socketID).emit(errorEventName, <Error>e);
+      socket.to(socket.id).emit(errorEventName, e);
+      return;
     }
   });
   socket.on(becomeSpymasterEventName, (data: BecomeSpymasterData) => {
     const game = orchestrator.getGame(data.gameID);
     if (!game) {
-      io.to(data.socketID).emit(
+      io.to(socket.id).emit(
         errorEventName,
         new Error(`failed to find game by id ${data.gameID}`)
       );
@@ -186,7 +192,7 @@ io.on("connection", (socket) => {
         io.to(data.gameID).emit(nextTurnEventName, turnData);
       }
     } catch (e) {
-      io.to(data.socketID).emit(errorEventName, <Error>e);
+      io.to(socket.id).emit(errorEventName, <Error>e);
       return;
     }
   });
@@ -194,26 +200,23 @@ io.on("connection", (socket) => {
   socket.on(wordSelectedEventName, (data: SelectedWordData) => {
     const game = orchestrator.getGame(data.gameID);
     if (!game) {
-      io.to(data.socketID).emit(
+      io.to(socket.id).emit(
         errorEventName,
         new Error(`failed to find game by id ${data.gameID}`)
       );
       return;
     }
     try {
-      const teamRes = game.selectWord(data.wordValue, data.playerID);
-      const resData = <TurnResultData>{
-        teamResult: teamRes,
-        revealedWordVal: data.wordValue,
-      };
-      io.to(data.gameID).emit(turnResultEventName, resData);
+      const res = game.selectWord(data.wordValue, data.playerID);
+
+      io.to(data.gameID).emit(turnResultEventName, res);
       game.nextTurn();
       const turnData = <TurnData>{
         currentTurn: game.currentTurn,
       };
       io.to(data.gameID).emit(nextTurnEventName, turnData);
     } catch (e) {
-      io.to(data.socketID).emit(errorEventName, e);
+      io.to(socket.id).emit(errorEventName, e);
     }
   });
 });

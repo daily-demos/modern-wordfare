@@ -1,12 +1,13 @@
-import { Team, TeamResult, Word } from "../../../shared/types";
+import { Team, TeamResult, Word, WordKind } from "../../../shared/types";
 import { Call } from "../../daily";
-import "../../html/board.html";
+import "../../html/team.html";
 import "../../html/callControls.html";
 import "../../assets/flare.png";
 import { DailyParticipant } from "@daily-co/daily-js";
 import {
   registerCamBtnListener,
   registerInviteBtnListener,
+  registerLeaveBtnListener,
   registerMicBtnListener,
 } from "../../util/nav";
 import { WordGrid } from "./wordGrid";
@@ -31,6 +32,7 @@ import {
   wordSelectedEventName,
   SelectedWordData,
   TurnResultData,
+  leaveGameEventName,
 } from "../../../shared/events";
 import { timeStamp } from "console";
 import { join } from "path";
@@ -71,7 +73,6 @@ export class Board extends Phaser.Scene {
   private clickWord(word: Word) {
     console.log("clicked word, emitting");
     const data = <SelectedWordData>{
-      socketID: this.socket.id,
       gameID: this.gameID,
       wordValue: word.word,
       playerID: this.call.getPlayerId(),
@@ -82,6 +83,7 @@ export class Board extends Phaser.Scene {
   init(data: BoardData) {
     this.call = new Call(data.roomURL, data.playerName, data.meetingToken);
     this.gameID = data.gameID;
+    console.log("wordgrid", data.wordSet);
     this.wordGrid = new WordGrid(this, data.wordSet, (w: Word) => {
       this.clickWord(w);
     });
@@ -109,18 +111,20 @@ export class Board extends Phaser.Scene {
     });
 
     socket.on(gameDataDumpEventName, (data: GameData) => {
+      console.log("game data:", data);
+      if (data.currentTurn && data.currentTurn !== Team.None) {
+        this.toggleCurrentTurn(data.currentTurn);
+      }
+
+      for (let i = 0; i < data.revealedWordVals.length; i++) {
+        const val = data.revealedWordVals[i];
+        this.wordGrid.revealWord(val, this.team);
+      }
+      this.setScores(data.scores.team1);
+      this.setScores(data.scores.team2);
+
       for (let i = 0; i < data.players.length; i++) {
         const player = data.players[i];
-        if (data.currentTurn && data.currentTurn !== Team.None) {
-          this.toggleCurrentTurn(data.currentTurn);
-        }
-
-        for (let i = 0; i < data.revealedWordVals.length; i++) {
-          const val = data.revealedWordVals[i];
-          this.wordGrid.revealWord(val, this.team);
-        }
-        this.updateScore(data.scores.team1);
-        this.updateScore(data.scores.team2);
 
         this.pendingTiles[player.id] = setInterval(() => {
           const participant = this.call.getParticipant(player.id);
@@ -146,47 +150,37 @@ export class Board extends Phaser.Scene {
     });
 
     socket.on(turnResultEventName, (data: TurnResultData) => {
-      this.updateScore(data.teamResult);
+      this.updateScore(data);
       // Reveal the word;
-      this.wordGrid.revealWord(data.revealedWordVal, this.team);
+      this.wordGrid.revealWord(data.lastRevealedWord.word, this.team);
     });
   }
 
-  private updateScore(teamRes: TeamResult) {
-    const teamDOM = this.teamDOMs[teamRes.team];
+  private setScores(res: TeamResult) {
+    const teamDOM = this.teamDOMs[res.team];
     const score = teamDOM.getChildByID("score");
-    const currentScore: number = +score.innerHTML;
-    score.innerHTML = teamRes.score.toString();
+    score.innerHTML = res.wordsLeft.toString();
+  }
 
-    // If the score increased and this is the player's team,
-    // show a nice effect
-    if (currentScore < teamRes.score && teamRes.team === this.team) {
-      const effectShape = new Phaser.Geom.Rectangle(
-        teamDOM.x,
-        teamDOM.y,
-        teamDOM.width,
-        teamDOM.height
-      );
-
-      /*   this.particleManager.createEmitter({
-        x: teamDOM.x,
-        y: teamDOM.y,
-        scale: { start: 0.5, end: 0 },
-        blendMode: "ADD",
-        emitZone: {
-          type: "edge",
-          source: effectShape,
-          quantity: 48,
-          yoyo: false,
-        },
-      }); */
-      /* emitter.setEmitZone({
-        type: "edge",
-        source: effectShape,
-        quantity: 48,
-        yoyo: false,
-      }); */
+  private updateScore(teamRes: TurnResultData) {
+    const lastWord = teamRes.lastRevealedWord;
+    if (lastWord.kind === WordKind.Assassin) {
+      console.log("GAME OVER FOR TEAM", teamRes.team);
+      return;
     }
+
+    let wordTeam: Team;
+    if (lastWord.kind === WordKind.Team1) {
+      wordTeam = Team.Team1;
+    } else if (lastWord.kind === WordKind.Team2) {
+      wordTeam = Team.Team2;
+    }
+    const teamDOM = this.teamDOMs[wordTeam];
+    const score = teamDOM.getChildByID("score");
+
+    const wordsLeft: number = +score.innerHTML;
+
+    score.innerHTML = (wordsLeft - 1).toString();
   }
 
   private toggleCurrentTurn(currentTurn: Team) {
@@ -275,7 +269,7 @@ export class Board extends Phaser.Scene {
   }
 
   preload() {
-    this.load.html("team-dom", "../board.html");
+    this.load.html("team-dom", "../team.html");
     this.load.html("call-controls-dom", "../callControls.html");
     this.load.image("yellow", "../assets/flare.png");
   }
@@ -285,14 +279,21 @@ export class Board extends Phaser.Scene {
       .dom(0, 0)
       .createFromCache("call-controls-dom");
 
-    const x = this.cameras.main.worldView.x + this.cameras.main.width / 2;
-    const y = this.cameras.main.worldView.y + this.cameras.main.height - 100;
+    const x = this.game.canvas.width / 2;
+    const y = this.game.canvas.height - 60;
+    console.log(
+      "x, y:",
+      x,
+      y,
+      this.game.canvas.height,
+      callControlsDom.height - 58
+    );
 
     callControlsDom.setPosition(x, y).setOrigin(0.5, 1);
+
     this.particleManager = this.add.particles("yellow");
     this.call.registerJoinedMeetingHandler((p) => {
       const data = <JoinGameData>{
-        socketID: this.socket.id,
         gameID: this.gameID,
       };
       console.log("joining game", data);
@@ -347,7 +348,12 @@ export class Board extends Phaser.Scene {
         `${window.location.host}?gameID=${this.gameID}`
       );
     });
-    this.wordGrid.drawGrid(this.cameras.main.worldView);
+
+    registerLeaveBtnListener(() => {
+      this.call.leave();
+      this.socket.emit(leaveGameEventName);
+      this.scene.start("Lobby");
+    });
   }
 
   showTeams() {
@@ -356,15 +362,24 @@ export class Board extends Phaser.Scene {
 
     const controls = document.getElementById("controls");
     controls.classList.remove("hidden");
+
+    const t1 = this.teamDOMs[Team.Team1];
+    const t2 = this.teamDOMs[Team.Team2];
+    const rect = new Phaser.Geom.Rectangle(
+      t1.x + t1.width,
+      0,
+      this.game.canvas.width - t2.width,
+      this.game.canvas.height
+    );
+    console.log("t1 x: ", t1.x + t1.width, t2.width);
+    this.wordGrid.drawGrid(rect);
   }
 
   private showTeam(team: Team) {
     console.log("showing team", team);
-    const teamDOM = this.add.dom(0, 0).createFromCache("team-dom", null);
-
-    let x = this.cameras.main.worldView.x;
-    const y = this.cameras.main.worldView.y + 50;
-
+    const teamDOM = this.add.dom(0, 0).createFromCache("team-dom");
+    let x = 0;
+    const y = 0;
     const teamNameSpan = teamDOM.getChildByID("teamName");
 
     if (team === Team.Team1) {
@@ -374,8 +389,18 @@ export class Board extends Phaser.Scene {
       this.teamDOMs[Team.Team2] = teamDOM;
       teamNameSpan.innerHTML = "Team 2";
 
-      x =
-        this.cameras.main.worldView.x + this.cameras.main.width - teamDOM.width;
+      x = this.game.canvas.width - teamDOM.width;
+      console.log(
+        "game canvvas width, teamdom width:",
+        this.game.canvas.width,
+        teamDOM.width
+      );
+      /*  this.scale.on("resize", () => {
+        const x: number = this.game.scale.width / 2;
+        const y: number = this.game.scale.height / 2;
+      
+      
+        }); */
     }
 
     teamDOM.setPosition(x, y).setOrigin(0);
@@ -386,7 +411,6 @@ export class Board extends Phaser.Scene {
     const teamJoinBtn = <HTMLButtonElement>teamDOM.getChildByID("join");
     teamJoinBtn.onclick = () => {
       const data = <JoinTeamData>{
-        socketID: this.socket.id,
         gameID: this.gameID,
         sessionID: this.call.getPlayerId(),
         teamID: team,
@@ -413,7 +437,6 @@ export class Board extends Phaser.Scene {
         console.log("becoming spymaster!");
         beSpymasterButton.classList.add("hidden");
         const data = <BecomeSpymasterData>{
-          socketID: this.socket.id,
           gameID: this.gameID,
           sessionID: this.call.getPlayerId(),
         };

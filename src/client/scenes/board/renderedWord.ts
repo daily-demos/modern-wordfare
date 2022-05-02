@@ -1,8 +1,8 @@
 import { Team, Word, WordKind } from "../../../shared/types";
 
-export const textWidth = 145;
-export const textHeight = 50;
-const fontSize = "25px";
+export const textWidth = 125;
+export const textHeight = 45;
+const fontSize = "20px";
 const align = "center";
 const padding = 5;
 
@@ -66,7 +66,7 @@ export class RenderedWord {
     }
     let text = this.scene.add
       .text(x, y, this.word.word, wordStyle)
-      .setOrigin(0.5);
+      .setOrigin(0.5, 0);
     this.object = text;
     this.object.on("pointerdown", () => {
       console.log("clicked on word: ", this.word.word);

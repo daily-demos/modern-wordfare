@@ -1,17 +1,10 @@
 import {
   default as DailyIframe,
   DailyCall,
-  DailyEventObjectAppMessage,
   DailyEventObjectParticipant,
   DailyParticipant,
-  DailyEventObjectFatalError,
-  DailyEventObjectCameraError,
-  DailyEventObjectParticipants,
-  DailyEventObjectNetworkConnectionEvent,
-  DailyRoomInfo,
   DailyEventObjectTrack,
 } from "@daily-co/daily-js";
-import { Data } from "phaser";
 import { Team } from "../shared/types";
 
 export type joinHandler = (e: DailyParticipant) => void;
@@ -35,7 +28,6 @@ export class Call {
   private meetingToken: string;
 
   constructor(url: string, userName: string, meetingToken: string = null) {
-    console.log("daily loading", userName);
     this.url = url;
     this.userName = userName;
     this.meetingToken = meetingToken;
@@ -136,5 +128,11 @@ export class Call {
       params.token = this.meetingToken;
     }
     this.callObject.join(params);
+  }
+
+  leave() {
+    this.callObject.leave().then(() => {
+      this.callObject.destroy();
+    });
   }
 }

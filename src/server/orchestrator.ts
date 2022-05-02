@@ -1,7 +1,12 @@
 import { DAILY_API_KEY } from "./env";
 import axios from "axios";
 import { Game, GameState } from "./game";
-import { Word } from "../shared/types";
+import { Team, Word } from "../shared/types";
+import {
+  GameNotFound,
+  PlayerNotFound,
+  SocketMappingNotFound,
+} from "../shared/error";
 
 const dailyAPIURL = "https://api.daily.co/v1";
 
@@ -11,13 +16,18 @@ interface ICreatedDailyRoomData {
   url: string;
 }
 
+interface PlayerInfo {
+  playerID: string;
+  gameID: string;
+}
+
 export class GameOrchestrator {
   games: Map<string, Game> = new Map();
+  private socketMappings: { [key: string]: PlayerInfo } = {};
 
   constructor() {}
 
   async createGame(name: string, wordSet: Word[]): Promise<Game> {
-    console.log("createGame()", name);
     const apiKey = DAILY_API_KEY;
 
     const req = {
@@ -35,7 +45,6 @@ export class GameOrchestrator {
 
     const url = `${dailyAPIURL}/rooms/`;
     const data = JSON.stringify(req);
-    console.log("headers:", url, headers, data);
     let res = await axios.post(url, data, { headers }).catch((error) => {
       throw new Error(`failed to create room: ${error})`);
     });
@@ -46,7 +55,6 @@ export class GameOrchestrator {
     }
     const body = JSON.parse(JSON.stringify(res.data));
     const roomData = <ICreatedDailyRoomData>body;
-    console.log("gamedata:", roomData);
 
     const game = new Game(name, roomData.url, roomData.name, wordSet);
     this.games.set(game.id, game);
@@ -80,5 +88,38 @@ export class GameOrchestrator {
 
   getGame(gameID: string): Game {
     return this.games.get(gameID);
+  }
+
+  // joinGame adds a player to a game, if the game for their
+  // requested ID exists.
+  joinGame(
+    gameID: string,
+    playerID: string,
+    team: Team,
+    socketID: string
+  ): Game {
+    const game = this.getGame(gameID);
+    if (!game) {
+      throw new GameNotFound(gameID);
+    }
+    game.addPlayer(playerID, team);
+    this.socketMappings[socketID] = <PlayerInfo>{
+      gameID: gameID,
+      playerID: playerID,
+    };
+    return game;
+  }
+
+  // ejectPlayer removes the player associated with the given
+  // socket ID from whatever game they are in.
+  ejectPlayer(socketID: string) {
+    console.log("ejecting player", socketID);
+    const playerInfo = this.socketMappings[socketID];
+    if (!playerInfo) {
+      throw new SocketMappingNotFound(socketID);
+    }
+    const game = this.getGame(playerInfo.gameID);
+    game.removePlayer(playerInfo.playerID);
+    delete this.socketMappings[socketID];
   }
 }

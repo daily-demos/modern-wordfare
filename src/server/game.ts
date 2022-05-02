@@ -6,6 +6,7 @@ import {
   SpymasterExists,
   WordAlreadyRevealed,
 } from "../shared/error";
+import { TurnResultData } from "../shared/events";
 import { Player, Team, TeamResult, Word, WordKind } from "../shared/types";
 import { DAILY_DOMAIN } from "./env";
 
@@ -16,8 +17,6 @@ export enum GameState {
   Ended,
 }
 
-const assassinatedScore = -100000;
-
 export class Game {
   readonly id: string;
   readonly name: string;
@@ -26,19 +25,20 @@ export class Game {
   state: GameState;
   readonly wordSet: Word[];
   players: Player[] = [];
+
   private team1SpymasterID: string;
   private team2SpymasterID: string;
   currentTurn: Team;
   teamResults: { [key in Team]?: TeamResult } = {
     team1: {
       team: Team.Team1,
-      score: 0,
-      revealedWordCount: 0,
+      wordsLeft: 9,
+      isAssassinated: false,
     },
     team2: {
       team: Team.Team2,
-      score: 0,
-      revealedWordCount: 0,
+      wordsLeft: 9,
+      isAssassinated: false,
     },
   };
 
@@ -56,16 +56,27 @@ export class Game {
     this.id = `${DAILY_DOMAIN}-${roomName}`;
   }
 
-  addPlayer(id: string, team: Team) {
+  addPlayer(playerID: string, team: Team) {
     // See if this player is already on one of the teams
     for (let i = 0; i < this.players.length; i++) {
       const p = this.players[i];
-      if (p.id === id) {
+      if (p.id === playerID) {
         throw new DuplicatePlayer(p.id, p.team);
       }
     }
-    const p = new Player(id, team);
+    const p = new Player(playerID, team);
     this.players.push(p);
+  }
+
+  removePlayer(playerID: string) {
+    for (let i = 0; i < this.players.length; i++) {
+      const p = this.players[i];
+      if (p.id === playerID) {
+        this.players.splice(i, 1);
+        return;
+      }
+    }
+    throw new PlayerNotFound(playerID);
   }
 
   setSpymaster(id: string): Player {
@@ -115,7 +126,7 @@ export class Game {
     this.currentTurn = Team.Team2;
   }
 
-  selectWord(wordVal: string, playerID: string): TeamResult {
+  selectWord(wordVal: string, playerID: string): TurnResultData {
     // Check if user selected word on their own team
     let word: Word;
 
@@ -161,14 +172,17 @@ export class Game {
       (word.kind === WordKind.Team1 && player.team === Team.Team1) ||
       (word.kind === WordKind.Team2 && player.team === Team.Team2)
     ) {
-      teamRes.score += 2;
+      teamRes.wordsLeft--;
     } else if (word.kind === WordKind.Assassin) {
-      teamRes.score = assassinatedScore;
+      teamRes.isAssassinated = true;
     } else if (word.kind !== WordKind.Neutral) {
-      teamRes.score -= 1;
+      teamRes.wordsLeft--;
     }
 
-    return teamRes;
+    return <TurnResultData>{
+      team: player.team,
+      lastRevealedWord: word,
+    };
   }
 
   getRevealedWordVals(): string[] {

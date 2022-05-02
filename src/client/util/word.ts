@@ -1,20 +1,16 @@
-import defaultWordlist from "./dictionaries/default.json";
-import { wordCount } from "./config";
-import { rand, shuffle } from "./util/math";
-import { Word, WordKind } from "../shared/types";
+import defaultWordlist from "../dictionaries/default.json";
+import { wordCount, wordsPerTeam } from "../config";
+import { rand, shuffle } from "./math";
+import { Word, WordKind } from "../../shared/types";
 
 export function createWordSet(): Word[] {
   // Pick 25 random words
   const words = chooseRandomWords(defaultWordlist.words, wordCount);
-  console.log("createWordSet() 25 words:", words);
   // Divide the words into two teams
-  const team1WordSet = buildWordSet(words, 8, WordKind.Team1);
-  console.log("createWordSet() team1: ", team1WordSet);
-  const team2WordSet = buildWordSet(words, 8, WordKind.Team2);
-  console.log("createWordSet() team2: ", team2WordSet);
+  const team1WordSet = buildWordSet(words, wordsPerTeam, WordKind.Team1);
+  const team2WordSet = buildWordSet(words, wordsPerTeam, WordKind.Team2);
 
   const assassinWord = buildWordSet(words, 1, WordKind.Assassin);
-  console.log("createWordSet() assassun: ", assassinWord);
 
   let neutralWordSet: Word[] = [];
   // The rest of the words are neutral
