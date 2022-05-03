@@ -1,3 +1,4 @@
+import axios from "axios";
 import {
   ICreateGameRequest,
   ICreateGameResponse,
@@ -6,15 +7,14 @@ import {
   Word,
 } from "../../shared/types";
 import "../html/lobby.html";
-import axios from "axios";
 import { BoardData } from "./board/board";
-import { createWordSet } from "../util/word";
+import createWordSet from "../util/word";
 
-export class Lobby extends Phaser.Scene {
-  private lobbyDOM: Phaser.GameObjects.DOMElement;
+export default class Lobby extends Phaser.Scene {
   initialize() {
     Phaser.Scene.call(this, { key: "Lobby" });
   }
+
   constructor() {
     super("Lobby");
   }
@@ -25,7 +25,6 @@ export class Lobby extends Phaser.Scene {
 
   create() {
     const lobbyDOM = this.add.dom(0, 0).createFromCache("lobby-dom");
-    this.lobbyDOM = lobbyDOM;
 
     const x: number = this.game.canvas.width / 2;
     const y: number = this.game.canvas.height / 2;
@@ -46,15 +45,16 @@ export class Lobby extends Phaser.Scene {
 
     lobbyDOM.addListener("click");
 
-    lobbyDOM.on("click", function (event: any) {
+    lobbyDOM.on("click", (event: any) => {
       event.preventDefault();
-
-      const lobbyScene = this.scene.scene;
+      const lobbyScene = this.scene;
 
       if (event.target.id === "join-game") {
-        const inputPlayerName = this.getChildByID("join-player-name")?.value;
-        console.log("input player name:", inputPlayerName);
-        this.removeListener("click");
+        const playerNameForm = <HTMLFormElement>(
+          lobbyDOM.getChildByID("join-player-name")
+        );
+        const inputPlayerName = playerNameForm?.value;
+        lobbyDOM.removeListener("click");
 
         // Make get request for game data
         joinGame(params.gameID)
@@ -69,21 +69,25 @@ export class Lobby extends Phaser.Scene {
           })
           .catch((error) => {
             console.error("failed to create game", error);
-            console.log(this.scene);
             lobbyScene.restart();
           });
         return;
       }
 
       if (event.target.id === "create-game") {
-        var inputGameName = this.getChildByID("game-name")?.value;
-        console.log("input game name:", inputGameName);
-        const inputPlayerName = this.getChildByID("create-player-name")?.value;
-        console.log("input player name:", inputPlayerName);
-        this.removeListener("click");
+        const gameNameForm = <HTMLFormElement>(
+          lobbyDOM.getChildByID("game-name")
+        );
+        const inputGameName = gameNameForm?.value;
+
+        const playerNameForm = <HTMLFormElement>(
+          lobbyDOM.getChildByID("create-player-name")
+        );
+        const inputPlayerName = playerNameForm?.value;
+        lobbyDOM.removeListener("click");
 
         //  Tween the login form out
-        this.scene.tweens.add({
+        this.tweens.add({
           targets: lobbyDOM.rotate3d,
           x: 1,
           w: 90,
@@ -91,14 +95,14 @@ export class Lobby extends Phaser.Scene {
           ease: "Power3",
         });
 
-        this.scene.tweens.add({
+        this.tweens.add({
           targets: lobbyDOM,
           scaleX: 2,
           scaleY: 2,
           y: 700,
           duration: 3000,
           ease: "Power3",
-          onComplete: function () {
+          onComplete: () => {
             lobbyDOM.setVisible(false);
           },
         });
@@ -113,7 +117,7 @@ export class Lobby extends Phaser.Scene {
               gameID: gameData.gameID,
               playerName: inputPlayerName,
               meetingToken: gameData.meetingToken,
-              wordSet: wordSet,
+              wordSet,
             });
           })
           .catch((error) => {
@@ -124,7 +128,7 @@ export class Lobby extends Phaser.Scene {
     });
   }
 
-  update() {}
+  static update() {}
 }
 
 async function createGame(
@@ -133,8 +137,8 @@ async function createGame(
 ): Promise<ICreateGameResponse> {
   // Create the game here
   const req = <ICreateGameRequest>{
-    gameName: gameName,
-    wordSet: wordSet,
+    gameName,
+    wordSet,
   };
 
   const headers = {
@@ -144,7 +148,7 @@ async function createGame(
   const url = "/create";
   const data = JSON.stringify(req);
 
-  let res = await axios.post(url, data, { headers }).catch((error) => {
+  const res = await axios.post(url, data, { headers }).catch((error) => {
     throw new Error(`failed to create game: ${error})`);
   });
 
@@ -154,7 +158,7 @@ async function createGame(
 
 async function joinGame(gameID: string): Promise<IJoinGameResponse> {
   const req = <IJoinGameRequest>{
-    gameID: gameID,
+    gameID,
   };
 
   const headers = {
@@ -162,9 +166,8 @@ async function joinGame(gameID: string): Promise<IJoinGameResponse> {
   };
   const url = "/join";
   const data = JSON.stringify(req);
-  console.log("join data: ", data);
 
-  let res = await axios.post(url, data, { headers }).catch((error) => {
+  const res = await axios.post(url, data, { headers }).catch((error) => {
     throw new Error(`failed to join game: ${error})`);
   });
 

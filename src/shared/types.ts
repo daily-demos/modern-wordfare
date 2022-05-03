@@ -40,7 +40,9 @@ export type Word = {
 
 export class Player {
   id: string;
+
   team: Team = Team.None;
+
   isSpymaster: boolean;
 
   constructor(id: string, team: Team) {

@@ -1,4 +1,4 @@
-import { Player, Team, TeamResult, Word, WordKind } from "./types";
+import { Player, Team, TeamResult, Word } from "./types";
 
 export const joinTeamEventName = "join-team";
 export interface JoinTeamData {

@@ -1,12 +1,11 @@
 import { Team, Word } from "../../../shared/types";
-import { shuffle } from "../../util/math";
 import { RenderedWord, textHeight, textWidth } from "./renderedWord";
 
-export class WordGrid {
+export default class WordGrid {
   private renderedWords: RenderedWord[] = [];
 
   constructor(scene: Phaser.Scene, words: Word[], onClick: (w: Word) => void) {
-    for (let i = 0; i < words.length; i++) {
+    for (let i = 0; i < words.length; i += 1) {
       const word = words[i];
       this.renderedWords.push(new RenderedWord(scene, word, onClick));
     }
@@ -26,7 +25,7 @@ export class WordGrid {
 
     let x = startX;
     let y = startY;
-    for (let i = 0; i < this.renderedWords.length; i++) {
+    for (let i = 0; i < this.renderedWords.length; i += 1) {
       const word = this.renderedWords[i];
       word.renderWordObject(x, y);
       x += wordWidth + wordBuffer;
@@ -38,20 +37,21 @@ export class WordGrid {
   }
 
   revealAllWords(ownTeam: Team) {
-    for (let i = 0; i < this.renderedWords.length; i++) {
+    for (let i = 0; i < this.renderedWords.length; i += 1) {
       const word = this.renderedWords[i];
       word.colorize(ownTeam);
     }
   }
 
   revealWord(wordVal: string, ownTeam: Team) {
-    if (!ownTeam || ownTeam === Team.None) {
-      ownTeam = Team.Team1;
+    let ot = ownTeam;
+    if (!ot || ot === Team.None) {
+      ot = Team.Team1;
     }
-    for (let i = 0; i < this.renderedWords.length; i++) {
+    for (let i = 0; i < this.renderedWords.length; i += 1) {
       const word = this.renderedWords[i];
       if (word.word.word === wordVal) {
-        word.colorize(ownTeam);
+        word.colorize(ot);
         return;
       }
     }
@@ -59,7 +59,7 @@ export class WordGrid {
   }
 
   enableInteraction() {
-    for (let i = 0; i < this.renderedWords.length; i++) {
+    for (let i = 0; i < this.renderedWords.length; i += 1) {
       const word = this.renderedWords[i];
       if (!word.word.isRevealed) {
         word.enableInteraction();
@@ -68,7 +68,7 @@ export class WordGrid {
   }
 
   disableInteraction() {
-    for (let i = 0; i < this.renderedWords.length; i++) {
+    for (let i = 0; i < this.renderedWords.length; i += 1) {
       const word = this.renderedWords[i];
       word.disableInteraction();
     }

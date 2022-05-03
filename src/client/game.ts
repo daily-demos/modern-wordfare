@@ -1,15 +1,14 @@
 import Phaser from "phaser";
 import { Board } from "./scenes/board/board";
-import { Lobby } from "./scenes/lobby";
+import Lobby from "./scenes/lobby";
 
-export class Game {
+export default class Game {
   private game: Phaser.Game;
-  private zoom: number = 1;
 
-  constructor() {
+  start() {
     console.log("constructing game");
 
-    let config = {
+    const config = {
       type: Phaser.AUTO,
       width: 1200,
       height: 900,
@@ -17,7 +16,6 @@ export class Game {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
       },
-      // zoom: this.zoom,
       parent: "game",
       backgroundColor: "#2b3f56",
       scene: [Lobby, Board],
@@ -26,5 +24,9 @@ export class Game {
       },
     };
     this.game = new Phaser.Game(config);
+  }
+
+  destroy() {
+    this.game.destroy(true);
   }
 }

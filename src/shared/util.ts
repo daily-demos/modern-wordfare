@@ -1,6 +1,6 @@
-import { Team, TeamResult, WordKind } from "./types";
+import { Team, WordKind } from "./types";
 
-export function wordKindToTeam(wk: WordKind): Team {
+export default function wordKindToTeam(wk: WordKind): Team {
   if (wk === WordKind.Team1) {
     return Team.Team1;
   }

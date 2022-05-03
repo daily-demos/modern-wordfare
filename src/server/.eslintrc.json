@@ -1,0 +1,6 @@
+{
+  "env": {},
+  "rules": {
+    "no-console": "off"
+  }
+}

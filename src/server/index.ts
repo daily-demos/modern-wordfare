@@ -1,11 +1,9 @@
-import express, { Express, Request, Response } from "express";
+import express, { Request, Response } from "express";
 import { createServer } from "http";
-import { createSecureServer } from "http2";
 
-import { dirname, basename, join } from "path";
-import { Data } from "phaser";
+import { dirname, join } from "path";
 import { Server } from "socket.io";
-import { fileURLToPath } from "url";
+import GameNotFound from "../shared/errors/gameNotFound";
 import {
   BecomeSpymasterData,
   becomeSpymasterEventName,
@@ -25,7 +23,6 @@ import {
   wordSelectedEventName,
   SelectedWordData,
   turnResultEventName,
-  TurnResultData,
   leaveGameEventName,
   endTurnEventName,
   EndTurnData,
@@ -35,13 +32,17 @@ import {
   ICreateGameResponse,
   IJoinGameRequest,
   IJoinGameResponse,
-  Team,
 } from "../shared/types";
-import { GameOrchestrator } from "./orchestrator";
+import GameOrchestrator from "./orchestrator";
 
-var app = express();
+const app = express();
 const port = 3000;
 const orchestrator = new GameOrchestrator();
+
+function getClientPath(): string {
+  const basePath = dirname(__dirname);
+  return join(basePath, "client");
+}
 
 const clientPath = getClientPath();
 
@@ -49,11 +50,9 @@ app.use("/", express.static(clientPath));
 
 app.use(express.json());
 
-app.post("/join", function (req: Request, res: Response) {
-  console.log("attempting game join", req.body);
+app.post("/join", (req: Request, res: Response) => {
   const body = <IJoinGameRequest>req.body;
-  const gameID = body.gameID;
-  console.log("game iD:", gameID);
+  const { gameID } = body;
   if (!gameID) {
     const err = "request must contain game ID";
     console.error(err);
@@ -75,7 +74,7 @@ app.post("/join", function (req: Request, res: Response) {
   res.send(data);
 });
 
-app.post("/create", function (req: Request, res: Response) {
+app.post("/create", (req: Request, res: Response) => {
   const body = <ICreateGameRequest>req.body;
   if (!body.wordSet) {
     const err = "word set must be defined";
@@ -116,7 +115,7 @@ const server = createServer(app);
 const io = new Server(server);
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
-  socket.on(joinGameEventName, function (data: JoinGameData) {
+  socket.on(joinGameEventName, (data: JoinGameData) => {
     socket.join(data.gameID);
     // Send game data back:
     const game = orchestrator.getGame(data.gameID);
@@ -167,16 +166,12 @@ io.on("connection", (socket) => {
     } catch (e) {
       console.error(e);
       socket.to(socket.id).emit(errorEventName, e);
-      return;
     }
   });
   socket.on(becomeSpymasterEventName, (data: BecomeSpymasterData) => {
     const game = orchestrator.getGame(data.gameID);
     if (!game) {
-      io.to(socket.id).emit(
-        errorEventName,
-        new Error(`failed to find game by id ${data.gameID}`)
-      );
+      io.to(socket.id).emit(errorEventName, new GameNotFound(data.gameID));
       return;
     }
     try {
@@ -195,17 +190,13 @@ io.on("connection", (socket) => {
       }
     } catch (e) {
       io.to(socket.id).emit(errorEventName, <Error>e);
-      return;
     }
   });
 
   socket.on(endTurnEventName, (data: EndTurnData) => {
     const game = orchestrator.getGame(data.gameID);
     if (!game) {
-      io.to(socket.id).emit(
-        errorEventName,
-        new Error(`failed to find game by id ${data.gameID}`)
-      );
+      io.to(socket.id).emit(errorEventName, new GameNotFound(data.gameID));
       return;
     }
     game.nextTurn();
@@ -221,10 +212,7 @@ io.on("connection", (socket) => {
 
     const game = orchestrator.getGame(data.gameID);
     if (!game) {
-      io.to(socket.id).emit(
-        errorEventName,
-        new Error(`failed to find game by id ${data.gameID}`)
-      );
+      io.to(socket.id).emit(errorEventName, new GameNotFound(data.gameID));
       return;
     }
     try {
@@ -248,9 +236,3 @@ io.on("connection", (socket) => {
 server.listen(port, () => {
   console.log(`listening on port ${port}`);
 });
-
-function getClientPath(): string {
-  const basePath = dirname(__dirname);
-  const clientPath = join(basePath, "client");
-  return clientPath;
-}

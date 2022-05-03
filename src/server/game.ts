@@ -1,14 +1,12 @@
-import {
-  DuplicatePlayer,
-  InvalidTurn,
-  InvalidWord,
-  PlayerNotFound,
-  SpymasterExists,
-  WordAlreadyRevealed,
-} from "../shared/error";
+import DuplicatePlayer from "../shared/errors/duplicatePlayer";
+import InvalidWord from "../shared/errors/invalidWord";
+import WordAlreadyRevealed from "../shared/errors/wordAlreadyRevealed";
+import InvalidTurn from "../shared/errors/invalidTurn";
+import SpymasterExists from "../shared/errors/spymasterExists";
+import PlayerNotFound from "../shared/errors/playerNotFound";
 import { TurnResultData } from "../shared/events";
 import { Player, Team, TeamResult, Word, WordKind } from "../shared/types";
-import { wordKindToTeam } from "../shared/util";
+import wordKindToTeam from "../shared/util";
 import { DAILY_DOMAIN } from "./env";
 
 export enum GameState {
@@ -20,16 +18,25 @@ export enum GameState {
 
 export class Game {
   readonly id: string;
+
   readonly name: string;
+
   readonly dailyRoomURL: string;
+
   readonly dailyRoomName: string;
+
   state: GameState;
+
   readonly wordSet: Word[];
+
   players: Player[] = [];
 
   private team1SpymasterID: string;
+
   private team2SpymasterID: string;
+
   currentTurn: Team;
+
   teamResults: { [key in Team]?: TeamResult } = {
     team1: {
       team: Team.Team1,
@@ -59,7 +66,7 @@ export class Game {
 
   addPlayer(playerID: string, team: Team) {
     // See if this player is already on one of the teams
-    for (let i = 0; i < this.players.length; i++) {
+    for (let i = 0; i < this.players.length; i += 1) {
       const p = this.players[i];
       if (p.id === playerID) {
         throw new DuplicatePlayer(p.id, p.team);
@@ -70,7 +77,7 @@ export class Game {
   }
 
   removePlayer(playerID: string) {
-    for (let i = 0; i < this.players.length; i++) {
+    for (let i = 0; i < this.players.length; i += 1) {
       const p = this.players[i];
       if (p.id === playerID) {
         this.players.splice(i, 1);
@@ -83,7 +90,7 @@ export class Game {
   setSpymaster(id: string): Player {
     let player: Player = null;
     // First, find this player in our player list
-    for (let i = 0; i < this.players.length; i++) {
+    for (let i = 0; i < this.players.length; i += 1) {
       const p = this.players[i];
       if (p.id === id) {
         player = p;
@@ -93,7 +100,7 @@ export class Game {
     if (!player) {
       throw new PlayerNotFound(id);
     }
-    const team = player.team;
+    const { team } = player;
     if (team === Team.Team1) {
       if (!this.team1SpymasterID) {
         this.team1SpymasterID = id;
@@ -132,7 +139,7 @@ export class Game {
     let word: Word;
 
     // First, confirm that this is actually a valid word in our game
-    for (let i = 0; i < this.wordSet.length; i++) {
+    for (let i = 0; i < this.wordSet.length; i += 1) {
       const w = this.wordSet[i];
       if (wordVal === w.word) {
         if (w.isRevealed) {
@@ -149,7 +156,7 @@ export class Game {
 
     // Find the given player:
     let player: Player;
-    for (let i = 0; i < this.players.length; i++) {
+    for (let i = 0; i < this.players.length; i += 1) {
       const p = this.players[i];
       if (p.id === playerID) {
         player = p;
@@ -170,7 +177,7 @@ export class Game {
 
     const wordTeam = wordKindToTeam(word.kind);
     if (wordTeam !== Team.None) {
-      this.teamResults[wordTeam].wordsLeft--;
+      this.teamResults[wordTeam].wordsLeft -= 1;
     } else if (word.kind === WordKind.Assassin) {
       teamRes.isAssassinated = true;
     }
@@ -187,7 +194,7 @@ export class Game {
 
   getRevealedWordVals(): string[] {
     const revealed: string[] = [];
-    for (let i = 0; i < this.wordSet.length; i++) {
+    for (let i = 0; i < this.wordSet.length; i += 1) {
       const w = this.wordSet[i];
       if (w.isRevealed) {
         revealed.push(w.word);

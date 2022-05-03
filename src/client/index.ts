@@ -1,5 +1,3 @@
-import { Call } from "./daily";
-
 // These imports are here to ensure they're bundled into
 // the final distribution.
 import "./html/index.html";
@@ -13,10 +11,11 @@ import "./assets/microphone-off.svg";
 import "./assets/microphone.svg";
 import "./assets/screen-off.svg";
 import "./assets/screen-on.svg";
-import { Game } from "./game";
+import Game from "./game";
 
-export function initGame() {
+export default function initGame() {
   const game = new Game();
+  game.start();
 }
 
 window.addEventListener("DOMContentLoaded", () => {

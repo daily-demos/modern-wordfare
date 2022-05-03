@@ -1,17 +1,17 @@
+import { DailyParticipant } from "@daily-co/daily-js";
+import { io, Socket } from "socket.io-client";
 import { Team, TeamResult, Word, WordKind } from "../../../shared/types";
 import { Call } from "../../daily";
 import "../../html/team.html";
 import "../../html/callControls.html";
 import "../../assets/flare.png";
-import { DailyParticipant } from "@daily-co/daily-js";
 import {
   registerCamBtnListener,
   registerInviteBtnListener,
   registerLeaveBtnListener,
   registerMicBtnListener,
 } from "../../util/nav";
-import { WordGrid } from "./wordGrid";
-import { io, Socket } from "socket.io-client";
+import WordGrid from "./wordGrid";
 import {
   BecomeSpymasterData,
   becomeSpymasterEventName,
@@ -34,9 +34,7 @@ import {
   TurnResultData,
   leaveGameEventName,
 } from "../../../shared/events";
-import { timeStamp } from "console";
-import { join } from "path";
-import { wordKindToTeam } from "../../../shared/util";
+import wordKindToTeam from "../../../shared/util";
 
 export interface BoardData {
   roomURL: string;
@@ -48,20 +46,30 @@ export interface BoardData {
 
 export class Board extends Phaser.Scene {
   private wordGrid: WordGrid;
+
   call: Call;
+
   gameID: string;
+
   controlsDOM: Phaser.GameObjects.DOMElement;
+
   teamDOMs: { [key in Team]?: Phaser.GameObjects.DOMElement } = {
     team1: null,
     team2: null,
   };
 
   team = Team.None;
+
   socket: Socket;
+
   pendingTiles: { [key: string]: ReturnType<typeof setInterval> } = {};
+
   private particleManager: Phaser.GameObjects.Particles.ParticleEmitterManager;
+
   private turnParticleEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
+
   private isSpymaster: boolean;
+
   constructor() {
     super("Board");
   }
@@ -71,7 +79,6 @@ export class Board extends Phaser.Scene {
   }
 
   private clickWord(word: Word) {
-    console.log("clicked word, emitting");
     const data = <SelectedWordData>{
       gameID: this.gameID,
       wordValue: word.word,
@@ -80,11 +87,14 @@ export class Board extends Phaser.Scene {
     this.socket.emit(wordSelectedEventName, data);
   }
 
-  init(data: BoardData) {
-    this.call = new Call(data.roomURL, data.playerName, data.meetingToken);
-    this.gameID = data.gameID;
-    console.log("wordgrid", data.wordSet);
-    this.wordGrid = new WordGrid(this, data.wordSet, (w: Word) => {
+  init(boardData: BoardData) {
+    this.call = new Call(
+      boardData.roomURL,
+      boardData.playerName,
+      boardData.meetingToken
+    );
+    this.gameID = boardData.gameID;
+    this.wordGrid = new WordGrid(this, boardData.wordSet, (w: Word) => {
       this.clickWord(w);
     });
     const socket: Socket = io();
@@ -111,25 +121,23 @@ export class Board extends Phaser.Scene {
     });
 
     socket.on(gameDataDumpEventName, (data: GameData) => {
-      console.log("game data:", data);
       if (data.currentTurn && data.currentTurn !== Team.None) {
         this.toggleCurrentTurn(data.currentTurn);
       }
 
-      for (let i = 0; i < data.revealedWordVals.length; i++) {
+      for (let i = 0; i < data.revealedWordVals.length; i += 1) {
         const val = data.revealedWordVals[i];
         this.wordGrid.revealWord(val, this.team);
       }
       this.setScores(data.scores.team1);
       this.setScores(data.scores.team2);
 
-      for (let i = 0; i < data.players.length; i++) {
+      for (let i = 0; i < data.players.length; i += 1) {
         const player = data.players[i];
 
         this.pendingTiles[player.id] = setInterval(() => {
           const participant = this.call.getParticipant(player.id);
           if (!participant) {
-            console.log("participant does not yet exist");
             return;
           }
           this.clearPendingTile(player.id);
@@ -193,7 +201,6 @@ export class Board extends Phaser.Scene {
       tiles.clientWidth,
       tiles.clientHeight
     );
-    console.log("effectSHape:", effectShape, this.cameras.main.y, teamDOM.y);
 
     if (!this.turnParticleEmitter) {
       this.turnParticleEmitter = this.particleManager.createEmitter({
@@ -287,28 +294,27 @@ export class Board extends Phaser.Scene {
     this.controlsDOM = callControlsDom;
 
     this.particleManager = this.add.particles("yellow");
-    this.call.registerJoinedMeetingHandler((p) => {
+    this.call.registerJoinedMeetingHandler(() => {
       const data = <JoinGameData>{
         gameID: this.gameID,
       };
-      console.log("joining game", data);
       this.socket.emit(joinGameEventName, data);
       this.showTeams();
     });
 
     this.call.registerTrackStartedHandler((p) => {
-      const tracks = this.call.getParticipantTracks(p.participant);
+      const tracks = Call.getParticipantTracks(p.participant);
       try {
-        this.updateMedia(p.participant.session_id, tracks);
+        updateMedia(p.participant.session_id, tracks);
       } catch (e) {
         console.warn(e);
       }
     });
 
     this.call.registerTrackStoppedHandler((p) => {
-      const tracks = this.call.getParticipantTracks(p.participant);
+      const tracks = Call.getParticipantTracks(p.participant);
       try {
-        this.updateMedia(p.participant.session_id, tracks);
+        updateMedia(p.participant.session_id, tracks);
       } catch (e) {
         console.warn(e);
       }
@@ -352,12 +358,10 @@ export class Board extends Phaser.Scene {
       this.game.canvas.width - t2.width,
       this.game.canvas.height
     );
-    console.log("t1 x: ", t1.x + t1.width, t2.width);
     this.wordGrid.drawGrid(rect);
   }
 
   private showTeam(team: Team) {
-    console.log("showing team", team);
     const teamDOM = this.add.dom(0, 0).createFromCache("team-dom");
     let x = 0;
     const y = 0;
@@ -369,13 +373,7 @@ export class Board extends Phaser.Scene {
     } else if (team === Team.Team2) {
       this.teamDOMs[Team.Team2] = teamDOM;
       teamNameSpan.innerHTML = "Team 2";
-
       x = this.game.canvas.width - teamDOM.width;
-      console.log(
-        "game canvvas width, teamdom width:",
-        this.game.canvas.width,
-        teamDOM.width
-      );
     }
 
     teamDOM.setPosition(x, y).setOrigin(0);
@@ -393,8 +391,7 @@ export class Board extends Phaser.Scene {
 
       this.socket.emit(joinTeamEventName, data);
       const joinButtons = document.getElementsByClassName("join");
-      console.log("all join buttons:", joinButtons.length);
-      for (let i = 0; i < joinButtons.length; i++) {
+      for (let i = 0; i < joinButtons.length; i += 1) {
         const btn = joinButtons[i];
         btn.classList.add("hidden");
       }
@@ -409,20 +406,19 @@ export class Board extends Phaser.Scene {
       );
       beSpymasterButton.classList.remove("hidden");
       beSpymasterButton.onclick = () => {
-        console.log("becoming spymaster!");
         beSpymasterButton.classList.add("hidden");
-        const data = <BecomeSpymasterData>{
+        const resData = <BecomeSpymasterData>{
           gameID: this.gameID,
           sessionID: this.call.getPlayerId(),
         };
-        this.socket.emit(becomeSpymasterEventName, data);
+        this.socket.emit(becomeSpymasterEventName, resData);
         beSpymasterButton.classList.add("hidden");
       };
     };
   }
 
   private makeSpymaster(id: string, team: Team) {
-    const participantTile = this.getTile(id);
+    const participantTile = getTile(id);
     participantTile.classList.add("spymaster");
 
     if (this.team === team) {
@@ -443,18 +439,16 @@ export class Board extends Phaser.Scene {
     const dom = this.teamDOMs[team];
 
     // See if there is already an existing tile by this ID, error out if so
-    let participantTile = this.getTile(id);
+    let participantTile = getTile(id);
     if (participantTile) {
       throw new Error(`tile for participant ID ${id} already exists`);
     }
 
-    const teamDiv = this.getTeamDiv(team);
-    console.log("teamDIV:", teamDiv);
     // Create participant tile with the video and name tags within
     const tiles = dom.getChildByID("tiles");
 
     participantTile = document.createElement("div");
-    participantTile.id = this.getParticipantTileID(id);
+    participantTile.id = getParticipantTileID(id);
     participantTile.className = "tile";
 
     const video = document.createElement("video");
@@ -467,41 +461,37 @@ export class Board extends Phaser.Scene {
     participantTile.appendChild(nameTag);
     tiles.appendChild(participantTile);
 
-    const tracks = this.call.getParticipantTracks(p);
-    this.updateMedia(id, tracks);
+    const tracks = Call.getParticipantTracks(p);
+    updateMedia(id, tracks);
   }
 
-  update() {}
+  /* update() {} */
+}
 
-  private getParticipantTileID(sessionID: string): string {
-    return `participant-${sessionID}`;
+function getParticipantTileID(sessionID: string): string {
+  return `participant-${sessionID}`;
+}
+
+function getTile(participantID: string): HTMLDivElement {
+  const participantTileID = getParticipantTileID(participantID);
+  const participantTile = <HTMLDivElement>(
+    document.getElementById(participantTileID)
+  );
+  return participantTile;
+}
+
+function updateMedia(participantID: string, tracks: MediaStreamTrack[]) {
+  const participantTile = getTile(participantID);
+  if (!participantTile) {
+    throw new Error(`tile for participant ID ${participantID} does not exist`);
   }
-
-  private updateMedia(participantID: string, tracks: MediaStreamTrack[]) {
-    const participantTile = this.getTile(participantID);
-    if (!participantTile) {
-      throw new Error(
-        `tile for participant ID ${participantID} does not exist`
-      );
-    }
-    const videoTags = participantTile.getElementsByTagName("video");
-    if (!videoTags || videoTags.length === 0) {
-      throw new Error(
-        `video tile for participant ID ${participantID} does not exist`
-      );
-    }
-    const video = videoTags[0];
-    const stream = new MediaStream(tracks);
-    video.srcObject = stream;
-    console.log("updateMedia() video, tracks, stream:", video, tracks, stream);
-  }
-
-  private getTile(participantID: string): HTMLDivElement {
-    const participantTileID = this.getParticipantTileID(participantID);
-    const participantTile = <HTMLDivElement>(
-      document.getElementById(participantTileID)
+  const videoTags = participantTile.getElementsByTagName("video");
+  if (!videoTags || videoTags.length === 0) {
+    throw new Error(
+      `video tile for participant ID ${participantID} does not exist`
     );
-    console.log("participant tile:", participantTileID, participantTile);
-    return participantTile;
   }
+  const video = videoTags[0];
+  const stream = new MediaStream(tracks);
+  video.srcObject = stream;
 }

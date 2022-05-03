@@ -1,5 +1,4 @@
-import {
-  default as DailyIframe,
+import DailyIframe, {
   DailyCall,
   DailyEventObjectParticipant,
   DailyParticipant,
@@ -7,24 +6,27 @@ import {
 } from "@daily-co/daily-js";
 import { Team } from "../shared/types";
 
-export type joinHandler = (e: DailyParticipant) => void;
-export type dataDumpHandler = (
+export type JoinHandler = (e: DailyParticipant) => void;
+export type DataDumpHandler = (
   p: DailyParticipant,
   team: Team,
   team1Score: number,
   team2Score: number
 ) => void;
 
-export type leaveHandler = (e: DailyEventObjectParticipant) => void;
-export type trackStartedHandler = (e: DailyEventObjectTrack) => void;
-export type trackStoppedHandler = (e: DailyEventObjectTrack) => void;
-export type participantUpdatedHandler = (e: DailyParticipant) => void;
+export type LeaveHandler = (e: DailyEventObjectParticipant) => void;
+export type TrackStartedHandler = (e: DailyEventObjectTrack) => void;
+export type TrackStoppedHandler = (e: DailyEventObjectTrack) => void;
+export type ParticipantUpdatedHandler = (e: DailyParticipant) => void;
 const playableState = "playable";
 
 export class Call {
   private url: string;
+
   private userName: string;
+
   private callObject: DailyCall;
+
   private meetingToken: string;
 
   constructor(url: string, userName: string, meetingToken: string = null) {
@@ -43,6 +45,7 @@ export class Call {
   getPlayerId(): string {
     return this.callObject.participants().local.session_id;
   }
+
   getParticipant(sessionID: string): DailyParticipant {
     const participants = this.callObject.participants();
     if (participants.local.session_id === sessionID) {
@@ -52,75 +55,72 @@ export class Call {
   }
 
   toggleLocalVideo() {
-    console.log("toggling local video");
     const current = this.callObject.participants().local.video;
     this.callObject.setLocalVideo(!current);
   }
 
   toggleLocalAudio() {
-    console.log("toggling local audio");
     const current = this.callObject.participants().local.audio;
     this.callObject.setLocalAudio(!current);
   }
 
-  registerJoinedMeetingHandler(h: joinHandler) {
+  registerJoinedMeetingHandler(h: JoinHandler) {
     this.callObject.on("joined-meeting", (e) => {
-      console.log("joined meeting");
       h(e.participants.local);
     });
   }
 
-  registerParticipantJoinedHandler(h: joinHandler) {
+  registerParticipantJoinedHandler(h: JoinHandler) {
     this.callObject.on("participant-joined", (e) => {
-      console.log("participant joined", e.participant);
       h(e.participant);
     });
   }
 
-  registerParticipantLeftHandler(h: leaveHandler) {
+  registerParticipantLeftHandler(h: LeaveHandler) {
     this.callObject.on("participant-left", (e) => {
       h(e);
     });
   }
 
-  registerParticipantUpdatedHandler(h: participantUpdatedHandler) {
+  registerParticipantUpdatedHandler(h: ParticipantUpdatedHandler) {
     this.callObject.on("participant-updated", (e) => {
       h(e.participant);
     });
   }
 
-  registerTrackStartedHandler(h: trackStartedHandler) {
+  registerTrackStartedHandler(h: TrackStartedHandler) {
     this.callObject.on("track-started", (e) => {
       h(e);
     });
   }
 
-  registerTrackStoppedHandler(h: trackStoppedHandler) {
+  registerTrackStoppedHandler(h: TrackStoppedHandler) {
     this.callObject.on("track-stopped", (e) => {
       h(e);
     });
   }
 
-  getParticipantTracks(p: DailyParticipant): MediaStreamTrack[] {
-    console.log("tracks:", p?.tracks);
+  static getParticipantTracks(p: DailyParticipant): MediaStreamTrack[] {
     const tracks = p?.tracks;
     if (!tracks) return null;
 
     const vt = tracks.video;
     const at = tracks.audio;
 
-    let mediaTracks: MediaStreamTrack[] = [];
-    if (vt?.state === playableState || vt?.state === "loading") {
+    const mediaTracks: MediaStreamTrack[] = [];
+    const vs = vt?.state;
+    if (vs === playableState || vs === "loading") {
       mediaTracks.push(vt.persistentTrack);
     }
-    if (at?.state === playableState || at?.state === "loading") {
+    const as = at?.state;
+    if (as === playableState || as === "loading") {
       mediaTracks.push(at.persistentTrack);
     }
     return mediaTracks;
   }
 
   join() {
-    let params: { [k: string]: string } = {
+    const params: { [k: string]: string } = {
       url: this.url,
       userName: this.userName,
     };

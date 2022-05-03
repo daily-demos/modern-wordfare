@@ -3,9 +3,11 @@ export function rand(min: number, max: number) {
 }
 
 // Fisher-Yates shuffle
-export function shuffle(arr: Array<any>) {
-  for (let i = 0; i < arr.length; i++) {
-    let n = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[n]] = [arr[n], arr[i]];
+export function shuffle(arr: Array<any>): Array<any> {
+  const a = arr;
+  for (let i = 0; i < a.length; i += 1) {
+    const n = Math.floor(Math.random() * (i + 1));
+    [a[i], a[n]] = [a[n], a[i]];
   }
+  return a;
 }

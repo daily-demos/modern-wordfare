@@ -1,12 +1,9 @@
-import { DAILY_API_KEY } from "./env";
 import axios from "axios";
-import { Game, GameState } from "./game";
+import { DAILY_API_KEY } from "./env";
+import { Game } from "./game";
 import { Team, Word } from "../shared/types";
-import {
-  GameNotFound,
-  PlayerNotFound,
-  SocketMappingNotFound,
-} from "../shared/error";
+import SocketMappingNotFound from "../shared/errors/socketMappingNotFound";
+import GameNotFound from "../shared/errors/gameNotFound";
 
 const dailyAPIURL = "https://api.daily.co/v1";
 
@@ -21,11 +18,12 @@ interface PlayerInfo {
   gameID: string;
 }
 
-export class GameOrchestrator {
+export default class GameOrchestrator {
   games: Map<string, Game> = new Map();
-  private socketMappings: { [key: string]: PlayerInfo } = {};
 
-  constructor() {}
+  private readonly dailyAPIKey: string = DAILY_API_KEY;
+
+  private socketMappings: { [key: string]: PlayerInfo } = {};
 
   async createGame(name: string, wordSet: Word[]): Promise<Game> {
     const apiKey = DAILY_API_KEY;
@@ -45,7 +43,7 @@ export class GameOrchestrator {
 
     const url = `${dailyAPIURL}/rooms/`;
     const data = JSON.stringify(req);
-    let res = await axios.post(url, data, { headers }).catch((error) => {
+    const res = await axios.post(url, data, { headers }).catch((error) => {
       throw new Error(`failed to create room: ${error})`);
     });
 
@@ -62,7 +60,7 @@ export class GameOrchestrator {
   }
 
   async getMeetingToken(roomName: string): Promise<string> {
-    const api = DAILY_API_KEY;
+    const api = this.dailyAPIKey;
     const req = {
       properties: {
         room_name: roomName,
@@ -79,7 +77,7 @@ export class GameOrchestrator {
 
     const url = `${dailyAPIURL}/meeting-tokens/`;
     console.log("headers:", url, headers, data);
-    let res = await axios.post(url, data, { headers }).catch((error) => {
+    const res = await axios.post(url, data, { headers }).catch((error) => {
       throw new Error(`failed to create meeting token: ${error})`);
     });
 
@@ -104,8 +102,8 @@ export class GameOrchestrator {
     }
     game.addPlayer(playerID, team);
     this.socketMappings[socketID] = <PlayerInfo>{
-      gameID: gameID,
-      playerID: playerID,
+      gameID,
+      playerID,
     };
     return game;
   }

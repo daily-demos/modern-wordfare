@@ -2,7 +2,7 @@ const path = require("path");
 const nodeExternals = require("webpack-node-externals");
 const webpack = require("webpack");
 
-const dotenv = require("dotenv").config({
+require("dotenv").config({
   path: path.join(__dirname, ".env"),
 });
 
