@@ -55,14 +55,15 @@ export interface SelectedWordData {
 }
 
 export const turnResultEventName = "turn-result";
-/*export interface TurnResultData {
-  turnResult: TurnResult;
-} */
 export interface TurnResultData {
   team: Team;
   lastRevealedWord: Word;
-  /* wordsLeft: number; */
-  /* isAssassinated: boolean; */
 }
 
 export const leaveGameEventName = "leave-game";
+
+export const endTurnEventName = "end-turn";
+export interface EndTurnData {
+  gameID: string;
+  playerID: string;
+}

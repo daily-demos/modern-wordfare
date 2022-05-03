@@ -1,4 +1,5 @@
 import { Team, Word, WordKind } from "../../../shared/types";
+import { wordKindToTeam } from "../../../shared/util";
 
 export const textWidth = 125;
 export const textHeight = 45;
@@ -43,15 +44,16 @@ export class RenderedWord {
   colorize(ownTeam: Team) {
     let style = this.wordStyle;
     console.log("word kind, own team:", this.word.kind, ownTeam);
-    if (
-      (this.word.kind === WordKind.Team1 && ownTeam === Team.Team1) ||
-      (this.word.kind === WordKind.Team2 && ownTeam === Team.Team2)
-    ) {
-      style.backgroundColor = this.ownTeamConfig.backgroundColor;
-    } else if (this.word.kind === WordKind.Assassin) {
+
+    if (this.word.kind === WordKind.Assassin) {
       style.backgroundColor = this.assassinConfig.backgroundColor;
     } else if (this.word.kind === WordKind.Neutral) {
       style.backgroundColor = this.neutralConfig.backgroundColor;
+    }
+    const wordTeam = wordKindToTeam(this.word.kind);
+
+    if (wordTeam === ownTeam) {
+      style.backgroundColor = this.ownTeamConfig.backgroundColor;
     } else {
       style.backgroundColor = this.otherTeamConfig.backgroundColor;
     }

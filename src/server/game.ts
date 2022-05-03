@@ -8,6 +8,7 @@ import {
 } from "../shared/error";
 import { TurnResultData } from "../shared/events";
 import { Player, Team, TeamResult, Word, WordKind } from "../shared/types";
+import { wordKindToTeam } from "../shared/util";
 import { DAILY_DOMAIN } from "./env";
 
 export enum GameState {
@@ -165,18 +166,17 @@ export class Game {
     if (player.team !== this.currentTurn) {
       throw new InvalidTurn();
     }
-
     const teamRes = this.teamResults[player.team];
 
-    if (
-      (word.kind === WordKind.Team1 && player.team === Team.Team1) ||
-      (word.kind === WordKind.Team2 && player.team === Team.Team2)
-    ) {
-      teamRes.wordsLeft--;
+    const wordTeam = wordKindToTeam(word.kind);
+    if (wordTeam !== Team.None) {
+      this.teamResults[wordTeam].wordsLeft--;
     } else if (word.kind === WordKind.Assassin) {
       teamRes.isAssassinated = true;
-    } else if (word.kind !== WordKind.Neutral) {
-      teamRes.wordsLeft--;
+    }
+
+    if (wordTeam !== player.team) {
+      this.nextTurn();
     }
 
     return <TurnResultData>{
@@ -193,6 +193,7 @@ export class Game {
         revealed.push(w.word);
       }
     }
+
     return revealed;
   }
 }

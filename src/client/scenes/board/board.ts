@@ -36,6 +36,7 @@ import {
 } from "../../../shared/events";
 import { timeStamp } from "console";
 import { join } from "path";
+import { wordKindToTeam } from "../../../shared/util";
 
 export interface BoardData {
   roomURL: string;
@@ -49,13 +50,12 @@ export class Board extends Phaser.Scene {
   private wordGrid: WordGrid;
   call: Call;
   gameID: string;
-  // boardDOM: Phaser.GameObjects.DOMElement;
+  controlsDOM: Phaser.GameObjects.DOMElement;
   teamDOMs: { [key in Team]?: Phaser.GameObjects.DOMElement } = {
     team1: null,
     team2: null,
   };
-  /* team1DOM: Phaser.GameObjects.DOMElement;
-  team2DOM: Phaser.GameObjects.DOMElement; */
+
   team = Team.None;
   socket: Socket;
   pendingTiles: { [key: string]: ReturnType<typeof setInterval> } = {};
@@ -169,17 +169,14 @@ export class Board extends Phaser.Scene {
       return;
     }
 
-    let wordTeam: Team;
-    if (lastWord.kind === WordKind.Team1) {
-      wordTeam = Team.Team1;
-    } else if (lastWord.kind === WordKind.Team2) {
-      wordTeam = Team.Team2;
+    const wordTeam = wordKindToTeam(WordKind.Team1);
+    if (wordTeam === Team.None) {
+      return;
     }
+
     const teamDOM = this.teamDOMs[wordTeam];
     const score = teamDOM.getChildByID("score");
-
     const wordsLeft: number = +score.innerHTML;
-
     score.innerHTML = (wordsLeft - 1).toString();
   }
 
@@ -222,11 +219,15 @@ export class Board extends Phaser.Scene {
       return;
     }
 
+    const endTurnBtn = this.controlsDOM.getChildByID("end-turn");
+
     if (currentTurn === this.team) {
       this.wordGrid.enableInteraction();
+      endTurnBtn.classList.remove("hidden");
       return;
     }
     this.wordGrid.disableInteraction();
+    endTurnBtn.classList.add("hidden");
   }
 
   private getTeamDivs(activeTeam: Team): {
@@ -281,15 +282,9 @@ export class Board extends Phaser.Scene {
 
     const x = this.game.canvas.width / 2;
     const y = this.game.canvas.height - 60;
-    console.log(
-      "x, y:",
-      x,
-      y,
-      this.game.canvas.height,
-      callControlsDom.height - 58
-    );
 
     callControlsDom.setPosition(x, y).setOrigin(0.5, 1);
+    this.controlsDOM = callControlsDom;
 
     this.particleManager = this.add.particles("yellow");
     this.call.registerJoinedMeetingHandler((p) => {
@@ -318,20 +313,6 @@ export class Board extends Phaser.Scene {
         console.warn(e);
       }
     });
-    /*
-    this.call.registerParticipantUpdatedHandler((p) => {
-      const tracks = this.call.getParticipantTracks(p);
-      console.log(
-        "partiicipant updated session ID and participant:",
-        p.session_id,
-        tracks
-      );
-      try {
-        this.updateMedia(p.session_id, tracks);
-      } catch (e) {
-        console.warn(e);
-      }
-    }); */
 
     this.call.join();
 
@@ -395,12 +376,6 @@ export class Board extends Phaser.Scene {
         this.game.canvas.width,
         teamDOM.width
       );
-      /*  this.scale.on("resize", () => {
-        const x: number = this.game.scale.width / 2;
-        const y: number = this.game.scale.height / 2;
-      
-      
-        }); */
     }
 
     teamDOM.setPosition(x, y).setOrigin(0);
@@ -430,7 +405,7 @@ export class Board extends Phaser.Scene {
         return;
       }
       const beSpymasterButton = <HTMLButtonElement>(
-        teamDOM.getChildByID("join-spymaster")
+        this.controlsDOM.getChildByID("be-spymaster")
       );
       beSpymasterButton.classList.remove("hidden");
       beSpymasterButton.onclick = () => {
@@ -451,12 +426,8 @@ export class Board extends Phaser.Scene {
     participantTile.classList.add("spymaster");
 
     if (this.team === team) {
-      const teamDiv = this.getTeamDiv(this.team);
-      const btns = teamDiv.getElementsByTagName("button");
-      for (let i = 0; i < btns.length; i++) {
-        const btn = btns[i];
-        btn.classList.add("hidden");
-      }
+      const spymasterBtn = this.controlsDOM.getChildByID("be-spymaster");
+      spymasterBtn.classList.add("hidden");
     }
 
     if (id === this.call.getPlayerId()) {

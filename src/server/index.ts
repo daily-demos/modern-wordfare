@@ -27,6 +27,8 @@ import {
   turnResultEventName,
   TurnResultData,
   leaveGameEventName,
+  endTurnEventName,
+  EndTurnData,
 } from "../shared/events";
 import {
   ICreateGameRequest,
@@ -197,7 +199,26 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on(endTurnEventName, (data: EndTurnData) => {
+    const game = orchestrator.getGame(data.gameID);
+    if (!game) {
+      io.to(socket.id).emit(
+        errorEventName,
+        new Error(`failed to find game by id ${data.gameID}`)
+      );
+      return;
+    }
+    game.nextTurn();
+    io.to(data.gameID).emit(nextTurnEventName, <TurnData>{
+      currentTurn: game.currentTurn,
+    });
+  });
+
   socket.on(wordSelectedEventName, (data: SelectedWordData) => {
+    // TODO: use socket ID to map request to a game and player
+    // on second thought maybe not..socket ID will change in case
+    // of connection interrupt and we don't want to rely on that.
+
     const game = orchestrator.getGame(data.gameID);
     if (!game) {
       io.to(socket.id).emit(
@@ -207,14 +228,17 @@ io.on("connection", (socket) => {
       return;
     }
     try {
+      const oldTurn = game.currentTurn;
       const res = game.selectWord(data.wordValue, data.playerID);
-
       io.to(data.gameID).emit(turnResultEventName, res);
-      game.nextTurn();
-      const turnData = <TurnData>{
-        currentTurn: game.currentTurn,
-      };
-      io.to(data.gameID).emit(nextTurnEventName, turnData);
+
+      const newTurn = game.currentTurn;
+      if (oldTurn !== newTurn) {
+        const turnData = <TurnData>{
+          currentTurn: newTurn,
+        };
+        io.to(data.gameID).emit(nextTurnEventName, turnData);
+      }
     } catch (e) {
       io.to(socket.id).emit(errorEventName, e);
     }
