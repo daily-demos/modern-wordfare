@@ -6,7 +6,7 @@ import { Game } from "../game";
 
 describe("Spymaster tests", () => {
   test("Basic spymaster readiness", () => {
-    const game = new Game("test game", "test url", "test room", null);
+    const game = new Game("test game", "test url", "test room", []);
 
     expect(game.spymastersReady()).toBe(false);
     game.addPlayer("team1", Team.Team1);
@@ -19,7 +19,7 @@ describe("Spymaster tests", () => {
   });
 
   test("Duplicate spymaster", () => {
-    const game = new Game("test game", "test url", "test room", null);
+    const game = new Game("test game", "test url", "test room", []);
 
     game.addPlayer("player1", Team.Team1);
     game.addPlayer("player2", Team.Team1);
