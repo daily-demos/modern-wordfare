@@ -4,6 +4,7 @@ import { Game } from "./game";
 import { Team, Word } from "../shared/types";
 import SocketMappingNotFound from "../shared/errors/socketMappingNotFound";
 import GameNotFound from "../shared/errors/gameNotFound";
+import { PlayerLeftData } from "../shared/events";
 
 const dailyAPIURL = "https://api.daily.co/v1";
 
@@ -110,7 +111,7 @@ export default class GameOrchestrator {
 
   // ejectPlayer removes the player associated with the given
   // socket ID from whatever game they are in.
-  ejectPlayer(socketID: string) {
+  ejectPlayer(socketID: string): PlayerInfo {
     console.log("ejecting player", socketID);
     const playerInfo = this.socketMappings[socketID];
     if (!playerInfo) {
@@ -119,5 +120,23 @@ export default class GameOrchestrator {
     const game = this.getGame(playerInfo.gameID);
     game.removePlayer(playerInfo.playerID);
     delete this.socketMappings[socketID];
+    return playerInfo;
+  }
+
+  restartGame(socketID: string, gameID: string, newWordSet: Word[]) {
+    const game = this.getGame(gameID);
+    if (!game) {
+      throw new GameNotFound(gameID);
+    }
+    const playerInfo = this.socketMappings[socketID];
+    if (!playerInfo) {
+      throw new SocketMappingNotFound(socketID);
+    }
+    if (playerInfo.gameID !== gameID) {
+      throw new Error(
+        `game ID mismatch between request (${gameID}) and socket mapping (${playerInfo.gameID})`
+      );
+    }
+    game.restart(newWordSet);
   }
 }

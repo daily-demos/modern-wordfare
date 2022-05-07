@@ -26,13 +26,21 @@ import {
   leaveGameEventName,
   endTurnEventName,
   EndTurnData,
+  restartGameEventName,
+  RestartGameData,
+  gameRestartedEventName,
+  GameRestartedData,
+  playerLeftgameEventName,
+  PlayerLeftData,
 } from "../shared/events";
 import {
   ICreateGameRequest,
   ICreateGameResponse,
   IJoinGameRequest,
   IJoinGameResponse,
+  Word,
 } from "../shared/types";
+import { GameState } from "./game";
 import GameOrchestrator from "./orchestrator";
 
 const app = express();
@@ -76,7 +84,8 @@ app.post("/join", (req: Request, res: Response) => {
 
 app.post("/create", (req: Request, res: Response) => {
   const body = <ICreateGameRequest>req.body;
-  if (!body.wordSet) {
+  const wordSet = body.wordSet;
+  if (!wordSet) {
     const err = "word set must be defined";
     res.status(400).send(`{"error":"${err}}`);
     return;
@@ -87,7 +96,7 @@ app.post("/create", (req: Request, res: Response) => {
     return;
   }
   orchestrator
-    .createGame(body.gameName, body.wordSet)
+    .createGame(body.gameName, wordSet)
     .then((game) => {
       orchestrator
         .getMeetingToken(game.dailyRoomName)
@@ -133,7 +142,12 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("user disconnected");
     try {
-      orchestrator.ejectPlayer(socket.id);
+      const ejectedPlayerInfo = orchestrator.ejectPlayer(socket.id);
+      io.to(ejectedPlayerInfo.gameID).emit(playerLeftgameEventName, <
+        PlayerLeftData
+      >{
+        playerID: ejectedPlayerInfo.playerID,
+      });
     } catch (e) {
       console.error(e);
     }
@@ -141,10 +155,22 @@ io.on("connection", (socket) => {
 
   socket.on(leaveGameEventName, () => {
     try {
-      orchestrator.ejectPlayer(socket.id);
+      const ejectedPlayerInfo = orchestrator.ejectPlayer(socket.id);
+      io.to(ejectedPlayerInfo.gameID).emit(playerLeftgameEventName, <
+        PlayerLeftData
+      >{
+        playerID: ejectedPlayerInfo.playerID,
+      });
     } catch (e) {
       console.error(e);
     }
+  });
+
+  socket.on(restartGameEventName, (data: RestartGameData) => {
+    orchestrator.restartGame(socket.id, data.gameID, data.newWordSet);
+    io.to(data.gameID).emit(gameRestartedEventName, <GameRestartedData>{
+      newWordSet: data.newWordSet,
+    });
   });
 
   socket.on(joinTeamEventName, (data: JoinTeamData) => {
@@ -181,7 +207,7 @@ io.on("connection", (socket) => {
         teamID: spymaster.team,
       };
       io.to(data.gameID).emit(newSpymasterEventName, spymasterData);
-      if (game.spymastersReady()) {
+      if (game.spymastersReady() && game.state === GameState.Pending) {
         game.nextTurn();
         const turnData = <TurnData>{
           currentTurn: game.currentTurn,

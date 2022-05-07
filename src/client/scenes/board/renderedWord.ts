@@ -1,5 +1,5 @@
 import { Team, Word, WordKind } from "../../../shared/types";
-import wordKindToTeam from "../../../shared/util";
+import { wordKindToTeam } from "../../../shared/util";
 
 export const textWidth = 125;
 export const textHeight = 45;
@@ -67,15 +67,15 @@ export class RenderedWord {
   renderWordObject(x: number, y: number) {
     const { wordStyle } = this;
     wordStyle.backgroundColor = this.neutralConfig.backgroundColor;
-    if (this.word.word.length > 10) {
+    if (this.word.value.length > 10) {
       wordStyle.fontSize = "20px";
     }
     const text = this.scene.add
-      .text(x, y, this.word.word, wordStyle)
+      .text(x, y, this.word.value, wordStyle)
       .setOrigin(0.5, 0);
     this.object = text;
     this.object.on("pointerdown", () => {
-      console.log("clicked on word: ", this.word.word);
+      console.log("clicked on word: ", this.word.value);
       this.onClick(this.word);
     });
   }

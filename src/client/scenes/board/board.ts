@@ -4,13 +4,16 @@ import { Team, TeamResult, Word, WordKind } from "../../../shared/types";
 import { Call } from "../../daily";
 import "../../html/team.html";
 import "../../html/callControls.html";
+import "../../html/end.html";
+
 import "../../assets/flare.png";
 import {
   registerCamBtnListener,
+  registerEndTurnBtnListener,
   registerInviteBtnListener,
   registerLeaveBtnListener,
   registerMicBtnListener,
-} from "../../util/nav";
+} from "./nav";
 import WordGrid from "./wordGrid";
 import {
   BecomeSpymasterData,
@@ -33,8 +36,18 @@ import {
   SelectedWordData,
   TurnResultData,
   leaveGameEventName,
+  restartGameEventName,
+  RestartGameData,
+  gameRestartedEventName,
+  GameRestartedData,
+  endTurnEventName,
+  EndTurnData,
+  playerLeftgameEventName,
+  PlayerLeftData,
 } from "../../../shared/events";
-import wordKindToTeam from "../../../shared/util";
+import createWordSet from "../../util/word";
+import { timeStamp } from "console";
+import { wordKindToTeam } from "../../../shared/util";
 
 export interface BoardData {
   roomURL: string;
@@ -70,6 +83,8 @@ export class Board extends Phaser.Scene {
 
   private isSpymaster: boolean;
 
+  private boardData: BoardData;
+
   constructor() {
     super("Board");
   }
@@ -78,10 +93,18 @@ export class Board extends Phaser.Scene {
     Phaser.Scene.call(this, { key: "Board" });
   }
 
+  private restart() {
+    const newWordSet = createWordSet();
+    this.socket.emit(restartGameEventName, <RestartGameData>{
+      gameID: this.gameID,
+      newWordSet: newWordSet,
+    });
+  }
+
   private clickWord(word: Word) {
     const data = <SelectedWordData>{
       gameID: this.gameID,
-      wordValue: word.word,
+      wordValue: word.value,
       playerID: this.call.getPlayerId(),
     };
     this.socket.emit(wordSelectedEventName, data);
@@ -93,6 +116,7 @@ export class Board extends Phaser.Scene {
       boardData.playerName,
       boardData.meetingToken
     );
+    this.boardData = this.boardData;
     this.gameID = boardData.gameID;
     this.wordGrid = new WordGrid(this, boardData.wordSet, (w: Word) => {
       this.clickWord(w);
@@ -160,7 +184,18 @@ export class Board extends Phaser.Scene {
     socket.on(turnResultEventName, (data: TurnResultData) => {
       this.updateScore(data);
       // Reveal the word;
-      this.wordGrid.revealWord(data.lastRevealedWord.word, this.team);
+      this.wordGrid.revealWord(data.lastRevealedWord.value, this.team);
+    });
+
+    socket.on(gameRestartedEventName, (data: GameRestartedData) => {
+      console.log("restarting game");
+      boardData.wordSet = data.newWordSet;
+      this.scene.restart(boardData);
+    });
+
+    socket.on(playerLeftgameEventName, (data: PlayerLeftData) => {
+      console.log("removing player", data);
+      this.removeTile(data.playerID);
     });
   }
 
@@ -173,11 +208,18 @@ export class Board extends Phaser.Scene {
   private updateScore(teamRes: TurnResultData) {
     const lastWord = teamRes.lastRevealedWord;
     if (lastWord.kind === WordKind.Assassin) {
-      console.log("GAME OVER FOR TEAM", teamRes.team);
+      console.log("ASSASSINATED");
+      let winningTeam: Team;
+      if (teamRes.team === Team.Team1) {
+        winningTeam = Team.Team2;
+      } else if (teamRes.team) {
+        winningTeam = Team.Team1;
+      }
+      this.showRestart(winningTeam); // TODO
       return;
     }
 
-    const wordTeam = wordKindToTeam(WordKind.Team1);
+    const wordTeam = wordKindToTeam(lastWord.kind);
     if (wordTeam === Team.None) {
       return;
     }
@@ -185,7 +227,27 @@ export class Board extends Phaser.Scene {
     const teamDOM = this.teamDOMs[wordTeam];
     const score = teamDOM.getChildByID("score");
     const wordsLeft: number = +score.innerHTML;
-    score.innerHTML = (wordsLeft - 1).toString();
+
+    const newScore = wordsLeft - 1;
+    if (newScore === 0) {
+      this.showRestart(wordTeam);
+      return;
+    }
+    score.innerHTML = newScore.toString();
+  }
+
+  private showRestart(winner: Team) {
+    const endDOM = this.add.dom(0, 0).createFromCache("end-dom");
+    console.log("endDOM:", endDOM);
+    const x = this.game.canvas.width / 2;
+    const y = this.game.canvas.height / 2;
+    endDOM.setPosition(x, y).setOrigin(0.5);
+
+    const restartBtn = <HTMLButtonElement>endDOM.getChildByID("restart");
+    restartBtn.onclick = () => {
+      this.restart();
+    };
+    return;
   }
 
   private toggleCurrentTurn(currentTurn: Team) {
@@ -279,6 +341,7 @@ export class Board extends Phaser.Scene {
   preload() {
     this.load.html("team-dom", "../team.html");
     this.load.html("call-controls-dom", "../callControls.html");
+    this.load.html("end-dom", "../end.html");
     this.load.image("yellow", "../assets/flare.png");
   }
 
@@ -334,6 +397,13 @@ export class Board extends Phaser.Scene {
       navigator.clipboard.writeText(
         `${window.location.host}?gameID=${this.gameID}`
       );
+    });
+
+    registerEndTurnBtnListener(() => {
+      this.socket.emit(endTurnEventName, <EndTurnData>{
+        gameID: this.gameID,
+        playerID: this.call.getPlayerId(),
+      });
     });
 
     registerLeaveBtnListener(() => {
@@ -433,7 +503,7 @@ export class Board extends Phaser.Scene {
     }
   }
 
-  createTile(p: DailyParticipant, team: Team) {
+  private createTile(p: DailyParticipant, team: Team) {
     const name = p.user_name;
     const id = p.session_id;
     const dom = this.teamDOMs[team];
@@ -463,6 +533,11 @@ export class Board extends Phaser.Scene {
 
     const tracks = Call.getParticipantTracks(p);
     updateMedia(id, tracks);
+  }
+
+  private removeTile(playerID: string) {
+    const ele = document.getElementById(getParticipantTileID(playerID));
+    ele?.remove();
   }
 
   /* update() {} */

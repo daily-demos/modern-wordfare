@@ -17,3 +17,8 @@ export function registerInviteBtnListener(f: () => void) {
   const toggleMicBtn = document.getElementById("invite");
   toggleMicBtn.addEventListener("click", f);
 }
+
+export function registerEndTurnBtnListener(f: () => void) {
+  const endTurnBtn = document.getElementById("end-turn");
+  endTurnBtn.addEventListener("click", f);
+}

@@ -67,3 +67,19 @@ export interface EndTurnData {
   gameID: string;
   playerID: string;
 }
+
+export const restartGameEventName = "restart-game";
+export interface RestartGameData {
+  gameID: string;
+  newWordSet: Word[];
+}
+
+export const gameRestartedEventName = "game-restarted";
+export interface GameRestartedData {
+  newWordSet: Word[];
+}
+
+export const playerLeftgameEventName = "player-left";
+export interface PlayerLeftData {
+  playerID: string;
+}

@@ -1,6 +1,7 @@
-import { Team, WordKind } from "./types";
+import { arrayBuffer } from "stream/consumers";
+import { Team, Word, WordKind } from "./types";
 
-export default function wordKindToTeam(wk: WordKind): Team {
+export function wordKindToTeam(wk: WordKind): Team {
   if (wk === WordKind.Team1) {
     return Team.Team1;
   }
@@ -8,4 +9,9 @@ export default function wordKindToTeam(wk: WordKind): Team {
     return Team.Team2;
   }
   return Team.None;
+}
+
+export function setContainsDuplicateWords(arr: Word[]): boolean {
+  const set = new Set(arr.map((w) => w.value));
+  return set.size !== arr.length;
 }

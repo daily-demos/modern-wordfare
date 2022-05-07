@@ -32,12 +32,6 @@ export enum Team {
   Team2 = "team2",
 }
 
-export type Word = {
-  word: string;
-  kind: WordKind;
-  isRevealed: boolean;
-};
-
 export class Player {
   id: string;
 
@@ -48,6 +42,17 @@ export class Player {
   constructor(id: string, team: Team) {
     this.id = id;
     this.team = team;
+  }
+}
+
+export class Word {
+  readonly value: string;
+  readonly kind: WordKind;
+  isRevealed: boolean;
+
+  constructor(val: string, kind: WordKind) {
+    this.value = val;
+    this.kind = kind;
   }
 }
 

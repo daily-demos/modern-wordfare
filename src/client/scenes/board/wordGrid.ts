@@ -49,9 +49,9 @@ export default class WordGrid {
       ot = Team.Team1;
     }
     for (let i = 0; i < this.renderedWords.length; i += 1) {
-      const word = this.renderedWords[i];
-      if (word.word.word === wordVal) {
-        word.colorize(ot);
+      const rw = this.renderedWords[i];
+      if (rw.word.value === wordVal) {
+        rw.colorize(ot);
         return;
       }
     }

@@ -2,10 +2,14 @@ import defaultWordlist from "../dictionaries/default.json";
 import { wordCount, wordsPerTeam } from "../config";
 import { rand, shuffle } from "./math";
 import { Word, WordKind } from "../../shared/types";
+import { setContainsDuplicateWords } from "../../shared/util";
 
 export default function createWordSet(): Word[] {
   // Pick 25 random words
-  const words = chooseRandomWords(defaultWordlist.words, wordCount);
+  let words = chooseRandomWords(defaultWordlist.words, wordCount);
+
+  words = shuffle(words);
+
   // Divide the words into two teams
   const team1WordSet = buildWordSet(words, wordsPerTeam, WordKind.Team1);
   const team2WordSet = buildWordSet(words, wordsPerTeam, WordKind.Team2);
@@ -13,14 +17,11 @@ export default function createWordSet(): Word[] {
   const assassinWord = buildWordSet(words, 1, WordKind.Assassin);
 
   const neutralWordSet: Word[] = [];
+
   // The rest of the words are neutral
   for (let i = 0; i < words.length; i += 1) {
     const w = words[i];
-    const word = {
-      word: w,
-      kind: WordKind.Neutral,
-      isRevealed: false,
-    };
+    const word = new Word(w, WordKind.Neutral);
     neutralWordSet.push(word);
   }
 
@@ -30,23 +31,25 @@ export default function createWordSet(): Word[] {
     .concat(assassinWord);
 
   wordSet = shuffle(wordSet);
+  if (setContainsDuplicateWords(wordSet)) {
+    throw new Error("wordset contains duplicate elements");
+  }
   return wordSet;
 }
 
-function buildWordSet(words: string[], count: Number, kind: WordKind): Word[] {
-  const chosenWords = chooseRandomWords(words, count);
-  const wordSet: Word[] = [];
-  for (let i = 0; i < chosenWords.length; i += 1) {
-    const w = chosenWords[i];
-    words.splice(i, 1);
-    const word = {
-      word: w,
-      kind,
-      isRevealed: false,
-    };
-    wordSet.push(word);
+function buildWordSet(
+  allWords: string[],
+  count: Number,
+  kind: WordKind
+): Word[] {
+  let chosenWords: Word[] = [];
+  for (let i = 0; i < count; i += 1) {
+    const w = allWords[i];
+    const word = new Word(w, kind);
+    chosenWords.push(word);
+    allWords.splice(i, 1);
   }
-  return wordSet;
+  return chosenWords;
 }
 
 function chooseRandomWords(allWords: string[], count: Number): string[] {
@@ -60,6 +63,7 @@ function chooseRandomWords(allWords: string[], count: Number): string[] {
   while (chosenWords.length < count) {
     const idx = rand(0, l - 1);
     const w = allWords[idx];
+    // Do not include duplicate words
     if (!chosenWords.includes(w)) {
       chosenWords.push(w);
     }
