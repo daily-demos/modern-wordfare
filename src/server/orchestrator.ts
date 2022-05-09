@@ -5,6 +5,7 @@ import { Team, Word } from "../shared/types";
 import SocketMappingNotFound from "../shared/errors/socketMappingNotFound";
 import GameNotFound from "../shared/errors/gameNotFound";
 import { PlayerLeftData } from "../shared/events";
+import { StoreClient } from "./store/store";
 
 const dailyAPIURL = "https://api.daily.co/v1";
 
@@ -14,17 +15,21 @@ interface ICreatedDailyRoomData {
   url: string;
 }
 
-interface PlayerInfo {
+export interface PlayerInfo {
   playerID: string;
   gameID: string;
 }
 
 export default class GameOrchestrator {
-  games: Map<string, Game> = new Map();
+  // games: Map<string, Game> = new Map();
 
   private readonly dailyAPIKey: string = DAILY_API_KEY;
 
-  private socketMappings: { [key: string]: PlayerInfo } = {};
+  private readonly storeClient: StoreClient;
+
+  constructor(storeClient: StoreClient) {
+    this.storeClient = storeClient;
+  }
 
   async createGame(name: string, wordSet: Word[]): Promise<Game> {
     const apiKey = DAILY_API_KEY;
@@ -56,7 +61,7 @@ export default class GameOrchestrator {
     const roomData = <ICreatedDailyRoomData>body;
 
     const game = new Game(name, roomData.url, roomData.name, wordSet);
-    this.games.set(game.id, game);
+    await this.storeClient.storeGame(game);
     return game;
   }
 
@@ -85,50 +90,52 @@ export default class GameOrchestrator {
     return res.data?.token;
   }
 
-  getGame(gameID: string): Game {
-    return this.games.get(gameID);
+  async getGame(gameID: string): Promise<Game> {
+    const game = await this.storeClient.getGame(gameID);
+    game.storeClient = this.storeClient;
+    return game;
   }
 
   // joinGame adds a player to a game, if the game for their
   // requested ID exists.
-  joinGame(
+  async joinGame(
     gameID: string,
     playerID: string,
     team: Team,
     socketID: string
-  ): Game {
-    const game = this.getGame(gameID);
+  ): Promise<Game> {
+    const game = await this.getGame(gameID);
     if (!game) {
       throw new GameNotFound(gameID);
     }
     game.addPlayer(playerID, team);
-    this.socketMappings[socketID] = <PlayerInfo>{
+    this.storeClient.storeSocketMapping(socketID, <PlayerInfo>{
       gameID,
       playerID,
-    };
+    });
     return game;
   }
 
   // ejectPlayer removes the player associated with the given
   // socket ID from whatever game they are in.
-  ejectPlayer(socketID: string): PlayerInfo {
+  async ejectPlayer(socketID: string): Promise<PlayerInfo> {
     console.log("ejecting player", socketID);
-    const playerInfo = this.socketMappings[socketID];
+    const playerInfo = await this.storeClient.getSocketMapping(socketID);
     if (!playerInfo) {
       throw new SocketMappingNotFound(socketID);
     }
-    const game = this.getGame(playerInfo.gameID);
+    const game = await this.getGame(playerInfo.gameID);
     game.removePlayer(playerInfo.playerID);
-    delete this.socketMappings[socketID];
+    this.storeClient.deleteSocketMapping(socketID);
     return playerInfo;
   }
 
-  restartGame(socketID: string, gameID: string, newWordSet: Word[]) {
-    const game = this.getGame(gameID);
+  async restartGame(socketID: string, gameID: string, newWordSet: Word[]) {
+    const game = await this.getGame(gameID);
     if (!game) {
       throw new GameNotFound(gameID);
     }
-    const playerInfo = this.socketMappings[socketID];
+    const playerInfo = await this.storeClient.getSocketMapping(socketID);
     if (!playerInfo) {
       throw new SocketMappingNotFound(socketID);
     }

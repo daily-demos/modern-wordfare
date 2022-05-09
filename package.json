@@ -17,7 +17,9 @@
     "axios": "^0.26.1",
     "express": "^4.17.3",
     "http-server": "^14.1.0",
+    "node-cache": "^5.1.2",
     "phaser": "^3.55.2",
+    "redis": "^4.1.0",
     "socket.io": "^4.5.0",
     "socket.io-client": "^4.5.0"
   },
@@ -42,6 +44,7 @@
     "nodemon": "^2.0.15",
     "parcel": "^2.4.1",
     "prettier": "^2.6.2",
+    "redis-mock": "^0.56.3",
     "ts-jest": "^28.0.1",
     "ts-loader": "^9.2.8",
     "ts-node": "^10.7.0",

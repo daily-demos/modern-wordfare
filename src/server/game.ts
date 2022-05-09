@@ -8,6 +8,7 @@ import { TurnResultData } from "../shared/events";
 import { Player, Team, TeamResult, Word, WordKind } from "../shared/types";
 import { DAILY_DOMAIN } from "./env";
 import { wordKindToTeam } from "../shared/util";
+import { StoreClient } from "./store/store";
 
 export enum GameState {
   Unknown = 0,
@@ -34,6 +35,8 @@ export class Game {
   private team1SpymasterID: string;
 
   private team2SpymasterID: string;
+
+  storeClient: StoreClient;
 
   currentTurn: Team;
 
@@ -83,6 +86,7 @@ export class Game {
     }
     const p = new Player(playerID, team);
     this.players.push(p);
+    this.storeClient.storeGame(this);
   }
 
   removePlayer(playerID: string) {
@@ -114,6 +118,7 @@ export class Game {
       if (!this.team1SpymasterID) {
         this.team1SpymasterID = id;
         player.isSpymaster = true;
+        this.storeClient.storeGame(this);
         return player;
       }
       throw new SpymasterExists(player.team);
@@ -123,6 +128,7 @@ export class Game {
       if (!this.team2SpymasterID) {
         this.team2SpymasterID = id;
         player.isSpymaster = true;
+        this.storeClient.storeGame(this);
         return player;
       }
       throw new SpymasterExists(player.team);
@@ -135,15 +141,18 @@ export class Game {
     return !!(this.team1SpymasterID && this.team2SpymasterID);
   }
 
-  nextTurn() {
+  nextTurn(updateStore = true) {
     if (this.state != GameState.Playing) {
       this.state = GameState.Playing;
     }
     if (!this.currentTurn || this.currentTurn === Team.Team2) {
       this.currentTurn = Team.Team1;
-      return;
+    } else {
+      this.currentTurn = Team.Team2;
     }
-    this.currentTurn = Team.Team2;
+    if (updateStore) {
+      this.storeClient.storeGame(this);
+    }
   }
 
   selectWord(wordVal: string, playerID: string): TurnResultData {
@@ -179,12 +188,12 @@ export class Game {
       throw new PlayerNotFound(playerID);
     }
 
-    word.isRevealed = true;
-
     // Check if this player is allowed to even select a word
     if (player.team !== this.currentTurn) {
       throw new InvalidTurn();
     }
+    word.isRevealed = true;
+
     const teamRes = this.teamResults[player.team];
 
     const wordTeam = wordKindToTeam(word.kind);
@@ -196,11 +205,10 @@ export class Game {
 
     if (wordTeam !== player.team) {
       console.log("wordTeam, playerTeam", wordVal, word, wordTeam, player.team);
-      this.nextTurn();
+      this.nextTurn(false);
     }
 
-    // If all of a team's words are selected, it's game over
-
+    this.storeClient.storeGame(this);
     return <TurnResultData>{
       team: player.team,
       lastRevealedWord: word,
@@ -220,10 +228,11 @@ export class Game {
   }
 
   restart(newWordSet: Word[]) {
-    this.players = null;
+    this.players = [];
     this.team1SpymasterID = null;
     this.team2SpymasterID = null;
     this.wordSet = newWordSet;
     this.currentTurn = Team.None;
+    this.storeClient.storeGame(this);
   }
 }

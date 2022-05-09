@@ -42,9 +42,10 @@ import {
 import { GameState } from "./game";
 import GameOrchestrator from "./orchestrator";
 import { PORT } from "./env";
+import { Memory } from "./store/memory";
 
 const app = express();
-const orchestrator = new GameOrchestrator();
+const orchestrator = new GameOrchestrator(new Memory());
 const port = PORT || 3000;
 
 function getClientPath(): string {
@@ -58,7 +59,7 @@ app.use("/", express.static(clientPath));
 
 app.use(express.json());
 
-app.post("/join", (req: Request, res: Response) => {
+app.post("/join", async (req: Request, res: Response) => {
   const body = <IJoinGameRequest>req.body;
   const { gameID } = body;
   if (!gameID) {
@@ -67,7 +68,7 @@ app.post("/join", (req: Request, res: Response) => {
     res.status(400).send(`{"error":"${err}}`);
     return;
   }
-  const game = orchestrator.getGame(gameID);
+  const game = await orchestrator.getGame(gameID);
   if (!game) {
     const err = `game id ${gameID} not found`;
     console.error(err);
@@ -127,22 +128,29 @@ io.on("connection", (socket) => {
   socket.on(joinGameEventName, (data: JoinGameData) => {
     socket.join(data.gameID);
     // Send game data back:
-    const game = orchestrator.getGame(data.gameID);
-    const gameDataDump = <GameData>{
-      gameID: data.gameID,
-      players: game.players,
-      currentTurn: game.currentTurn,
-      revealedWordVals: game.getRevealedWordVals(),
-      scores: game.teamResults,
-    };
-    console.log("sending data dump", socket.id, gameDataDump);
-    io.to(socket.id).emit(gameDataDumpEventName, gameDataDump);
+    orchestrator
+      .getGame(data.gameID)
+      .then((game) => {
+        const gameDataDump = <GameData>{
+          gameID: data.gameID,
+          players: game.players,
+          currentTurn: game.currentTurn,
+          revealedWordVals: game.getRevealedWordVals(),
+          scores: game.teamResults,
+        };
+        console.log("sending data dump", socket.id, gameDataDump);
+        io.to(socket.id).emit(gameDataDumpEventName, gameDataDump);
+      })
+      .catch((e) => {
+        console.error(e);
+        io.to(socket.id).emit(errorEventName, e);
+      });
   });
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     console.log("user disconnected");
     try {
-      const ejectedPlayerInfo = orchestrator.ejectPlayer(socket.id);
+      const ejectedPlayerInfo = await orchestrator.ejectPlayer(socket.id);
       io.to(ejectedPlayerInfo.gameID).emit(playerLeftgameEventName, <
         PlayerLeftData
       >{
@@ -153,9 +161,9 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on(leaveGameEventName, () => {
+  socket.on(leaveGameEventName, async () => {
     try {
-      const ejectedPlayerInfo = orchestrator.ejectPlayer(socket.id);
+      const ejectedPlayerInfo = await orchestrator.ejectPlayer(socket.id);
       io.to(ejectedPlayerInfo.gameID).emit(playerLeftgameEventName, <
         PlayerLeftData
       >{
@@ -166,8 +174,8 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on(restartGameEventName, (data: RestartGameData) => {
-    orchestrator.restartGame(socket.id, data.gameID, data.newWordSet);
+  socket.on(restartGameEventName, async (data: RestartGameData) => {
+    await orchestrator.restartGame(socket.id, data.gameID, data.newWordSet);
     io.to(data.gameID).emit(gameRestartedEventName, <GameRestartedData>{
       newWordSet: data.newWordSet,
     });
@@ -175,27 +183,25 @@ io.on("connection", (socket) => {
 
   socket.on(joinTeamEventName, (data: JoinTeamData) => {
     console.log("joining team", socket.id);
-    try {
-      const game = orchestrator.joinGame(
-        data.gameID,
-        data.sessionID,
-        data.teamID,
-        socket.id
-      );
-      const joinedData = <JoinedTeamData>{
-        sessionID: data.sessionID,
-        teamID: data.teamID,
-        currentTurn: game.currentTurn,
-      };
-      // using "io" here to emit to the whole room including the sender
-      io.to(data.gameID).emit(joinedTeamEventName, joinedData);
-    } catch (e) {
-      console.error(e);
-      socket.to(socket.id).emit(errorEventName, e);
-    }
+    orchestrator
+      .joinGame(data.gameID, data.sessionID, data.teamID, socket.id)
+      .then((game) => {
+        const joinedData = <JoinedTeamData>{
+          sessionID: data.sessionID,
+          teamID: data.teamID,
+          currentTurn: game.currentTurn,
+        };
+        // using "io" here to emit to the whole room including the sender
+        io.to(data.gameID).emit(joinedTeamEventName, joinedData);
+      })
+      .catch((e) => {
+        console.error(e);
+        socket.to(socket.id).emit(errorEventName, e);
+      });
   });
-  socket.on(becomeSpymasterEventName, (data: BecomeSpymasterData) => {
-    const game = orchestrator.getGame(data.gameID);
+
+  socket.on(becomeSpymasterEventName, async (data: BecomeSpymasterData) => {
+    const game = await orchestrator.getGame(data.gameID);
     if (!game) {
       io.to(socket.id).emit(errorEventName, new GameNotFound(data.gameID));
       return;
@@ -219,8 +225,8 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on(endTurnEventName, (data: EndTurnData) => {
-    const game = orchestrator.getGame(data.gameID);
+  socket.on(endTurnEventName, async (data: EndTurnData) => {
+    const game = await orchestrator.getGame(data.gameID);
     if (!game) {
       io.to(socket.id).emit(errorEventName, new GameNotFound(data.gameID));
       return;
@@ -231,12 +237,8 @@ io.on("connection", (socket) => {
     });
   });
 
-  socket.on(wordSelectedEventName, (data: SelectedWordData) => {
-    // TODO: use socket ID to map request to a game and player
-    // on second thought maybe not..socket ID will change in case
-    // of connection interrupt and we don't want to rely on that.
-
-    const game = orchestrator.getGame(data.gameID);
+  socket.on(wordSelectedEventName, async (data: SelectedWordData) => {
+    const game = await orchestrator.getGame(data.gameID);
     if (!game) {
       io.to(socket.id).emit(errorEventName, new GameNotFound(data.gameID));
       return;
