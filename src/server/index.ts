@@ -38,12 +38,10 @@ import {
   ICreateGameResponse,
   IJoinGameRequest,
   IJoinGameResponse,
-  Word,
 } from "../shared/types";
 import { GameState } from "./game";
 import GameOrchestrator from "./orchestrator";
 import { PORT } from "./env";
-
 
 const app = express();
 const orchestrator = new GameOrchestrator();

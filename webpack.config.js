@@ -1,6 +1,6 @@
 const path = require("path");
 const nodeExternals = require("webpack-node-externals");
-const dotenv = require('dotenv-webpack');
+const dotenv = require("dotenv-webpack");
 // const webpack = require("webpack");
 
 /* require("dotenv").config({
@@ -28,7 +28,7 @@ const server = {
     new dotenv({
       systemvars: true,
     }),
-  /*  new webpack.DefinePlugin({
+    /*  new webpack.DefinePlugin({
       "process.env": JSON.stringify(process.env),
     }), */
   ],
