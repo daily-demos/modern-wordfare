@@ -14,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "@daily-co/daily-js": "^0.24.0",
+    "@redis/client": "^1.1.0",
     "axios": "^0.26.1",
     "express": "^4.17.3",
     "http-server": "^14.1.0",

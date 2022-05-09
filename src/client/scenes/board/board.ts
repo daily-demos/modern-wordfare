@@ -1,6 +1,6 @@
 import { DailyParticipant } from "@daily-co/daily-js";
 import { io, Socket } from "socket.io-client";
-import { Team, TeamResult, Word, WordKind } from "../../../shared/types";
+import { Team, TeamResult } from "../../../shared/types";
 import { Call } from "../../daily";
 import "../../html/team.html";
 import "../../html/callControls.html";
@@ -46,8 +46,8 @@ import {
   PlayerLeftData,
 } from "../../../shared/events";
 import createWordSet from "../../util/word";
-import { timeStamp } from "console";
 import { wordKindToTeam } from "../../../shared/util";
+import { Word, WordKind } from "../../../shared/word";
 
 export interface BoardData {
   roomURL: string;
@@ -97,7 +97,7 @@ export class Board extends Phaser.Scene {
     const newWordSet = createWordSet();
     this.socket.emit(restartGameEventName, <RestartGameData>{
       gameID: this.gameID,
-      newWordSet: newWordSet,
+      newWordSet,
     });
   }
 
@@ -116,7 +116,7 @@ export class Board extends Phaser.Scene {
       boardData.playerName,
       boardData.meetingToken
     );
-    this.boardData = this.boardData;
+    this.boardData = boardData;
     this.gameID = boardData.gameID;
     this.wordGrid = new WordGrid(this, boardData.wordSet, (w: Word) => {
       this.clickWord(w);
@@ -189,13 +189,13 @@ export class Board extends Phaser.Scene {
 
     socket.on(gameRestartedEventName, (data: GameRestartedData) => {
       console.log("restarting game");
-      boardData.wordSet = data.newWordSet;
+      this.boardData.wordSet = data.newWordSet;
       this.scene.restart(boardData);
     });
 
     socket.on(playerLeftgameEventName, (data: PlayerLeftData) => {
       console.log("removing player", data);
-      this.removeTile(data.playerID);
+      removeTile(data.playerID);
     });
   }
 
@@ -238,7 +238,8 @@ export class Board extends Phaser.Scene {
 
   private showRestart(winner: Team) {
     const endDOM = this.add.dom(0, 0).createFromCache("end-dom");
-    console.log("endDOM:", endDOM);
+    const name = endDOM.getChildByID("teamName");
+    name.innerHTML = winner.toString();
     const x = this.game.canvas.width / 2;
     const y = this.game.canvas.height / 2;
     endDOM.setPosition(x, y).setOrigin(0.5);
@@ -247,7 +248,6 @@ export class Board extends Phaser.Scene {
     restartBtn.onclick = () => {
       this.restart();
     };
-    return;
   }
 
   private toggleCurrentTurn(currentTurn: Team) {
@@ -535,12 +535,12 @@ export class Board extends Phaser.Scene {
     updateMedia(id, tracks);
   }
 
-  private removeTile(playerID: string) {
-    const ele = document.getElementById(getParticipantTileID(playerID));
-    ele?.remove();
-  }
-
   /* update() {} */
+}
+
+function removeTile(playerID: string) {
+  const ele = document.getElementById(getParticipantTileID(playerID));
+  ele?.remove();
 }
 
 function getParticipantTileID(sessionID: string): string {

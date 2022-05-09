@@ -1,4 +1,5 @@
-import { Team, Word, WordKind } from "./types";
+import { Team } from "./types";
+import { Word, WordKind } from "./word";
 
 export function wordKindToTeam(wk: WordKind): Team {
   if (wk === WordKind.Team1) {

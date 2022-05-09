@@ -3,7 +3,7 @@ import { createServer } from "http";
 
 import { dirname, join } from "path";
 import { Server } from "socket.io";
-import GameNotFound from "../shared/errors/gameNotFound";
+
 import {
   BecomeSpymasterData,
   becomeSpymasterEventName,
@@ -38,11 +38,11 @@ import {
   ICreateGameResponse,
   IJoinGameRequest,
   IJoinGameResponse,
+  Team,
 } from "../shared/types";
-import { GameState } from "./game";
 import GameOrchestrator from "./orchestrator";
 import { PORT } from "./env";
-import { Memory } from "./store/memory";
+import Memory from "./store/memory";
 
 const app = express();
 const orchestrator = new GameOrchestrator(new Memory());
@@ -85,7 +85,7 @@ app.post("/join", async (req: Request, res: Response) => {
 
 app.post("/create", (req: Request, res: Response) => {
   const body = <ICreateGameRequest>req.body;
-  const wordSet = body.wordSet;
+  const { wordSet } = body;
   if (!wordSet) {
     const err = "word set must be defined";
     res.status(400).send(`{"error":"${err}}`);
@@ -123,6 +123,7 @@ app.post("/create", (req: Request, res: Response) => {
 const server = createServer(app);
 
 const io = new Server(server);
+
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
   socket.on(joinGameEventName, (data: JoinGameData) => {
@@ -201,68 +202,58 @@ io.on("connection", (socket) => {
   });
 
   socket.on(becomeSpymasterEventName, async (data: BecomeSpymasterData) => {
-    const game = await orchestrator.getGame(data.gameID);
-    if (!game) {
-      io.to(socket.id).emit(errorEventName, new GameNotFound(data.gameID));
-      return;
-    }
-    try {
-      const spymaster = game.setSpymaster(data.sessionID);
-      const spymasterData = <SpymasterData>{
-        spymasterID: data.sessionID,
-        teamID: spymaster.team,
-      };
-      io.to(data.gameID).emit(newSpymasterEventName, spymasterData);
-      if (game.spymastersReady() && game.state === GameState.Pending) {
-        game.nextTurn();
-        const turnData = <TurnData>{
-          currentTurn: game.currentTurn,
+    orchestrator
+      .setGameSpymaster(data.gameID, data.sessionID)
+      .then((res) => {
+        const spymasterData = <SpymasterData>{
+          spymasterID: data.sessionID,
+          teamID: res.spymaster.team,
         };
-        io.to(data.gameID).emit(nextTurnEventName, turnData);
-      }
-    } catch (e) {
-      io.to(socket.id).emit(errorEventName, <Error>e);
-    }
+        io.to(data.gameID).emit(newSpymasterEventName, spymasterData);
+        if (res.currentTurn !== Team.None) {
+          const turnData = <TurnData>{
+            currentTurn: res.currentTurn,
+          };
+          io.to(data.gameID).emit(nextTurnEventName, turnData);
+        }
+      })
+      .catch((e) => {
+        io.to(socket.id).emit(errorEventName, e);
+      });
   });
 
   socket.on(endTurnEventName, async (data: EndTurnData) => {
-    const game = await orchestrator.getGame(data.gameID);
-    if (!game) {
-      io.to(socket.id).emit(errorEventName, new GameNotFound(data.gameID));
-      return;
-    }
-    game.nextTurn();
-    io.to(data.gameID).emit(nextTurnEventName, <TurnData>{
-      currentTurn: game.currentTurn,
-    });
+    orchestrator
+      .toggleGameTurn(data.gameID)
+      .then((currentTurn) => {
+        io.to(data.gameID).emit(nextTurnEventName, <TurnData>{
+          currentTurn,
+        });
+      })
+      .catch((e) => {
+        io.to(socket.id).emit(errorEventName, e);
+      });
   });
 
   socket.on(wordSelectedEventName, async (data: SelectedWordData) => {
-    const game = await orchestrator.getGame(data.gameID);
-    if (!game) {
-      io.to(socket.id).emit(errorEventName, new GameNotFound(data.gameID));
-      return;
-    }
-    try {
-      const oldTurn = game.currentTurn;
-      const res = game.selectWord(data.wordValue, data.playerID);
-      io.to(data.gameID).emit(turnResultEventName, res);
-
-      const newTurn = game.currentTurn;
-      if (oldTurn !== newTurn) {
-        const turnData = <TurnData>{
-          currentTurn: newTurn,
-        };
-        io.to(data.gameID).emit(nextTurnEventName, turnData);
-      }
-    } catch (e) {
-      io.to(socket.id).emit(errorEventName, e);
-    }
+    orchestrator
+      .selectGameWord(data.gameID, data.wordValue, data.playerID)
+      .then((turnRes) => {
+        io.to(data.gameID).emit(turnResultEventName, turnRes);
+        if (turnRes.newCurrentTurn !== Team.None) {
+          const turnData = <TurnData>{
+            currentTurn: turnRes.newCurrentTurn,
+          };
+          io.to(data.gameID).emit(nextTurnEventName, turnData);
+        }
+      })
+      .catch((e) => {
+        io.to(socket.id).emit(errorEventName, e);
+      });
   });
 });
 
 server.listen(port, () => {
   console.log("PORT: ", port, process.env);
-
   console.log(`listening on port ${port}`);
 });

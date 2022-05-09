@@ -1,11 +1,6 @@
 const path = require("path");
 const nodeExternals = require("webpack-node-externals");
-const dotenv = require("dotenv-webpack");
-// const webpack = require("webpack");
-
-/* require("dotenv").config({
-  path: path.join(__dirname, ".env"),
-}); */
+const Dotenv = require("dotenv-webpack");
 
 const server = {
   entry: "./src/server/index.ts",
@@ -25,12 +20,9 @@ const server = {
     extensions: [".tsx", ".ts", ".js"],
   },
   plugins: [
-    new dotenv({
+    new Dotenv({
       systemvars: true,
     }),
-    /*  new webpack.DefinePlugin({
-      "process.env": JSON.stringify(process.env),
-    }), */
   ],
   output: {
     filename: "index.js",

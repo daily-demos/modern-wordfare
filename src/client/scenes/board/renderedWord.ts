@@ -1,5 +1,6 @@
-import { Team, Word, WordKind } from "../../../shared/types";
+import { Team } from "../../../shared/types";
 import { wordKindToTeam } from "../../../shared/util";
+import { Word, WordKind } from "../../../shared/word";
 
 export const textWidth = 125;
 export const textHeight = 45;

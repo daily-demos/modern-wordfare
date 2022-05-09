@@ -1,5 +1,3 @@
-import { Team } from "../types";
-
 export default class DuplicatePlayer extends Error {
   name = "duplicate-words";
 

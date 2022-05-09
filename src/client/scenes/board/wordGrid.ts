@@ -1,4 +1,5 @@
-import { Team, Word } from "../../../shared/types";
+import { Team } from "../../../shared/types";
+import { Word } from "../../../shared/word";
 import { RenderedWord, textHeight, textWidth } from "./renderedWord";
 
 export default class WordGrid {

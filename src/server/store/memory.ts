@@ -1,57 +1,43 @@
-import { Player } from "../../shared/types";
-import { Game } from "../game";
-import { PlayerInfo } from "../orchestrator";
-import { StoreClient } from "./store";
 import NodeCache from "node-cache";
+import { Game } from "../game";
+import { PlayerInfo, StoreClient } from "./store";
 
 const gameTTL = 300;
-const errNotImplemented = new Error("not implemented");
 
-export class Memory implements StoreClient {
+export default class Memory implements StoreClient {
   client: NodeCache;
 
   constructor() {
     this.client = new NodeCache();
   }
+
   connect: () => void;
 
   storeGame(game: Game) {
-    this.client.set(this.getGameKey(game.id), game, gameTTL);
+    this.client.set(getGameKey(game.id), game, gameTTL);
   }
 
   async getGame(gameID: string): Promise<Game> {
-    return this.client.get(this.getGameKey(gameID));
-  }
-
-  storePlayer(gameID: string, player: Player) {
-    throw errNotImplemented;
-  }
-
-  async getPlayer(gameID: string, playerID: string): Promise<Player> {
-    throw errNotImplemented;
+    return this.client.get(getGameKey(gameID));
   }
 
   storeSocketMapping(socketID: string, playerInfo: PlayerInfo) {
-    this.client.set(this.getSocketMappingKey(socketID), playerInfo);
+    this.client.set(getSocketMappingKey(socketID), playerInfo);
   }
 
   async getSocketMapping(socketID: string): Promise<PlayerInfo> {
-    return await this.client.get(this.getSocketMappingKey(socketID));
+    return this.client.get(getSocketMappingKey(socketID));
   }
 
   deleteSocketMapping(socketID: string) {
-    this.client.del(this.getSocketMappingKey(socketID));
+    this.client.del(getSocketMappingKey(socketID));
   }
+}
 
-  private getGameKey(gameID: string): string {
-    return `GAME:${gameID}`;
-  }
+function getGameKey(gameID: string): string {
+  return `GAME:${gameID}`;
+}
 
-  private getPlayerKey(playerID: string, gameID: string): string {
-    return `PLAYER:${playerID}:${gameID}`;
-  }
-
-  private getSocketMappingKey(socketID: string): string {
-    return `SOCKET:${socketID}`;
-  }
+function getSocketMappingKey(socketID: string): string {
+  return `SOCKET:${socketID}`;
 }

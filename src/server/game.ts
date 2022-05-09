@@ -5,10 +5,11 @@ import InvalidTurn from "../shared/errors/invalidTurn";
 import SpymasterExists from "../shared/errors/spymasterExists";
 import PlayerNotFound from "../shared/errors/playerNotFound";
 import { TurnResultData } from "../shared/events";
-import { Player, Team, TeamResult, Word, WordKind } from "../shared/types";
+import { Team, TeamResult } from "../shared/types";
 import { DAILY_DOMAIN } from "./env";
 import { wordKindToTeam } from "../shared/util";
-import { StoreClient } from "./store/store";
+import { Word, WordKind } from "../shared/word";
+import Player from "../shared/player";
 
 export enum GameState {
   Unknown = 0,
@@ -36,9 +37,7 @@ export class Game {
 
   private team2SpymasterID: string;
 
-  storeClient: StoreClient;
-
-  currentTurn: Team;
+  currentTurn = Team.None;
 
   teamResults: { [key in Team]?: TeamResult } = {
     team1: {
@@ -86,7 +85,6 @@ export class Game {
     }
     const p = new Player(playerID, team);
     this.players.push(p);
-    this.storeClient.storeGame(this);
   }
 
   removePlayer(playerID: string) {
@@ -118,7 +116,6 @@ export class Game {
       if (!this.team1SpymasterID) {
         this.team1SpymasterID = id;
         player.isSpymaster = true;
-        this.storeClient.storeGame(this);
         return player;
       }
       throw new SpymasterExists(player.team);
@@ -128,7 +125,6 @@ export class Game {
       if (!this.team2SpymasterID) {
         this.team2SpymasterID = id;
         player.isSpymaster = true;
-        this.storeClient.storeGame(this);
         return player;
       }
       throw new SpymasterExists(player.team);
@@ -141,17 +137,14 @@ export class Game {
     return !!(this.team1SpymasterID && this.team2SpymasterID);
   }
 
-  nextTurn(updateStore = true) {
-    if (this.state != GameState.Playing) {
+  nextTurn() {
+    if (this.state !== GameState.Playing) {
       this.state = GameState.Playing;
     }
     if (!this.currentTurn || this.currentTurn === Team.Team2) {
       this.currentTurn = Team.Team1;
     } else {
       this.currentTurn = Team.Team2;
-    }
-    if (updateStore) {
-      this.storeClient.storeGame(this);
     }
   }
 
@@ -167,7 +160,6 @@ export class Game {
           throw new WordAlreadyRevealed(val);
         }
         word = w;
-        continue;
       }
     }
 
@@ -203,15 +195,18 @@ export class Game {
       teamRes.isAssassinated = true;
     }
 
+    // If no turn is toggled, newCurrentTurn is set to no team
+    let newCurrentTurn = Team.None;
     if (wordTeam !== player.team) {
       console.log("wordTeam, playerTeam", wordVal, word, wordTeam, player.team);
-      this.nextTurn(false);
+      this.nextTurn();
+      newCurrentTurn = this.currentTurn;
     }
 
-    this.storeClient.storeGame(this);
     return <TurnResultData>{
       team: player.team,
       lastRevealedWord: word,
+      newCurrentTurn,
     };
   }
 
@@ -233,6 +228,5 @@ export class Game {
     this.team2SpymasterID = null;
     this.wordSet = newWordSet;
     this.currentTurn = Team.None;
-    this.storeClient.storeGame(this);
   }
 }

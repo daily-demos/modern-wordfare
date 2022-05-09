@@ -1,5 +1,5 @@
-import { Word, WordKind } from "../types";
 import { setContainsDuplicateWords } from "../util";
+import { Word, WordKind } from "../word";
 
 describe("utility tests", () => {
   test("word set does not contain duplicates", () => {

@@ -1,7 +1,6 @@
-import { Word, WordKind } from "../../../shared/types";
+import { Word, WordKind } from "../../../shared/word";
 import { Game } from "../../game";
-import { Memory } from "../memory";
-import { Redis } from "../redis";
+import Memory from "../memory";
 
 describe("Memory storage tests", () => {
   test("store game", async () => {

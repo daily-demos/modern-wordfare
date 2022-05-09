@@ -1,11 +1,13 @@
 import axios from "axios";
 import { DAILY_API_KEY } from "./env";
-import { Game } from "./game";
-import { Team, Word } from "../shared/types";
+import { Game, GameState } from "./game";
+import { Team } from "../shared/types";
 import SocketMappingNotFound from "../shared/errors/socketMappingNotFound";
 import GameNotFound from "../shared/errors/gameNotFound";
-import { PlayerLeftData } from "../shared/events";
-import { StoreClient } from "./store/store";
+import { TurnResultData } from "../shared/events";
+import { PlayerInfo, StoreClient } from "./store/store";
+import { Word } from "../shared/word";
+import Player from "../shared/player";
 
 const dailyAPIURL = "https://api.daily.co/v1";
 
@@ -15,11 +17,6 @@ interface ICreatedDailyRoomData {
   url: string;
 }
 
-export interface PlayerInfo {
-  playerID: string;
-  gameID: string;
-}
-
 export default class GameOrchestrator {
   // games: Map<string, Game> = new Map();
 
@@ -27,8 +24,13 @@ export default class GameOrchestrator {
 
   private readonly storeClient: StoreClient;
 
+  readonly updateStoreFunc: (game: Game) => void;
+
   constructor(storeClient: StoreClient) {
     this.storeClient = storeClient;
+    this.updateStoreFunc = (game: Game) => {
+      this.storeClient.storeGame(game);
+    };
   }
 
   async createGame(name: string, wordSet: Word[]): Promise<Game> {
@@ -92,7 +94,6 @@ export default class GameOrchestrator {
 
   async getGame(gameID: string): Promise<Game> {
     const game = await this.storeClient.getGame(gameID);
-    game.storeClient = this.storeClient;
     return game;
   }
 
@@ -113,6 +114,7 @@ export default class GameOrchestrator {
       gameID,
       playerID,
     });
+    this.storeClient.storeGame(game);
     return game;
   }
 
@@ -145,5 +147,53 @@ export default class GameOrchestrator {
       );
     }
     game.restart(newWordSet);
+  }
+
+  async setGameSpymaster(
+    gameID: string,
+    playerID: string
+  ): Promise<{ spymaster: Player; currentTurn: Team }> {
+    const game = await this.getGame(gameID);
+    if (!game) {
+      throw new GameNotFound(gameID);
+    }
+    const spymaster = game.setSpymaster(playerID);
+    if (game.spymastersReady() && game.state === GameState.Pending) {
+      game.nextTurn();
+    }
+    this.storeClient.storeGame(game);
+    return {
+      spymaster,
+      currentTurn: game.currentTurn,
+    };
+  }
+
+  async selectGameWord(
+    gameID: string,
+    wordVal: string,
+    playerID: string
+  ): Promise<TurnResultData> {
+    const game = await this.getGame(gameID);
+    if (!game) {
+      throw new GameNotFound(gameID);
+    }
+    const turnRes = game.selectWord(wordVal, playerID);
+    if (
+      turnRes.lastRevealedWord.value === wordVal ||
+      turnRes.newCurrentTurn !== Team.None
+    ) {
+      this.storeClient.storeGame(game);
+    }
+    return turnRes;
+  }
+
+  async toggleGameTurn(gameID: string): Promise<Team> {
+    const game = await this.getGame(gameID);
+    if (!game) {
+      throw new GameNotFound(gameID);
+    }
+    game.nextTurn();
+    this.storeClient.storeGame(game);
+    return game.currentTurn;
   }
 }

@@ -1,4 +1,6 @@
-import { Player, Team, TeamResult, Word } from "./types";
+import Player from "./player";
+import { Team, TeamResult } from "./types";
+import { Word } from "./word";
 
 export const joinTeamEventName = "join-team";
 export interface JoinTeamData {
@@ -58,6 +60,7 @@ export const turnResultEventName = "turn-result";
 export interface TurnResultData {
   team: Team;
   lastRevealedWord: Word;
+  newCurrentTurn: Team;
 }
 
 export const leaveGameEventName = "leave-game";

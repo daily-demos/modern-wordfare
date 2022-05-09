@@ -1,4 +1,4 @@
-import { WordKind } from "../../../shared/types";
+import { WordKind } from "../../../shared/word";
 import { wordCount, wordsPerTeam } from "../../config";
 import createWordSet from "../word";
 
@@ -24,13 +24,13 @@ describe("Wordset generation tests", () => {
         case WordKind.Assassin:
           assassinCount += 1;
           break;
+        default:
+          break;
       }
     }
 
     expect(team1Count).toBe(wordsPerTeam);
     expect(team2Count).toBe(wordsPerTeam);
     expect(assassinCount).toBe(1);
-
-    // Check for any word duplicatio
   });
 });

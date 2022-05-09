@@ -4,11 +4,11 @@ import {
   ICreateGameResponse,
   IJoinGameRequest,
   IJoinGameResponse,
-  Word,
 } from "../../shared/types";
 import "../html/lobby.html";
 import { BoardData } from "./board/board";
 import createWordSet from "../util/word";
+import { Word } from "../../shared/word";
 
 export default class Lobby extends Phaser.Scene {
   initialize() {

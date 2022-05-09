@@ -1,7 +1,8 @@
-import { wordCount, wordsPerTeam } from "../../client/config";
+import { wordsPerTeam } from "../../client/config";
 import InvalidTurn from "../../shared/errors/invalidTurn";
 import SpymasterExists from "../../shared/errors/spymasterExists";
-import { Player, Team, Word, WordKind } from "../../shared/types";
+import { Team } from "../../shared/types";
+import { Word, WordKind } from "../../shared/word";
 import { Game } from "../game";
 
 describe("Spymaster tests", () => {
@@ -86,12 +87,12 @@ function getTestWordSet(): Word[] {
   const words = [];
 
   // Team 1
-  for (let i = 0; i < wordsPerTeam; i++) {
+  for (let i = 0; i < wordsPerTeam; i += 1) {
     const nw = new Word(`${i}-team1`, WordKind.Team1);
     words.push(nw);
   }
   // Team 2
-  for (let i = 0; i < wordsPerTeam; i++) {
+  for (let i = 0; i < wordsPerTeam; i += 1) {
     const nw = new Word(`${i}-team2`, WordKind.Team2);
     words.push(nw);
   }
@@ -100,7 +101,7 @@ function getTestWordSet(): Word[] {
   words.push(aw);
 
   // Neutral
-  for (let i = 0; i < wordsPerTeam; i++) {
+  for (let i = 0; i < wordsPerTeam; i += 1) {
     const nw = new Word(`${i}-neutral`, WordKind.Neutral);
     words.push(nw);
   }

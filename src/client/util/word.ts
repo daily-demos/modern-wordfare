@@ -1,8 +1,8 @@
 import defaultWordlist from "../dictionaries/default.json";
 import { wordCount, wordsPerTeam } from "../config";
 import { rand, shuffle } from "./math";
-import { Word, WordKind } from "../../shared/types";
 import { setContainsDuplicateWords } from "../../shared/util";
+import { Word, WordKind } from "../../shared/word";
 
 export default function createWordSet(): Word[] {
   // Pick 25 random words
@@ -42,7 +42,7 @@ function buildWordSet(
   count: Number,
   kind: WordKind
 ): Word[] {
-  let chosenWords: Word[] = [];
+  const chosenWords: Word[] = [];
   for (let i = 0; i < count; i += 1) {
     const w = allWords[i];
     const word = new Word(w, kind);
