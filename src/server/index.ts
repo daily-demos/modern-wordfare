@@ -46,8 +46,6 @@ import { PORT } from "./env";
 
 
 const app = express();
-const port = PORT || 3000;
-console.log("PORT: ", port);
 const orchestrator = new GameOrchestrator();
 
 function getClientPath(): string {
@@ -262,8 +260,8 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(port, () => {
-  console.log("PORT: ", port, process.env);
+server.listen(PORT, () => {
+  console.log("PORT: ", PORT, process.env);
 
-  console.log(`listening on port ${port}`);
+  console.log(`listening on port ${PORT}`);
 });
