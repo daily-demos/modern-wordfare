@@ -3,6 +3,7 @@ import { io, Socket } from "socket.io-client";
 import { Team, TeamResult } from "../../../shared/types";
 import { Call } from "../../daily";
 import "../../html/team.html";
+import "../../html/observers.html";
 import "../../html/callControls.html";
 import "../../html/end.html";
 
@@ -67,6 +68,7 @@ export class Board extends Phaser.Scene {
   controlsDOM: Phaser.GameObjects.DOMElement;
 
   teamDOMs: { [key in Team]?: Phaser.GameObjects.DOMElement } = {
+    none: null,
     team1: null,
     team2: null,
   };
@@ -138,6 +140,9 @@ export class Board extends Phaser.Scene {
       if (p.session_id === this.call.getPlayerId()) {
         this.team = data.teamID;
       }
+      if (this.getTileTeam(p.session_id) === Team.None) {
+        removeTile(p.session_id);
+      }
       this.createTile(p, data.teamID);
       if (data.currentTurn && data.currentTurn !== Team.None) {
         this.toggleCurrentTurn(data.currentTurn);
@@ -165,6 +170,9 @@ export class Board extends Phaser.Scene {
             return;
           }
           this.clearPendingTile(player.id);
+          if (this.getTileTeam(player.id) === Team.None) {
+            removeTile(player.id);
+          }
           this.createTile(participant, player.team);
           if (player.isSpymaster) {
             this.makeSpymaster(player.id, player.team);
@@ -340,6 +348,7 @@ export class Board extends Phaser.Scene {
 
   preload() {
     this.load.html("team-dom", "../team.html");
+    this.load.html("observers-dom", "../observers.html");
     this.load.html("call-controls-dom", "../callControls.html");
     this.load.html("end-dom", "../end.html");
     this.load.image("yellow", "../assets/flare.png");
@@ -363,6 +372,23 @@ export class Board extends Phaser.Scene {
       };
       this.socket.emit(joinGameEventName, data);
       this.showTeams();
+
+      const localID = this.call.getPlayerId();
+      if (!this.getTileTeam(localID)) {
+        const p = this.call.getParticipant(localID);
+        this.createTile(p, Team.None);
+      }
+    });
+
+    this.call.registerParticipantJoinedHandler((p) => {
+      if (this.getTileTeam(p.session_id)) return;
+      this.createTile(p, Team.None);
+    });
+
+    this.call.registerParticipantLeftHandler((p) => {
+      if (this.getTileTeam(p.participant.session_id) === Team.None) {
+        removeTile(p.participant.session_id);
+      }
     });
 
     this.call.registerTrackStartedHandler((p) => {
@@ -416,6 +442,7 @@ export class Board extends Phaser.Scene {
   showTeams() {
     this.showTeam(Team.Team1);
     this.showTeam(Team.Team2);
+    this.showObservers();
 
     const controls = document.getElementById("controls");
     controls.classList.remove("hidden");
@@ -431,10 +458,20 @@ export class Board extends Phaser.Scene {
     this.wordGrid.drawGrid(rect);
   }
 
+  private showObservers() {
+    const x = 0;
+    const y = this.game.canvas.height - 300;
+    const dom = this.add
+      .dom(x, y)
+      .createFromCache("observers-dom")
+      .setOrigin(0);
+    this.teamDOMs[Team.None] = dom;
+  }
+
   private showTeam(team: Team) {
     const teamDOM = this.add.dom(0, 0).createFromCache("team-dom");
     let x = 0;
-    const y = 0;
+    let y = 0;
     const teamNameSpan = teamDOM.getChildByID("teamName");
 
     if (team === Team.Team1) {
@@ -452,6 +489,7 @@ export class Board extends Phaser.Scene {
     teamDiv.classList.remove("hidden");
 
     const teamJoinBtn = <HTMLButtonElement>teamDOM.getChildByID("join");
+    teamJoinBtn.classList.remove("hidden");
     teamJoinBtn.onclick = () => {
       const data = <JoinTeamData>{
         gameID: this.gameID,
@@ -535,7 +573,19 @@ export class Board extends Phaser.Scene {
     updateMedia(id, tracks);
   }
 
-  /* update() {} */
+  private getTileTeam(playerID: string): Team {
+    const tileID = getParticipantTileID(playerID);
+    if (this.teamDOMs[Team.None].getChildByID(tileID)) {
+      return Team.None;
+    }
+    if (this.teamDOMs[Team.Team1].getChildByID(tileID)) {
+      return Team.Team1;
+    }
+    if (this.teamDOMs[Team.Team2].getChildByID(tileID)) {
+      return Team.Team2;
+    }
+    return null;
+  }
 }
 
 function removeTile(playerID: string) {
