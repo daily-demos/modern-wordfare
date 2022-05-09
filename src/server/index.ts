@@ -44,7 +44,7 @@ import { GameState } from "./game";
 import GameOrchestrator from "./orchestrator";
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const orchestrator = new GameOrchestrator();
 
 function getClientPath(): string {
