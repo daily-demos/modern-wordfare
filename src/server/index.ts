@@ -42,9 +42,11 @@ import {
 } from "../shared/types";
 import { GameState } from "./game";
 import GameOrchestrator from "./orchestrator";
+import { PORT } from "./env";
+
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = PORT || 3000;
 const orchestrator = new GameOrchestrator();
 
 function getClientPath(): string {

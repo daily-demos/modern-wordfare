@@ -1,2 +1,2 @@
 const envVars = process.env;
-export const { DAILY_DOMAIN, DAILY_API_KEY } = envVars;
+export const { DAILY_DOMAIN, DAILY_API_KEY, PORT } = envVars;
