@@ -17,7 +17,7 @@ export default class Game {
         autoCenter: Phaser.Scale.CENTER_BOTH,
       },
       parent: "game",
-      backgroundColor: "#2b3f56",
+      backgroundColor: "#fff",
       scene: [Lobby, Board],
       dom: {
         createContainer: true,

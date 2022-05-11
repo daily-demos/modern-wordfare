@@ -356,6 +356,7 @@ export class Board extends Phaser.Scene {
   }
 
   create() {
+    this.cameras.main.setBackgroundColor("#00a4b7");
     const callControlsDom = this.add
       .dom(0, 0)
       .createFromCache("call-controls-dom");
