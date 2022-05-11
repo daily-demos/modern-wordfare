@@ -124,6 +124,7 @@ export class Board extends Phaser.Scene {
     const socket: Socket = io();
     this.socket = socket;
     socket.connect();
+    console.log("connecting", socket.id);
 
     socket.on(errorEventName, (err: Error) => {
       console.error("received error from socket: ", err);
@@ -138,9 +139,8 @@ export class Board extends Phaser.Scene {
       if (p.session_id === this.call.getPlayerId()) {
         this.team = data.teamID;
       }
-      if (this.getTileTeam(p.session_id) === Team.None) {
-        removeTile(p.session_id);
-      }
+
+      console.log("creating tile in joinedTeamEventName", p.user_name, data.teamID);
       this.createTile(p, data.teamID);
       if (data.currentTurn && data.currentTurn !== Team.None) {
         this.toggleCurrentTurn(data.currentTurn);
@@ -168,9 +168,7 @@ export class Board extends Phaser.Scene {
             return;
           }
           this.clearPendingTile(player.id);
-          if (this.getTileTeam(player.id) === Team.None) {
-            removeTile(player.id);
-          }
+          console.log("creating tile in data dump", participant.user_name, player.team);
           this.createTile(participant, player.team);
           if (player.isSpymaster) {
             this.makeSpymaster(player.id, player.team);
@@ -195,6 +193,8 @@ export class Board extends Phaser.Scene {
 
     socket.on(gameRestartedEventName, (data: GameRestartedData) => {
       console.log("restarting game");
+      this.call.leave();
+      this.socket.disconnect();
       this.boardData.wordSet = data.newWordSet;
       this.scene.restart(boardData);
     });
@@ -377,12 +377,14 @@ export class Board extends Phaser.Scene {
       const localID = this.call.getPlayerId();
       if (!this.getTileTeam(localID)) {
         const p = this.call.getParticipant(localID);
+        console.log("creating tile in create()", p.user_name,Team.None);
         this.createTile(p, Team.None);
       }
     });
 
     this.call.registerParticipantJoinedHandler((p) => {
       if (this.getTileTeam(p.session_id)) return;
+      console.log("creating tile participant joined", p.user_name, Team.None);
       this.createTile(p, Team.None);
     });
 
@@ -497,6 +499,7 @@ export class Board extends Phaser.Scene {
         sessionID: this.call.getPlayerId(),
         teamID: team,
       };
+      console.log("joining team", data.sessionID, data.teamID)
 
       this.socket.emit(joinTeamEventName, data);
       const joinButtons = document.getElementsByClassName("join");
@@ -545,7 +548,13 @@ export class Board extends Phaser.Scene {
   private createTile(p: DailyParticipant, team: Team) {
     const name = p.user_name;
     const id = p.session_id;
+
+    if (team !== Team.None && this.getTileTeam(id) === Team.None) {
+      removeTile(id);
+    }
     const dom = this.teamDOMs[team];
+
+    console.log("creating tile", name, team);
 
     // See if there is already an existing tile by this ID, error out if so
     let participantTile = getTile(id);

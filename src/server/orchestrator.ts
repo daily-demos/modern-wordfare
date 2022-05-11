@@ -147,6 +147,7 @@ export default class GameOrchestrator {
       );
     }
     game.restart(newWordSet);
+    this.storeClient.storeGame(game);
   }
 
   async setGameSpymaster(
