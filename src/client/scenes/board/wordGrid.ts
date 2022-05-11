@@ -17,9 +17,10 @@ export default class WordGrid {
 
     const wordWidth = textWidth;
     const wordHeight = textHeight;
-    const wordBuffer = 10;
+    const wordBufferX = 15;
+    const wordBufferY = 25;
 
-    const totalWidth = (wordWidth + wordBuffer) * wordsPerRow;
+    const totalWidth = (wordWidth + wordBufferX) * wordsPerRow;
 
     const startX = space.x + (space.width - totalWidth) / 2;
     const startY = space.y + 50;
@@ -29,9 +30,9 @@ export default class WordGrid {
     for (let i = 0; i < this.renderedWords.length; i += 1) {
       const word = this.renderedWords[i];
       word.renderWordObject(x, y);
-      x += wordWidth + wordBuffer;
+      x += wordWidth + wordBufferX;
       if (x >= wordWidth * wordsPerRow + startX) {
-        y += wordHeight + wordBuffer;
+        y += wordHeight + wordBufferY;
         x = startX;
       }
     }
@@ -40,7 +41,7 @@ export default class WordGrid {
   revealAllWords(ownTeam: Team) {
     for (let i = 0; i < this.renderedWords.length; i += 1) {
       const word = this.renderedWords[i];
-      word.colorize(ownTeam);
+      word.colorize(ownTeam, false);
     }
   }
 

@@ -120,9 +120,7 @@ export class Board extends Phaser.Scene {
     );
     this.boardData = boardData;
     this.gameID = boardData.gameID;
-    this.wordGrid = new WordGrid(this, boardData.wordSet, (w: Word) => {
-      this.clickWord(w);
-    });
+
     const socket: Socket = io();
     this.socket = socket;
     socket.connect();
@@ -352,6 +350,9 @@ export class Board extends Phaser.Scene {
     this.load.html("call-controls-dom", "../callControls.html");
     this.load.html("end-dom", "../end.html");
     this.load.image("yellow", "../assets/flare.png");
+    this.wordGrid = new WordGrid(this, this.boardData.wordSet, (w: Word) => {
+      this.clickWord(w);
+    });
   }
 
   create() {
@@ -452,7 +453,7 @@ export class Board extends Phaser.Scene {
     const rect = new Phaser.Geom.Rectangle(
       t1.x + t1.width,
       0,
-      this.game.canvas.width - t2.width,
+      this.game.canvas.width - t2.width * 2,
       this.game.canvas.height
     );
     this.wordGrid.drawGrid(rect);

@@ -9,6 +9,7 @@ export interface ICreateGameResponse {
   roomURL: string;
   gameID: string;
   meetingToken: string;
+  wordSet: Word[];
 }
 
 export interface IJoinGameRequest {

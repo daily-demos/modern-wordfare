@@ -56,6 +56,16 @@ export default class Lobby extends Phaser.Scene {
         const inputPlayerName = playerNameForm?.value;
         lobbyDOM.removeListener("click");
 
+        this.tweens.add({
+          targets: lobbyDOM,
+          alpha: 0,
+          duration: 3000,
+          ease: "Power2",
+          onComplete: () => {
+            lobbyDOM.setVisible(false);
+          },
+        });
+
         // Make get request for game data
         joinGame(params.gameID)
           .then((gameData) => {
@@ -86,22 +96,11 @@ export default class Lobby extends Phaser.Scene {
         const inputPlayerName = playerNameForm?.value;
         lobbyDOM.removeListener("click");
 
-        //  Tween the login form out
-        this.tweens.add({
-          targets: lobbyDOM.rotate3d,
-          x: 1,
-          w: 90,
-          duration: 3000,
-          ease: "Power3",
-        });
-
         this.tweens.add({
           targets: lobbyDOM,
-          scaleX: 2,
-          scaleY: 2,
-          y: 700,
-          duration: 3000,
-          ease: "Power3",
+          alpha: 0,
+          duration: 2000,
+          ease: "Power2",
           onComplete: () => {
             lobbyDOM.setVisible(false);
           },
@@ -117,7 +116,7 @@ export default class Lobby extends Phaser.Scene {
               gameID: gameData.gameID,
               playerName: inputPlayerName,
               meetingToken: gameData.meetingToken,
-              wordSet,
+              wordSet: gameData.wordSet,
             });
           })
           .catch((error) => {

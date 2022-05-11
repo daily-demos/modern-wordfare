@@ -10,7 +10,7 @@ export default class Game {
 
     const config = {
       type: Phaser.AUTO,
-      width: 1200,
+      width: 1500,
       height: 900,
       scale: {
         mode: Phaser.Scale.FIT,

@@ -106,6 +106,7 @@ app.post("/create", (req: Request, res: Response) => {
             roomURL: game.dailyRoomURL,
             meetingToken: token,
             gameID: game.id,
+            wordSet: game.wordSet,
           };
           res.send(data);
         })

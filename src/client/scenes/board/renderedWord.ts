@@ -2,10 +2,10 @@ import { Team } from "../../../shared/types";
 import { wordKindToTeam } from "../../../shared/util";
 import { Word, WordKind } from "../../../shared/word";
 
-export const textWidth = 125;
-export const textHeight = 45;
-const fontSize = "20px";
-const align = "center";
+export const textWidth = 163;
+export const textHeight = 65;
+const fontSize = "24px";
+const align = "left";
 const padding = 5;
 
 export class RenderedWord {
@@ -47,22 +47,53 @@ export class RenderedWord {
     this.word = word;
     this.scene = scene;
     this.onClick = onClick;
+
+    const blob = new Blob([this.word.avatarSVG], { type: "image/svg+xml" });
+
+    const url = URL.createObjectURL(blob);
+    this.scene.load.svg(this.getAvatarID(), url);
   }
 
-  colorize(ownTeam: Team) {
+  private getAvatarID(): string {
+    return `avatar-${this.word.value}`;
+  }
+
+  colorize(ownTeam: Team, withAvatar: boolean = true) {
     const style = this.wordStyle;
     const wordTeam = wordKindToTeam(this.word.kind);
-    console.log("wordKind:", this.word.kind, wordTeam);
+
+    let tintShade1;
+
     if (this.word.kind === WordKind.Assassin) {
       style.backgroundColor = this.assassinConfig.backgroundColor;
+      tintShade1 = 0x666666;
     } else if (this.word.kind === WordKind.Neutral) {
       style.backgroundColor = this.neutralConfig.backgroundColor;
+      tintShade1 = 0xd7d7d7;
     } else if (wordTeam === ownTeam) {
       style.backgroundColor = this.ownTeamConfig.backgroundColor;
+      tintShade1 = 0x66ff00;
     } else {
       style.backgroundColor = this.otherTeamConfig.backgroundColor;
+      tintShade1 = 0xff0000;
     }
     this.object.setStyle(style);
+
+    if (!withAvatar) return;
+    const avatar = this.scene.add
+      .image(
+        this.object.x + textWidth - 32,
+        this.object.y + 16,
+        this.getAvatarID()
+      )
+      .setOrigin(0.5);
+    avatar.setTint(tintShade1);
+    this.scene.tweens.add({
+      targets: avatar,
+      alpha: 1,
+      duration: 1000,
+      ease: "Power2",
+    });
   }
 
   renderWordObject(x: number, y: number) {
@@ -73,7 +104,7 @@ export class RenderedWord {
     }
     const text = this.scene.add
       .text(x, y, this.word.value, wordStyle)
-      .setOrigin(0.5, 0);
+      .setOrigin(0, 0);
     this.object = text;
     this.object.on("pointerdown", () => {
       console.log("clicked on word: ", this.word.value);

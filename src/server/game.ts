@@ -10,6 +10,8 @@ import { DAILY_DOMAIN } from "./env";
 import { wordKindToTeam } from "../shared/util";
 import { Word, WordKind } from "../shared/word";
 import Player from "../shared/player";
+import { createAvatar } from "@dicebear/avatars";
+import * as avatarStyle from "@dicebear/avatars-avataaars-sprites";
 
 export enum GameState {
   Unknown = 0,
@@ -71,8 +73,46 @@ export class Game {
       if (team !== Team.None) {
         this.teamResults[team].wordsLeft += 1;
       }
+      // Create avatar image for each word
+      let svg = createAvatar(avatarStyle, {
+        seed: w.value,
+        scale: 65,
+        mouth: ["default", "eating", "serious", "smile", "tongue", "twinkle"],
+        eyes: [
+          "close",
+          "closed",
+          "default",
+          "roll",
+          "eyeRoll",
+          "happy",
+          "hearts",
+          "side",
+          "squint",
+          "surprised",
+          "wink",
+          "winkWacky",
+        ],
+        eyebrow: [
+          "angry",
+          "angryNatural",
+          "default",
+          "defaultNatural",
+          "flat",
+          "flatNatural",
+          "raised",
+          "raisedExcited",
+          "raisedExcitedNatural",
+          "unibrow",
+          "unibrowNatural",
+          "up",
+          "upDown",
+          "upDownNatural",
+          "frown",
+          "frownNatural",
+        ],
+      });
+      w.avatarSVG = svg;
     }
-    console.log("team results:", this.teamResults);
   }
 
   addPlayer(playerID: string, team: Team) {
@@ -198,7 +238,6 @@ export class Game {
     // If no turn is toggled, newCurrentTurn is set to no team
     let newCurrentTurn = Team.None;
     if (wordTeam !== player.team) {
-      console.log("wordTeam, playerTeam", wordVal, word, wordTeam, player.team);
       this.nextTurn();
       newCurrentTurn = this.currentTurn;
     }
