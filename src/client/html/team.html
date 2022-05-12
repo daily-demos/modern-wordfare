@@ -5,6 +5,20 @@
     object-fit: cover;
     -webkit-transform: scaleX(-1);
     transform: scaleX(-1);
+    border-radius: 25px;
+  }
+
+  #team {
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(255, 255, 255, 0.05);
+    width: 200px;
+    height: 100%;
+  }
+
+  #team #tiles {
+    height: 100%;
+    display: block;
   }
 
   #team #tiles .tile {
@@ -26,22 +40,8 @@
     color: white;
   }
 
-  #team #tiles {
-    height: 100%;
-    display: block;
-  }
-
-  #team {
-    display: flex;
-    flex-direction: column;
-    background-color: rgba(255, 255, 255, 0.05);
-    width: 200px;
-    height: 100%;
-  }
-
-  .spymaster {
-    border-color: blue;
-    border-width: 5px;
+  #team #tiles .spymaster {
+    border-color: #f79400 !important;
   }
 
   .hidden {

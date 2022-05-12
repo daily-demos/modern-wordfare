@@ -40,11 +40,16 @@ const client = {
         exclude: /node_modules/,
       },
       {
-        test: /\.(png|svg|jpg|jpeg|gif|ico)$/,
+        test: /\.(png|svg|jpg|jpeg|gif|ico|wav|ogg)$/,
         loader: "file-loader",
         options: {
-          outputPath: "assets",
-          name: "[name].[ext]",
+          name: (f) => {
+            let dirName = path.relative(
+              path.join(__dirname, "src", "assets"),
+              path.dirname(f)
+            );
+            return `${dirName}/[name].[ext]`;
+          },
         },
       },
       {

@@ -8,6 +8,9 @@ import "../../html/callControls.html";
 import "../../html/end.html";
 
 import "../../assets/flare.png";
+import "../../assets/audio/joined.wav";
+import "../../assets/audio/start.ogg";
+
 import {
   registerCamBtnListener,
   registerEndTurnBtnListener,
@@ -49,6 +52,7 @@ import {
 import createWordSet from "../../util/word";
 import { wordKindToTeam } from "../../../shared/util";
 import { Word, WordKind } from "../../../shared/word";
+import { Time } from "phaser";
 
 export interface BoardData {
   roomURL: string;
@@ -86,6 +90,8 @@ export class Board extends Phaser.Scene {
   private isSpymaster: boolean;
 
   private boardData: BoardData;
+
+  private joinedAt: number;
 
   constructor() {
     super("Board");
@@ -140,7 +146,11 @@ export class Board extends Phaser.Scene {
         this.team = data.teamID;
       }
 
-      console.log("creating tile in joinedTeamEventName", p.user_name, data.teamID);
+      console.log(
+        "creating tile in joinedTeamEventName",
+        p.user_name,
+        data.teamID
+      );
       this.createTile(p, data.teamID);
       if (data.currentTurn && data.currentTurn !== Team.None) {
         this.toggleCurrentTurn(data.currentTurn);
@@ -168,7 +178,11 @@ export class Board extends Phaser.Scene {
             return;
           }
           this.clearPendingTile(player.id);
-          console.log("creating tile in data dump", participant.user_name, player.team);
+          console.log(
+            "creating tile in data dump",
+            participant.user_name,
+            player.team
+          );
           this.createTile(participant, player.team);
           if (player.isSpymaster) {
             this.makeSpymaster(player.id, player.team);
@@ -281,6 +295,10 @@ export class Board extends Phaser.Scene {
           yoyo: false,
         },
       });
+
+      // If this is the first time we're creating the particle emitter,
+      // it must be the game's first turn. Play game start sound.
+      this.sound.play("start");
     } else {
       this.turnParticleEmitter.setEmitZone({
         type: "edge",
@@ -327,18 +345,6 @@ export class Board extends Phaser.Scene {
     throw new Error(`invalid active team requested: ${activeTeam}`);
   }
 
-  private getTeamDiv(team: Team): HTMLDivElement {
-    let dom: Phaser.GameObjects.DOMElement;
-    if (team === Team.Team1) {
-      dom = this.teamDOMs[Team.Team1];
-    }
-    if (team === Team.Team2) {
-      dom = this.teamDOMs[Team.Team2];
-    }
-    const div = dom.getChildByID("team");
-    return <HTMLDivElement>div;
-  }
-
   private clearPendingTile(sessionID: string) {
     clearInterval(this.pendingTiles[sessionID]);
     delete this.pendingTiles[sessionID];
@@ -350,13 +356,15 @@ export class Board extends Phaser.Scene {
     this.load.html("call-controls-dom", "../callControls.html");
     this.load.html("end-dom", "../end.html");
     this.load.image("yellow", "../assets/flare.png");
+    this.load.audio("joined", "../assets/audio/joined.wav");
+    this.load.audio("start", "../assets/audio/start.ogg");
     this.wordGrid = new WordGrid(this, this.boardData.wordSet, (w: Word) => {
       this.clickWord(w);
     });
   }
 
   create() {
-    this.cameras.main.setBackgroundColor("#00a4b7");
+    this.cameras.main.setBackgroundColor("#2b3f56");
     const callControlsDom = this.add
       .dom(0, 0)
       .createFromCache("call-controls-dom");
@@ -369,6 +377,7 @@ export class Board extends Phaser.Scene {
 
     this.particleManager = this.add.particles("yellow");
     this.call.registerJoinedMeetingHandler(() => {
+      this.joinedAt = Date.now();
       const data = <JoinGameData>{
         gameID: this.gameID,
       };
@@ -378,7 +387,7 @@ export class Board extends Phaser.Scene {
       const localID = this.call.getPlayerId();
       if (!this.getTileTeam(localID)) {
         const p = this.call.getParticipant(localID);
-        console.log("creating tile in create()", p.user_name,Team.None);
+        console.log("creating tile in create()", p.user_name, Team.None);
         this.createTile(p, Team.None);
       }
     });
@@ -386,6 +395,9 @@ export class Board extends Phaser.Scene {
     this.call.registerParticipantJoinedHandler((p) => {
       if (this.getTileTeam(p.session_id)) return;
       console.log("creating tile participant joined", p.user_name, Team.None);
+      if (Date.now() - this.joinedAt > 3000) {
+        this.sound.play("joined");
+      }
       this.createTile(p, Team.None);
     });
 
@@ -500,7 +512,7 @@ export class Board extends Phaser.Scene {
         sessionID: this.call.getPlayerId(),
         teamID: team,
       };
-      console.log("joining team", data.sessionID, data.teamID)
+      console.log("joining team", data.sessionID, data.teamID);
 
       this.socket.emit(joinTeamEventName, data);
       const joinButtons = document.getElementsByClassName("join");

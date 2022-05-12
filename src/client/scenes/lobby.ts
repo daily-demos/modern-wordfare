@@ -17,12 +17,12 @@ import "../assets/avatars/av4.svg";
 import "../assets/avatars/av5.svg";
 import "../assets/avatars/av6.svg";
 import "../assets/avatars/av7.svg";
+import "../assets/audio/word-success.wav";
+
 import { rand } from "../util/math";
 
-
 export default class Lobby extends Phaser.Scene {
-
-  private avatars: {rotation: number, img: Phaser.GameObjects.Image}[] = [];
+  private avatars: { rotation: number; img: Phaser.GameObjects.Image }[] = [];
 
   initialize() {
     Phaser.Scene.call(this, { key: "Lobby" });
@@ -34,42 +34,40 @@ export default class Lobby extends Phaser.Scene {
 
   preload() {
     this.load.html("lobby-dom", "../lobby.html");
-    this.load.svg("av1", "../assets/av1.svg");
-    this.load.svg("av2", "../assets/av2.svg");
-    this.load.svg("av3", "../assets/av3.svg");
-    this.load.svg("av4", "../assets/av4.svg");
-    this.load.svg("av5", "../assets/av5.svg");
-    this.load.svg("av6", "../assets/av6.svg");
-    this.load.svg("av7", "../assets/av7.svg");
+    this.load.svg("av1", "../assets/avatars/av1.svg");
+    this.load.svg("av2", "../assets/avatars/av2.svg");
+    this.load.svg("av3", "../assets/avatars/av3.svg");
+    this.load.svg("av4", "../assets/avatars/av4.svg");
+    this.load.svg("av5", "../assets/avatars/av5.svg");
+    this.load.svg("av6", "../assets/avatars/av6.svg");
+    this.load.svg("av7", "../assets/avatars/av7.svg");
+    this.load.audio("chime", "../assets/audio/word-success.wav");
   }
 
   private placeAvatar(num: number) {
     const width = this.game.canvas.width;
     const height = this.game.canvas.height;
 
-    let avX = rand(50, width-50);
-    let avY = rand(50, height-50);
+    let avX = rand(50, width - 50);
+    let avY = rand(50, height - 50);
 
     const img = this.add.image(avX, avY, `av${num}`);
-    const rot = rand(0,100);
+    const rot = rand(0, 100);
     img.setRotation(rot / 100);
 
-    const tint = rand(0,1);
+    const tint = rand(0, 1);
     if (tint === 0) {
-      img.setTint(0xFF0000);
+      img.setTint(0xff0000);
     } else {
-      img.setTint(0x00FF00);
+      img.setTint(0x00ff00);
     }
-    
-    const angleIncrement = rand(-25,25) / 100;
 
-    
-    this.avatars.push({rotation: angleIncrement, img: img});
+    const angleIncrement = rand(-25, 25) / 100;
 
+    this.avatars.push({ rotation: angleIncrement, img: img });
   }
 
   create() {
-
     for (let i = 1; i < 7; i += 1) {
       this.placeAvatar(i);
     }
@@ -81,7 +79,14 @@ export default class Lobby extends Phaser.Scene {
       align: "center",
     };
 
-    this.add.text(this.game.canvas.width / 2, 100, "Codewords or Deducement (or something!)", style).setOrigin(0.5);
+    this.add
+      .text(
+        this.game.canvas.width / 2,
+        100,
+        "Codewords or Deducement (or something!)",
+        style
+      )
+      .setOrigin(0.5);
 
     const lobbyDOM = this.add.dom(0, 0).createFromCache("lobby-dom");
 
@@ -108,7 +113,13 @@ export default class Lobby extends Phaser.Scene {
       event.preventDefault();
       const lobbyScene = this.scene;
 
-      if (event.target.id === "join-game") {
+      const targetID = event.target.id;
+
+      if (targetID !== "join-game" && targetID !== "create-game") return;
+
+      this.sound.play("chime", { name: "chime", start: 0, duration: 1.0 });
+
+      if (targetID === "join-game") {
         const playerNameForm = <HTMLFormElement>(
           lobbyDOM.getChildByID("join-player-name")
         );
@@ -143,7 +154,7 @@ export default class Lobby extends Phaser.Scene {
         return;
       }
 
-      if (event.target.id === "create-game") {
+      if (targetID === "create-game") {
         const gameNameForm = <HTMLFormElement>(
           lobbyDOM.getChildByID("game-name")
         );
