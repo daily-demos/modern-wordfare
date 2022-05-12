@@ -134,7 +134,7 @@ export class RenderedWord {
         this.getAvatarID()
       )
       .setOrigin(0.5);
-    console.log("revealing avatar:", avatar);
+    console.log("revealing avatar:", avatar, this.object.x + textWidth - 32, this.object.y + 16);
     avatar.setTint(tintShade);
     avatar.alpha = 0;
     this.scene.tweens.add({

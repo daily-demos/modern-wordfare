@@ -393,13 +393,16 @@ export class Board extends Phaser.Scene {
       const localID = this.localPlayerID;
       if (!this.getTileTeam(localID)) {
         const p = this.call.getParticipant(localID);
-        console.log("creating tile in create()", p.user_name, Team.None);
+        console.log("creating tile in joined-meeting", p.user_name, Team.None);
         this.createTile(p, Team.None);
       }
     });
 
     this.call.registerParticipantJoinedHandler((p) => {
-      if (this.getTileTeam(p.session_id)) return;
+      if (this.getTileTeam(p.session_id)) {
+        console.log("tile already exists", p.user_name)
+        return;
+      } 
       console.log("creating tile participant joined", p.user_name, Team.None);
       if (Date.now() - this.joinedAt > 3000) {
         this.sound.play("joined");
@@ -441,7 +444,7 @@ export class Board extends Phaser.Scene {
 
     registerInviteBtnListener(() => {
       navigator.clipboard.writeText(
-        `${window.location.host}?gameID=${this.gameID}`
+        `${window.location.origin}?gameID=${this.gameID}`
       );
     });
 
