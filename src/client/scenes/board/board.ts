@@ -600,7 +600,11 @@ export class Board extends Phaser.Scene {
     tiles.appendChild(participantTile);
 
     const tracks = Call.getParticipantTracks(p);
-    updateMedia(id, tracks);
+    try {
+      updateMedia(id, tracks);
+    } catch(e) {
+      console.warn(e);
+    }
   }
 
   private getTileTeam(playerID: string): Team {
