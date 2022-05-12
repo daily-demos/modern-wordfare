@@ -640,6 +640,11 @@ function updateMedia(participantID: string, tracks: MediaStreamTrack[]) {
     );
   }
   const video = videoTags[0];
+  console.log("tracks:", tracks);
+  if (!tracks || tracks.length === 0) {
+    video.srcObject = null;
+    return;
+  }
   const stream = new MediaStream(tracks);
   video.srcObject = stream;
 }

@@ -59,6 +59,7 @@ export class RenderedWord {
   }
 
   colorize(ownTeam: Team, withAvatar: boolean = true) {
+    console.log("colorizing word", this.word.value, withAvatar, this.word.avatarSVG)
     const style = this.wordStyle;
     const wordTeam = wordKindToTeam(this.word.kind);
 
