@@ -48,25 +48,25 @@
   }
 
   #controls .cam-on {
-    background-image: url("./camera.svg");
+    background-image: url("./assets/camera.svg");
     background-repeat: no-repeat;
     background-position: center;
   }
 
   #controls .cam-off {
-    background-image: url("./camera-off.svg");
+    background-image: url("./assets/camera-off.svg");
     background-repeat: no-repeat;
     background-position: center;
   }
 
   #controls .mic-on {
-    background-image: url("./microphone.svg");
+    background-image: url("./assets/microphone.svg");
     background-repeat: no-repeat;
     background-position: center;
   }
 
   #controls .mic-off {
-    background-image: url("./microphone-off.svg");
+    background-image: url("./assets/microphone-off.svg");
     background-repeat: no-repeat;
     background-position: center;
   }
@@ -82,8 +82,8 @@
   }
 </style>
 <div id="controls" class="hidden">
-  <button id="toggleCam" aria-label="Toggle camera">Toggle Cam</button>
-  <button id="toggleMic" aria-label="Toggle microphone">Toggle Mic</button>
+  <button id="toggleCam" class="cam-off" aria-label="Toggle camera"></button>
+  <button id="toggleMic" class="mic-off" aria-label="Toggle microphone"></button>
   <button id="be-spymaster" class="hidden">Become spymaster</button>
   <button id="end-turn" class="hidden">End turn</button>
   <button id="invite" aria-label="Invite">Invite</button>

@@ -10,8 +10,10 @@ import { Word } from "../shared/word";
 import Player from "../shared/player";
 
 
+const isStaging = DAILY_STAGING === "true"
+
 let dailyAPIDomain = "daily.co";
-if (DAILY_STAGING) {
+if (isStaging) {
   dailyAPIDomain = "staging.daily.co";
 }
 
@@ -56,6 +58,7 @@ export default class GameOrchestrator {
     };
 
     const url = `${dailyAPIURL}/rooms/`;
+    console.log("DAILY STAGING", isStaging, dailyAPIURL)
     const data = JSON.stringify(req);
     const res = await axios.post(url, data, { headers }).catch((error) => {
       throw new Error(`failed to create room: ${error})`);
@@ -69,8 +72,8 @@ export default class GameOrchestrator {
     const roomData = <ICreatedDailyRoomData>body;
     // Workaround for bug with incorrect room url return for staging
     let roomURL = roomData.url;
-    console.log("DAILY STAGING", DAILY_STAGING, !!DAILY_STAGING)
-    if (DAILY_STAGING) {
+   
+    if (isStaging) {
       roomURL = roomURL.replace("daily.co", "staging.daily.co");
     }
     console.log("room url:", roomData.url, body)

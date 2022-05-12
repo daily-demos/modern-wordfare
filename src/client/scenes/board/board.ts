@@ -380,6 +380,9 @@ export class Board extends Phaser.Scene {
       const data = <JoinGameData>{
         gameID: this.gameID,
       };
+      const controls = this.controlsDOM.getChildByID("controls")
+      controls.classList.remove("hidden");
+  
       this.socket.emit(joinGameEventName, data);
       this.showTeams();
 
@@ -458,9 +461,6 @@ export class Board extends Phaser.Scene {
     this.showTeam(Team.Team1);
     this.showTeam(Team.Team2);
     this.showObservers();
-
-    const controls = document.getElementById("controls");
-    controls.classList.remove("hidden");
 
     const t1 = this.teamDOMs[Team.Team1];
     const t2 = this.teamDOMs[Team.Team2];
