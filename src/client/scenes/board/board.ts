@@ -556,7 +556,10 @@ export class Board extends Phaser.Scene {
   }
 
   private createTile(p: DailyParticipant, team: Team) {
-    const name = p.user_name;
+    let name = p.user_name;
+    if (p.local) {
+      name = "You";
+    }
     const id = p.session_id;
 
     if (team !== Team.None && this.getTileTeam(id) === Team.None) {
