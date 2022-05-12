@@ -52,7 +52,6 @@ import {
 import createWordSet from "../../util/word";
 import { wordKindToTeam } from "../../../shared/util";
 import { Word, WordKind } from "../../../shared/word";
-import { Time } from "phaser";
 
 export interface BoardData {
   roomURL: string;

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { DAILY_API_KEY } from "./env";
+import { DAILY_API_KEY, DAILY_STAGING } from "./env";
 import { Game, GameState } from "./game";
 import { Team } from "../shared/types";
 import SocketMappingNotFound from "../shared/errors/socketMappingNotFound";
@@ -9,7 +9,13 @@ import { PlayerInfo, StoreClient } from "./store/store";
 import { Word } from "../shared/word";
 import Player from "../shared/player";
 
-const dailyAPIURL = "https://api.daily.co/v1";
+
+let dailyAPIDomain = "daily.co";
+if (DAILY_STAGING) {
+  dailyAPIDomain = "staging.daily.co";
+}
+
+const dailyAPIURL = `https://api.${dailyAPIDomain}/v1`;
 
 interface ICreatedDailyRoomData {
   id: string;
@@ -61,8 +67,15 @@ export default class GameOrchestrator {
     }
     const body = JSON.parse(JSON.stringify(res.data));
     const roomData = <ICreatedDailyRoomData>body;
+    // Workaround for bug with incorrect room url return for staging
+    let roomURL = roomData.url;
+    console.log("DAILY STAGING", DAILY_STAGING, !!DAILY_STAGING)
+    if (DAILY_STAGING) {
+      roomURL = roomURL.replace("daily.co", "staging.daily.co");
+    }
+    console.log("room url:", roomData.url, body)
 
-    const game = new Game(name, roomData.url, roomData.name, wordSet);
+    const game = new Game(name, roomURL, roomData.name, wordSet);
     await this.storeClient.storeGame(game);
     return game;
   }

@@ -1,6 +1,8 @@
 import { Team } from "../../../shared/types";
 import { wordKindToTeam } from "../../../shared/util";
 import { Word, WordKind } from "../../../shared/word";
+import "../../assets/audio/word-success.wav";
+import "../../assets/audio/word-failure.wav";
 
 export const textWidth = 163;
 export const textHeight = 65;
