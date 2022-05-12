@@ -404,9 +404,7 @@ export class Board extends Phaser.Scene {
     });
 
     this.call.registerParticipantLeftHandler((p) => {
-      if (this.getTileTeam(p.participant.session_id) === Team.None) {
-        removeTile(p.participant.session_id);
-      }
+      removeTile(p.participant.session_id);
     });
 
     this.call.registerTrackStartedHandler((p) => {
@@ -583,6 +581,9 @@ export class Board extends Phaser.Scene {
 
     const video = document.createElement("video");
     video.autoplay = true;
+    if (p.local) {
+      video.muted = true;
+    }
     participantTile.appendChild(video);
 
     const nameTag = document.createElement("div");
