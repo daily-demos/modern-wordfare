@@ -9,7 +9,7 @@ import "../../html/end.html";
 
 import "../../assets/flare.png";
 import "../../assets/audio/joined.wav";
-import "../../assets/audio/start.ogg";
+import "../../assets/audio/start.wav";
 
 import {
   registerCamBtnListener,
@@ -356,7 +356,7 @@ export class Board extends Phaser.Scene {
     this.load.html("end-dom", "../end.html");
     this.load.image("yellow", "../assets/flare.png");
     this.load.audio("joined", "../assets/audio/joined.wav");
-    this.load.audio("start", "../assets/audio/start.ogg");
+    this.load.audio("start", "../assets/audio/start.wav");
     this.wordGrid = new WordGrid(this, this.boardData.wordSet, (w: Word) => {
       this.clickWord(w);
     });
