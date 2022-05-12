@@ -42,10 +42,6 @@ export class Call {
     });
   }
 
-  getPlayerId(): string {
-    return this.callObject.participants().local.session_id;
-  }
-
   getParticipant(sessionID: string): DailyParticipant {
     const participants = this.callObject.participants();
     if (participants.local.session_id === sessionID) {

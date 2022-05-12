@@ -92,6 +92,8 @@ export class Board extends Phaser.Scene {
 
   private joinedAt: number;
 
+  private localPlayerID: string;
+
   constructor() {
     super("Board");
   }
@@ -112,8 +114,9 @@ export class Board extends Phaser.Scene {
     const data = <SelectedWordData>{
       gameID: this.gameID,
       wordValue: word.value,
-      playerID: this.call.getPlayerId(),
+      playerID: this.localPlayerID,
     };
+    console.log("selecting word", data.wordValue);
     this.socket.emit(wordSelectedEventName, data);
   }
 
@@ -141,7 +144,7 @@ export class Board extends Phaser.Scene {
         console.error(`failed to find participant with ID ${data.sessionID}`);
         return;
       }
-      if (p.session_id === this.call.getPlayerId()) {
+      if (p.session_id === this.localPlayerID) {
         this.team = data.teamID;
       }
 
@@ -375,8 +378,9 @@ export class Board extends Phaser.Scene {
     this.controlsDOM = callControlsDom;
 
     this.particleManager = this.add.particles("yellow");
-    this.call.registerJoinedMeetingHandler(() => {
+    this.call.registerJoinedMeetingHandler((player: DailyParticipant) => {
       this.joinedAt = Date.now();
+      this.localPlayerID = player.session_id;
       const data = <JoinGameData>{
         gameID: this.gameID,
       };
@@ -386,7 +390,7 @@ export class Board extends Phaser.Scene {
       this.socket.emit(joinGameEventName, data);
       this.showTeams();
 
-      const localID = this.call.getPlayerId();
+      const localID = this.localPlayerID;
       if (!this.getTileTeam(localID)) {
         const p = this.call.getParticipant(localID);
         console.log("creating tile in create()", p.user_name, Team.None);
@@ -444,7 +448,7 @@ export class Board extends Phaser.Scene {
     registerEndTurnBtnListener(() => {
       this.socket.emit(endTurnEventName, <EndTurnData>{
         gameID: this.gameID,
-        playerID: this.call.getPlayerId(),
+        playerID: this.localPlayerID,
       });
     });
 
@@ -506,7 +510,7 @@ export class Board extends Phaser.Scene {
     teamJoinBtn.onclick = () => {
       const data = <JoinTeamData>{
         gameID: this.gameID,
-        sessionID: this.call.getPlayerId(),
+        sessionID: this.localPlayerID,
         teamID: team,
       };
       console.log("joining team", data.sessionID, data.teamID);
@@ -531,7 +535,7 @@ export class Board extends Phaser.Scene {
         beSpymasterButton.classList.add("hidden");
         const resData = <BecomeSpymasterData>{
           gameID: this.gameID,
-          sessionID: this.call.getPlayerId(),
+          sessionID: this.localPlayerID,
         };
         this.socket.emit(becomeSpymasterEventName, resData);
         beSpymasterButton.classList.add("hidden");
@@ -548,7 +552,7 @@ export class Board extends Phaser.Scene {
       spymasterBtn.classList.add("hidden");
     }
 
-    if (id === this.call.getPlayerId()) {
+    if (id === this.localPlayerID) {
       // Show word colors in grid
       this.wordGrid.revealAllWords(this.team);
       this.isSpymaster = true;

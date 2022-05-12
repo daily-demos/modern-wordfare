@@ -59,7 +59,7 @@ export class RenderedWord {
   }
 
   colorize(ownTeam: Team, withAvatar: boolean = true) {
-    console.log("colorizing word", this.word.value, withAvatar, this.word.avatarSVG)
+    console.log("colorizing word", this.word.value, withAvatar)
     const style = this.wordStyle;
     const wordTeam = wordKindToTeam(this.word.kind);
 
@@ -134,7 +134,9 @@ export class RenderedWord {
         this.getAvatarID()
       )
       .setOrigin(0.5);
+    console.log("revealing avatar:", avatar);
     avatar.setTint(tintShade);
+    avatar.alpha = 0;
     this.scene.tweens.add({
       targets: avatar,
       alpha: 1,
