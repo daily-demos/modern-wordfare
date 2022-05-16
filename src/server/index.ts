@@ -61,6 +61,7 @@ app.use(express.json());
 
 app.post("/join", async (req: Request, res: Response) => {
   const body = <IJoinGameRequest>req.body;
+  console.log("joining game", body);
   const { gameID } = body;
   if (!gameID) {
     const err = "request must contain game ID";
@@ -80,6 +81,7 @@ app.post("/join", async (req: Request, res: Response) => {
     gameName: game.name,
     wordSet: game.wordSet,
   };
+  console.log("join sending res:", data);
   res.send(data);
 });
 
@@ -102,13 +104,10 @@ app.post("/create", (req: Request, res: Response) => {
       orchestrator
         .getMeetingToken(game.dailyRoomName)
         .then((token) => {
-          const data = <ICreateGameResponse>{
-            roomURL: game.dailyRoomURL,
-            meetingToken: token,
-            gameID: game.id,
-            wordSet: game.wordSet,
-          };
-          res.send(data);
+          // Set meeting token for this game
+          res.cookie(`meetingToken-${game.id}`, token)
+          console.log("GAME ID:", game.id);
+          res.redirect(`/?gameID=${game.id}&playerName=${body.playerName}`);
         })
         .catch((error) => {
           console.error("failed to get meeting token", error);

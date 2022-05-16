@@ -96,6 +96,7 @@ export class Board extends Phaser.Scene {
 
   constructor() {
     super("Board");
+    console.log("Loading board!")
   }
 
   initialize() {
@@ -121,6 +122,7 @@ export class Board extends Phaser.Scene {
   }
 
   init(boardData: BoardData) {
+    console.log("init boar ddata:", boardData)
     this.call = new Call(
       boardData.roomURL,
       boardData.playerName,

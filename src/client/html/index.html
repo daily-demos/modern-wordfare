@@ -47,7 +47,50 @@
         </a>
       </div>
     </header>
+    <style>
+      #create-game-form {
+        display: block;
+        width: 200px;
+      }
+    
+      #join-game-form {
+        display: block;
+        width: 200px;
+      }
+    
+      input {
+        display: block;
+        width: 100%;
+      }
+    
+      .hidden {
+        visibility: hidden;
+      }
+    
+      h2 {
+        color: #00c9df;
+      }
+    </style>
     <div id="game"></div>
+    <div id="scene">
+      <form id="join-game-form" class="hidden">
+        <h2>Join a game</h2>
+        <input type="text" placeholder="Your Name" id="join-player-name" required />
+        <button type="submit" id="join-game">Start demo</button>
+      </form>
+      <form id="create-game-form" class="hidden">
+        <h2>Start a new game</h2>
+        <input type="text" placeholder="Game Name" id="game-name" required />
+        <input
+          type="text"
+          placeholder="Your Name"
+          id="create-player-name"
+          required
+        />
+        <button type="submit" id="create-game">Start demo</button>
+      </form>
+    </div>
+    
   </body>
   <script type="module" src="index.js" charset="utf-8" defer></script>
 </html>

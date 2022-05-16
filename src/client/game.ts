@@ -1,11 +1,10 @@
 import Phaser from "phaser";
-import { Board } from "./scenes/board/board";
-import Lobby from "./scenes/lobby";
+import { Board, BoardData } from "./scenes/board/board";
 
 export default class Game {
   private game: Phaser.Game;
 
-  start() {
+  start(boardData: BoardData) {
     console.log("constructing game");
 
     const config = {
@@ -18,12 +17,14 @@ export default class Game {
       },
       parent: "game",
       backgroundColor: "#fff",
-      scene: [Lobby, Board],
+      scene: [Board],
       dom: {
         createContainer: true,
       },
     };
     this.game = new Phaser.Game(config);
+    console.log("board data:", boardData)
+    this.game.scene.start('Board', boardData)
   }
 
   destroy() {
