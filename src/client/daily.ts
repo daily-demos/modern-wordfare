@@ -105,11 +105,11 @@ export class Call {
 
     const mediaTracks: MediaStreamTrack[] = [];
     const vs = vt?.state;
-    if (vt.persistentTrack && vs === playableState || vs === "loading") {
+    if ((vt.persistentTrack && vs === playableState) || vs === "loading") {
       mediaTracks.push(vt.persistentTrack);
     }
     const as = at?.state;
-    if (at.persistentTrack && as === playableState || as === "loading") {
+    if ((at.persistentTrack && as === playableState) || as === "loading") {
       mediaTracks.push(at.persistentTrack);
     }
     return mediaTracks;

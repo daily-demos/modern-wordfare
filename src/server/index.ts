@@ -35,7 +35,6 @@ import {
 } from "../shared/events";
 import {
   ICreateGameRequest,
-  ICreateGameResponse,
   IJoinGameRequest,
   IJoinGameResponse,
   Team,
@@ -105,7 +104,7 @@ app.post("/create", (req: Request, res: Response) => {
         .getMeetingToken(game.dailyRoomName)
         .then((token) => {
           // Set meeting token for this game
-          res.cookie(`meetingToken-${game.id}`, token)
+          res.cookie(`meetingToken`, token);
           console.log("GAME ID:", game.id);
           res.redirect(`/?gameID=${game.id}&playerName=${body.playerName}`);
         })

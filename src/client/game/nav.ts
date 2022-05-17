@@ -19,6 +19,21 @@ export function registerInviteBtnListener(f: () => void) {
 }
 
 export function registerEndTurnBtnListener(f: () => void) {
-  const endTurnBtn = document.getElementById("end-turn");
+  const endTurnBtn = document.getElementById("endTurn");
   endTurnBtn.addEventListener("click", f);
+}
+
+export function registerBeSpymasterBtnListener(f: () => void) {
+  const btn = <HTMLButtonElement>document.getElementById("beSpymaster");
+  btn.addEventListener("click", f);
+  showBtn(btn);
+}
+
+export function hideSpymasterBtn() {
+  const btn = document.getElementById("beSpymaster");
+  btn.classList.add("invisible");
+}
+
+function showBtn(btn: HTMLButtonElement) {
+  btn.classList.remove("invisible");
 }
