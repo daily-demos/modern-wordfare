@@ -306,6 +306,14 @@ h2 {
   opacity: 1;
 }
 
+#board button .team2 {
+  background: linear-gradient(106.36deg, #3988FF 12.54%, #95B9EF 12.99%, #95B9EF 17.84%, #3988FF 17.85%, #3988FF 23.55%, #95B9EF 23.56%, #95B9EF 31.3%, #3988FF 31.31%, #3988FF 82.94%, #95B9EF 82.95%, #95B9EF 87.8%, #3988FF 87.81%), #3988FF;
+}
+
+#board button .team1 {
+  background: linear-gradient(106.36deg, #FF0000 12.54%, #EF8686 12.55%, #EF8686 17.86%, #FF0000 17.87%, #FF0000 23.55%, #EF8686 23.56%, #EF8686 31.3%, #FF0000 31.31%, #FF0000 82.92%, #EF8686 82.93%, #EF8686 87.8%, #FF0000 87.81%);
+}
+
 #board button:hover:enabled {
   opacity: 1;
   cursor: pointer;
@@ -416,13 +424,14 @@ h2 {
   width: 100%;
 }
 
-.team .tiles .tile video {
-  width: 100%;
-  height: 200px;
+
+.tiles .tile video {
+  width: 100px;
+  height: 100px;
   object-fit: cover;
   -webkit-transform: scaleX(-1);
   transform: scaleX(-1);
-  border-radius: 25px;
+  border-radius: 16px;
 }
 
 .team {
@@ -446,23 +455,28 @@ h2 {
   display: block;
 }
 
-.team .tiles .tile {
-  position: relative;
-  display: flex;
+.tiles .tile {
+  position: flex;
   justify-content: center;
-  background-color: aqua;
-  width: 200px;
-  margin-bottom: 15px;
-  border-radius: 25px;
-  border: 0.5px solid rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  width: 105px;
+  height: 100px;
+  border: 2px solid #1F1F1F;
+  filter: drop-shadow(0px 4px 0px #1F1F1F);
+  border-radius: 16px;
   background-image: linear-gradient(45deg, #121a24, #2b3f56);
 }
 
 .name {
-  position: absolute;
-  top: 195px;
+  align-self: center;
   z-index: 1;
   color: white;
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 16px;
+  text-align: center;
+  position: absolute;
+  top: calc(100% - 20px);
 }
 
 .team .tiles .spymaster {
@@ -502,33 +516,6 @@ button:hover:enabled {
 }
 body {
   background-color: #2b3f56;
-}
-#observers .tiles .tile video {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  -webkit-transform: scaleX(-1);
-  transform: scaleX(-1);
-  border-radius: 25px;
-}
-
-#observers .tiles .tile {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  background-color: aqua;
-  width: 200px;
-  margin-bottom: 15px;
-  border-radius: 25px;
-  border: 0.5px solid rgba(0, 0, 0, 0.1);
-  background-image: linear-gradient(45deg, #121a24, #2b3f56);
-}
-
-.name {
-  position: absolute;
-  top: 195px;
-  z-index: 1;
-  color: white;
 }
 
 #observers .tiles {

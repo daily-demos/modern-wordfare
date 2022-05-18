@@ -1,8 +1,8 @@
 export enum WordKind {
-  Neutral = 0,
-  Team1,
-  Team2,
-  Assassin,
+  Neutral = "neutral",
+  Team1 = "team1",
+  Team2 = "team2",
+  Assassin = "assassin",
 }
 
 export class Word {

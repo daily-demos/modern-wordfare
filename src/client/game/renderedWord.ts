@@ -45,7 +45,7 @@ export class RenderedWord {
     const wordTeam = wordKindToTeam(this.word.kind);
 
     let tintShade;
-    let bgColor;
+    /* let bgColor;
     if (this.word.kind === WordKind.Assassin) {
       bgColor = this.assassinConfig.backgroundColor;
       tintShade = 0x666666;
@@ -58,8 +58,8 @@ export class RenderedWord {
     } else {
       bgColor = this.otherTeamConfig.backgroundColor;
       tintShade = 0xff0000;
-    }
-    this.object.style.backgroundColor = bgColor;
+    } */
+    this.object.classList.add(this.word.kind.toString());
 
     if (!withAvatar) return;
 
@@ -70,6 +70,7 @@ export class RenderedWord {
   renderWordObject(): HTMLButtonElement {
     const word = document.createElement("button");
     word.innerText = this.word.value;
+    word.disabled = true;
     this.object = word;
     this.object.onclick = () => {
       console.log("clicked on word: ", this.word.value);
