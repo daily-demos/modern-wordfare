@@ -116,7 +116,11 @@ export class Board {
   }
 
   moveToTeam(p: DailyParticipant, team: Team, currentTurn: Team) {
-    console.log("session ID, local player ID:", p.session_id, this.localPlayerID)
+    console.log(
+      "session ID, local player ID:",
+      p.session_id,
+      this.localPlayerID
+    );
     if (p.session_id === this.localPlayerID) {
       this.team = team;
     }
@@ -150,7 +154,7 @@ export class Board {
     console.log("teamDivs", teams);
     teams.activeTeam.classList.add("active");
     teams.otherTeam.classList.remove("active");
-    console.log("this team:", this.team, currentTurn)
+    console.log("this team:", this.team, currentTurn);
     if (!this.team || this.isSpymaster) {
       return;
     }
@@ -158,7 +162,7 @@ export class Board {
     const endTurnBtn = document.getElementById("endTurn");
 
     if (currentTurn === this.team) {
-      console.log("current team!", currentTurn, this.team)
+      console.log("current team!", currentTurn, this.team);
       this.wordGrid.enableInteraction();
       endTurnBtn.classList.remove("invisible");
       return;

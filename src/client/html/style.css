@@ -1,3 +1,8 @@
+@font-face {
+  font-family: Jaldi;
+  src: url(../assets/Jaldi-Regular.ttf);
+}
+
 :root {
   --grey-lightest: #f7f9fa;
   --white: #ffffff;
@@ -6,8 +11,20 @@
   --dark-blue: #1f2d3d;
   --dark-blue-border: #2b3f56;
   --green: #72cc18;
-  --red-dark: #bb0c0c;
-  --font-family: GraphikRegular, "Helvetica Neue", Sans-Serif;
+  --blue-bright: #3988ff;
+  --blue-dark: #4673e9;
+  --black: #1f1f1f;
+  --grid-black-bg: rgba(0,0,0,0.1);
+  --grid-red-bg: rgba(255,0,0,0.1);
+  --red-bright: #ff0000;
+  --red-dark: #97150d;
+  --gold: #e3c421;
+  --font-family: Jaldi, "Helvetica Neue", Sans-Serif;
+  --grid-bg: linear-gradient(to right, var(--grid-red-bg) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-red-bg) 1px, transparent 1px),
+    linear-gradient(to right, var(--grid-black-bg) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-black-bg) 1px, transparent 1px);
+  --grid-bg-size: 10px 10px, 10px 10px, 5px 5px, 5px 5px;
 }
 
 * {
@@ -113,7 +130,11 @@ body {
   width: 100%;
   height: calc(100% - 52px);
   top: 52px;
-  background-color: var(--grey-lightest);
+  background: linear-gradient(
+    180deg,
+    var(--blue-dark) 0%,
+    var(--red-dark) 100%
+  );
   position: relative;
   /* display: flex; */
   justify-content: center;
@@ -220,10 +241,78 @@ h2 {
   width: 100%;
 }
 
-#board button {
-  width: 100px;
-  height: 50px;
+#team button {
+  border: 2px solid var(--black);
+  box-shadow: 0px 4px 0px var(--black);
+  border-radius: 16px;
+  width: 100%;
+  height: 64px;
+  font-family: "Jaldi";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 41px;
+  /* identical to box height */
+
+  text-align: center;
+  color: #ff0000;
 }
+
+#board button {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  margin: 3px;
+
+  width: 156px;
+  height: 85px;
+  border: 2px solid var(--black);
+  box-shadow: 0px 4px 0px var(--black);
+  border-radius: 16px;
+
+  /* Inside auto layout */
+
+  flex: none;
+  flex-grow: 1;
+  background: var(--grid-bg),
+    linear-gradient(
+      106.36deg,
+      #f7eede 12.54%,
+      #ffffff 12.99%,
+      #ffffff 17.86%,
+      #f7eede 18.05%,
+      #f7eede 23.55%,
+      #ffffff 23.59%,
+      #ffffff 31.3%,
+      #f7eede 31.38%,
+      #f7eede 82.94%,
+      #ffffff 82.98%,
+      #ffffff 87.8%,
+      #f7eede 88.15%
+    ),
+    #f7eede;
+  background-size: var(--grid-bg-size), 164px 64px, 164px 64px;
+  font-family: var(--font-family);
+  font-style: normal;
+  font-weight: 900;
+  font-size: 16px;
+  line-height: 27px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+  color: var(--black);
+  opacity: 1;
+}
+
+#board button:hover:enabled {
+  opacity: 1;
+  cursor: pointer;
+  border: 2px solid var(--gold);
+  box-shadow: 0px 4px 0px var(--gold);
+}
+
 #controls {
   display: flex;
   /* position: absolute; */
@@ -243,12 +332,18 @@ h2 {
 #toggleCam,
 #toggleMic,
 #toggleScreenShare {
-  width: 30px;
-  height: 30px;
-  border: none;
-  background-color: transparent;
-  border-radius: 5px;
-  size: 10px;
+  width: 64px;
+  height: 64px;
+  border: 2px solid var(--black);
+  box-shadow: 0px 4px 0px var(--black);
+  border-radius: 16px;
+  transform: matrix(1, 0, 0, -1, 0, 0);
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  gap: 8px;
 }
 
 #leave {
@@ -257,7 +352,12 @@ h2 {
   font-size: 12px;
   line-height: 16px;
   color: #ffffff;
-  background: #f63135;
+  background-image: linear-gradient(
+      to right,
+      var(--red-bright) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, var(--red-bright) 1px, transparent 1px);
   border-radius: 8px;
   justify-content: center;
   align-items: center;
@@ -298,9 +398,24 @@ h2 {
 
 #toggleCam:hover,
 #toggleMic:hover {
-  background-color: rgba(245, 245, 245, 0.6);
-  border-radius: 5px;
+  background-color: var(--red-bright);
 }
+
+#team1 {
+  background-color: var(--red-bright);
+}
+
+#team2 {
+  background-color: var(--blue-bright);
+}
+
+.team .teamLabel {
+  display: flex;
+  justify-content: space-between;
+  color: white;
+  width: 100%;
+}
+
 .team .tiles .tile video {
   width: 100%;
   height: 200px;
@@ -313,9 +428,17 @@ h2 {
 .team {
   display: flex;
   flex-direction: column;
-  background-color: rgba(255, 255, 255, 0.05);
-  width: 200px;
-  height: 100%;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 8px 16px 20px;
+  gap: 8px;
+  border: 2px solid var(--black);
+  box-shadow: 0px 4px 0px var(--black);
+  border-radius: 16px;
+  width: 248px;
+  height: 457px;
+  background: var(--grid-bg);
+  background-size: var(--grid-bg-size);
 }
 
 .team .tiles {
@@ -435,7 +558,7 @@ body {
   flex-direction: column;
 }
 #board {
-  width: 500px;
+  width: 816px;
   justify-content: space-evenly;
   display: flex;
   flex-direction: row;

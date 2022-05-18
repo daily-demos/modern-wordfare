@@ -10,12 +10,6 @@
       content="default-src 'self'; frame-src 'self' https://*.daily.co; script-src 'self' 'unsafe-eval'; connect-src https://*.daily.co https://*.pluot.blue wss:; worker-src 'self' blob:; style-src 'self' https://fonts.googleapis.com/css2; font-src 'self' https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Mu72xKKTU1Kvnz.woff2 https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2 https://*.gstatic.com"
     /-->
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap"
-      rel="stylesheet"
-    />
     <link rel="stylesheet" type="text/css" href="style.css" />
     <link rel="shortcut icon" href="./assets/favicon.ico" />
 
@@ -51,17 +45,21 @@
       <div id="game" class="invisible">
         <div id="top">
           <div id="team1" class="team hidden">
-            <h2 class="teamName"></h2>
-            <h3 class="score"></h3>
+            <span class="teamLabel">
+              <h2 class="teamName">Team 1</h2>
+              <h2 class="score"></h2>
+            </span>
             <div class="tiles"></div>
-            <button class="join">Join</button>
+            <button class="join">Join as Player</button>
           </div>
           <div id="board"></div>
           <div id="team2" class="team hidden">
-            <h2 class="teamName"></h2>
-            <h3 class="score"></h3>
+            <span class="teamLabel">
+              <h2 class="teamName">Team 2</h2>
+              <h2 class="score"></h2>
+            </span>
             <div class="tiles"></div>
-            <button class="join">Join</button>
+            <button class="join">Join as Player</button>
           </div>
         </div>
         <div id="bottom">

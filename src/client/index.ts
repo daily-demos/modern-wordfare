@@ -1,7 +1,8 @@
 // These imports are here to ensure they're bundled into
 // the final distribution.
 import "./html/index.html";
-import "./style.css";
+import "./html/style.css";
+import "./assets/Jaldi-Regular.ttf";
 import "./assets/favicon.ico";
 import "./assets/daily.svg";
 import "./assets/github.png";

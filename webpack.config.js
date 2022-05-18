@@ -40,7 +40,7 @@ const client = {
         exclude: /node_modules/,
       },
       {
-        test: /\.(png|svg|jpg|jpeg|gif|ico|wav)$/,
+        test: /\.(png|svg|jpg|jpeg|gif|ico|wav|ttf)$/,
         loader: "file-loader",
         options: {
           name: (f) => {
