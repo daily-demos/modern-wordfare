@@ -88,10 +88,11 @@ export default class Game {
     this.socket.emit(joinTeamEventName, data);
   }
 
-  private onBeSpymaster() {
+  private onBeSpymaster(team: Team) {
     const resData = <BecomeSpymasterData>{
       gameID: this.data.gameID,
       sessionID: this.localPlayerID,
+      team: team,
     };
     this.socket.emit(becomeSpymasterEventName, resData);
   }
@@ -119,8 +120,8 @@ export default class Game {
         (team: Team) => {
           this.onJoinTeam(team);
         },
-        () => {
-          this.onBeSpymaster();
+        (team: Team) => {
+          this.onBeSpymaster(team);
         }
       );
 
@@ -222,7 +223,7 @@ export default class Game {
         return;
       }
 
-      this.board.moveToTeam(p, data.teamID, data.currentTurn);
+      this.board.moveToTeam(p, data.teamID);
     });
 
     socket.on(gameDataDumpEventName, (data: GameData) => {
@@ -252,6 +253,14 @@ export default class Game {
     });
 
     socket.on(newSpymasterEventName, (data: SpymasterData) => {
+      const p = this.call.getParticipant(data.spymasterID);
+      if (!p) {
+        console.error(`failed to find participant with ID ${data.spymasterID}`);
+        return;
+      }
+
+      this.board.moveToTeam(p, data.teamID);
+
       this.board.makeSpymaster(data.spymasterID, data.teamID);
     });
 

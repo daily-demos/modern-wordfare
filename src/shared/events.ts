@@ -34,6 +34,7 @@ export const becomeSpymasterEventName = "become-spymaster";
 export interface BecomeSpymasterData {
   gameID: string;
   sessionID: string;
+  team: Team;
 }
 
 export const newSpymasterEventName = "new-spymaster";

@@ -1,3 +1,5 @@
+import { Team } from "../../shared/types";
+
 export function registerCamBtnListener(f: () => void) {
   const toggleCamBtn = document.getElementById("toggleCam");
   toggleCamBtn.addEventListener("click", f);
@@ -29,9 +31,29 @@ export function registerBeSpymasterBtnListener(f: () => void) {
   showBtn(btn);
 }
 
-export function hideSpymasterBtn() {
-  const btn = document.getElementById("beSpymaster");
+export function hideAllJoinBtns() {
+  hideJoinBtn(Team.Team1);
+  hideJoinBtn(Team.Team2);
+}
+export function hideAllSpymasterBtns() {
+  hideSpymasterBtn(Team.Team1);
+  hideSpymasterBtn(Team.Team2);
+}
+
+
+export function hideSpymasterBtn(team: Team) {
+  const teamDiv = <HTMLDivElement>document.getElementById(team.toString());
+  const btn = <HTMLButtonElement>teamDiv.getElementsByClassName("beSpymaster")[0];
   btn.classList.add("invisible");
+  btn.disabled = true;
+ 
+}
+
+function hideJoinBtn(team: Team) {
+  const teamDiv = <HTMLDivElement>document.getElementById(team.toString());
+  const btn = <HTMLButtonElement>teamDiv.getElementsByClassName("join")[0];
+  btn.classList.add("invisible");
+  btn.disabled = true;
 }
 
 function showBtn(btn: HTMLButtonElement) {

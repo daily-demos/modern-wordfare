@@ -10,7 +10,7 @@ import { GameData } from "../../shared/events";
 import { wordKindToTeam } from "../../shared/util";
 import { Word, WordKind } from "../../shared/word";
 import ErrTileAlreadyExists from "./errors/errTileAlreadyExists";
-import { hideSpymasterBtn, registerBeSpymasterBtnListener } from "./nav";
+import { hideAllJoinBtns, hideAllSpymasterBtns, hideSpymasterBtn, registerBeSpymasterBtnListener } from "./nav";
 
 export interface BoardData {
   roomURL: string;
@@ -22,6 +22,7 @@ export interface BoardData {
 
 export type onClickWord = (wordVal: string) => void;
 export type onJoinTeam = (team: Team) => void;
+export type onBeSpymaster = (team: Team) => void;
 
 export class Board {
   private wordGrid: WordGrid;
@@ -37,7 +38,7 @@ export class Board {
   team = Team.None;
 
   private readonly onJoinTeam: onJoinTeam;
-  private readonly onBeSpymaster: () => void;
+  private readonly onBeSpymaster: onBeSpymaster;
 
   private isSpymaster: boolean;
 
@@ -48,7 +49,7 @@ export class Board {
     localPlayerID: string,
     onClickWord: onClickWord,
     onJoinTeam: onJoinTeam,
-    onBeSpymaster: () => void
+    onBeSpymaster: onBeSpymaster,
   ) {
     console.log("constructing board!!");
 
@@ -115,7 +116,7 @@ export class Board {
     score.innerHTML = newScore.toString();
   }
 
-  moveToTeam(p: DailyParticipant, team: Team, currentTurn: Team) {
+  moveToTeam(p: DailyParticipant, team: Team) {
     console.log(
       "session ID, local player ID:",
       p.session_id,
@@ -127,9 +128,6 @@ export class Board {
 
     console.log("creating tile in joinedTeamEventName", p.user_name, team);
     this.createTile(p, team);
-    if (currentTurn && currentTurn !== Team.None) {
-      this.toggleCurrentTurn(currentTurn);
-    }
   }
 
   revealWord(wordVal: string) {
@@ -221,7 +219,7 @@ export class Board {
     const teamJoinBtn = <HTMLButtonElement>(
       teamDIV.getElementsByClassName("join")[0]
     );
-    teamJoinBtn.classList.remove("hidden");
+  //  teamJoinBtn.classList.remove("hidden");
     teamJoinBtn.onclick = () => {
       if (this.onJoinTeam) {
         this.onJoinTeam(team);
@@ -240,22 +238,28 @@ export class Board {
         // Team already has spymaster, don't set up the button
         return;
       }
-
-      registerBeSpymasterBtnListener(() => {
-        hideSpymasterBtn();
-        if (this.onBeSpymaster) {
-          this.onBeSpymaster();
-        }
-      });
     };
+
+    const beSpymasterBtn = <HTMLButtonElement>(
+      teamDIV.getElementsByClassName("beSpymaster")[0]
+    );
+    beSpymasterBtn.onclick = () => {
+      if (this.onBeSpymaster) {
+        this.onBeSpymaster(team);
+      }
+    }
+
   }
 
   makeSpymaster(id: string, team: Team) {
     const participantTile = getTile(id);
     participantTile.classList.add("spymaster");
 
-    if (this.team === team) {
-      hideSpymasterBtn();
+    if (team === this.team) {
+      hideAllJoinBtns();
+      hideAllSpymasterBtns();
+    } else {
+      hideSpymasterBtn(team);
     }
 
     if (id === this.localPlayerID) {

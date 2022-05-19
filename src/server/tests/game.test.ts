@@ -13,9 +13,9 @@ describe("Spymaster tests", () => {
     game.addPlayer("team1", Team.Team1);
     game.addPlayer("team2", Team.Team2);
 
-    game.setSpymaster("team1");
+    game.setSpymaster("team1", Team.Team1);
     expect(game.spymastersReady()).toBe(false);
-    game.setSpymaster("team2");
+    game.setSpymaster("team2", Team.Team2);
     expect(game.spymastersReady()).toBe(true);
   });
 
@@ -25,10 +25,10 @@ describe("Spymaster tests", () => {
     game.addPlayer("player1", Team.Team1);
     game.addPlayer("player2", Team.Team1);
 
-    game.setSpymaster("player1");
+    game.setSpymaster("player1", Team.Team1);
     console.log("set first spymaster");
     expect(() => {
-      game.setSpymaster("player2");
+      game.setSpymaster("player2", Team.Team1);
     }).toThrowError(SpymasterExists);
   });
 });

@@ -115,7 +115,7 @@ export class Game {
     }
   }
 
-  addPlayer(playerID: string, team: Team) {
+  addPlayer(playerID: string, team: Team): Player {
     // See if this player is already on one of the teams
     for (let i = 0; i < this.players.length; i += 1) {
       const p = this.players[i];
@@ -125,6 +125,7 @@ export class Game {
     }
     const p = new Player(playerID, team);
     this.players.push(p);
+    return p;
   }
 
   removePlayer(playerID: string) {
@@ -138,36 +139,21 @@ export class Game {
     throw new PlayerNotFound(playerID);
   }
 
-  setSpymaster(id: string): Player {
-    let player: Player = null;
-    // First, find this player in our player list
-    for (let i = 0; i < this.players.length; i += 1) {
-      const p = this.players[i];
-      if (p.id === id) {
-        player = p;
-        break;
-      }
-    }
-    if (!player) {
-      throw new PlayerNotFound(id);
-    }
-    const { team } = player;
-    if (team === Team.Team1) {
-      if (!this.team1SpymasterID) {
-        this.team1SpymasterID = id;
-        player.isSpymaster = true;
-        return player;
-      }
-      throw new SpymasterExists(player.team);
+  setSpymaster(id: string, team: Team): Player {
+    if ((team === Team.Team1 && this.team1SpymasterID) ||
+      (team === Team.Team2 && this.team2SpymasterID)) {
+      throw new SpymasterExists(team);
     }
 
+    const player = this.addPlayer(id, team);
+    player.isSpymaster = true;
+    if (team === Team.Team1) {
+      this.team1SpymasterID = player.id;
+      return player;
+    }
     if (team === Team.Team2) {
-      if (!this.team2SpymasterID) {
-        this.team2SpymasterID = id;
-        player.isSpymaster = true;
-        return player;
-      }
-      throw new SpymasterExists(player.team);
+      this.team2SpymasterID = player.id;
+      return player;
     }
 
     throw new Error(`player team unrecognized: ${player.team}`);

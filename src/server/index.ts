@@ -58,7 +58,7 @@ app.use("/", express.static(clientPath));
 
 app.use(express.json());
 
-app.post("/join", async (req: Request, res: Response) => {
+app.post("/join", (req: Request, res: Response) => {
   const body = <IJoinGameRequest>req.body;
   console.log("joining game", body);
   const { gameID } = body;
@@ -68,8 +68,22 @@ app.post("/join", async (req: Request, res: Response) => {
     res.status(400).send(`{"error":"${err}}`);
     return;
   }
-  const game = await orchestrator.getGame(gameID);
-  if (!game) {
+  orchestrator.getGame(gameID).then((game) => {
+    if (!game) {
+      const err = `game id ${gameID} not found`;
+      console.error(err);
+      res.status(404).send(`{"error":"${err}}`);
+      return;
+    }
+    const data = <IJoinGameResponse>{
+      roomURL: game.dailyRoomURL,
+      gameName: game.name,
+      wordSet: game.wordSet,
+    };
+    console.log("join sending res:", data);
+    res.send(data);
+  })
+ /* if (!game) {
     const err = `game id ${gameID} not found`;
     console.error(err);
     res.status(404).send(`{"error":"${err}}`);
@@ -81,7 +95,7 @@ app.post("/join", async (req: Request, res: Response) => {
     wordSet: game.wordSet,
   };
   console.log("join sending res:", data);
-  res.send(data);
+  res.send(data); */
 });
 
 app.post("/create", (req: Request, res: Response) => {
@@ -202,7 +216,7 @@ io.on("connection", (socket) => {
 
   socket.on(becomeSpymasterEventName, async (data: BecomeSpymasterData) => {
     orchestrator
-      .setGameSpymaster(data.gameID, data.sessionID)
+      .setGameSpymaster(data.gameID, data.sessionID, data.team)
       .then((res) => {
         const spymasterData = <SpymasterData>{
           spymasterID: data.sessionID,
