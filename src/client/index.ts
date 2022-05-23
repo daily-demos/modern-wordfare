@@ -12,8 +12,6 @@ import "./assets/microphone-off.svg";
 import "./assets/microphone.svg";
 import "./assets/screen-off.svg";
 import "./assets/screen-on.svg";
-import Game from "./game/game";
-import { BoardData } from "./game/board";
 import { initJoinProcess } from "./join";
 import { initCreateProcess } from "./create";
 

@@ -1,4 +1,3 @@
-import { GameData } from "../shared/events";
 import { IJoinGameRequest, IJoinGameResponse } from "../shared/types";
 import { BoardData } from "./game/board";
 import Game from "./game/game";
@@ -75,8 +74,5 @@ async function joinGame(gameID: string): Promise<IJoinGameResponse> {
 
   const body = await res.json();
   const gameData = <IJoinGameResponse>body;
-  const cookies = document.cookie;
-  console.log("cookies:", cookies);
-  console.log("RES HEADERS:", res.headers);
   return gameData;
 }

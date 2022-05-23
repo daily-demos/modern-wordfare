@@ -1,8 +1,8 @@
 import { Team } from "../../shared/types";
 import { wordKindToTeam } from "../../shared/util";
 import { Word, WordKind } from "../../shared/word";
-import "../assets/audio/word-success.wav";
-import "../assets/audio/word-failure.wav";
+import successAudio from "../assets/audio/word-success.wav";
+import failureAudio from "../assets/audio/word-failure.wav";
 
 export const textWidth = 163;
 export const textHeight = 65;
@@ -37,7 +37,7 @@ export class RenderedWord {
     this.word = word;
     this.onClick = onClick;
 
-    const blob = new Blob([this.word.avatarSVG], { type: "image/svg+xml" });
+   /* const blob = new Blob([this.word.avatarSVG], { type: "image/svg+xml" }); */
   }
 
   colorize(ownTeam: Team, withChime: boolean = true) {
@@ -74,11 +74,14 @@ export class RenderedWord {
 
   private playChime(ownTeam: Team) {
     const wordTeam = wordKindToTeam(this.word.kind);
+    let audio = new Audio();
     if (wordTeam === ownTeam) {
-      // play sound
+      audio.src = successAudio;
+      audio.play();
       return;
     }
-    // Play sound
+    audio.src = failureAudio;
+    audio.play();
   }
 
   private revealAvatar(tintShade: number) {

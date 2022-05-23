@@ -38,10 +38,15 @@ import {
   registerInviteBtnListener,
   registerLeaveBtnListener,
   registerMicBtnListener,
+  updateCamBtnState,
+  updateMicBtnState,
 } from "./nav";
 import createWordSet from "../util/word";
 import { Team } from "../../shared/types";
 import ErrTileAlreadyExists from "./errors/errTileAlreadyExists";
+
+import joinedAudio from "../assets/audio/joined.wav";
+
 
 export default class Game {
   socket: Socket;
@@ -59,7 +64,6 @@ export default class Game {
   private pendingTiles: { [key: string]: ReturnType<typeof setInterval> } = {};
 
   start(boardData: BoardData) {
-    // Display the game
     const g = document.getElementById("game");
     g.classList.remove("invisible");
     this.data = boardData;
@@ -113,10 +117,6 @@ export default class Game {
     };
   }
 
-  destroy() {
-    // this.game.destroy(true);
-  }
-
   private setupCall(bd: BoardData) {
     console.log("meeting token:", bd.meetingToken);
     this.call = new Call(bd.roomURL, bd.playerName, bd.meetingToken);
@@ -163,6 +163,10 @@ export default class Game {
     this.call.registerParticipantJoinedHandler((p) => {
       console.log("creating tile participant joined", p.user_name, Team.None);
       if (Date.now() - this.joinedAt > 3000) {
+        console.log("joinedAudio", joinedAudio);
+        let audio = new Audio(joinedAudio);
+        audio.play();
+
         // this.sound.play("joined");
       }
       try {
@@ -176,6 +180,13 @@ export default class Game {
     this.call.registerParticipantLeftHandler((p) => {
       removeTile(p.participant.session_id);
     });
+
+    this.call.registerParticipantUpdatedHandler((p) => {
+      if (p.local) {
+        updateCamBtnState(p.video);
+        updateMicBtnState(p.audio);
+      }
+    })
 
     this.call.registerTrackStartedHandler((p) => {
       const tracks = Call.getParticipantTracks(p.participant);
@@ -276,8 +287,7 @@ export default class Game {
         return;
       }
 
-      this.board.moveToTeam(p, data.teamID);
-
+      this.board.moveToTeam(p, data.teamID, true);
       this.board.makeSpymaster(data.spymasterID, data.teamID);
     });
 

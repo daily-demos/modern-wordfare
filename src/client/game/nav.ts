@@ -16,6 +16,28 @@ export function registerMicBtnListener(f: () => void) {
   };
 }
 
+export function updateCamBtnState(isOn: boolean) {
+  const btn = document.getElementById("toggleCam");
+  if (isOn) {
+    btn.classList.remove("cam-off")
+    btn.classList.add("cam-on");
+  } else {
+    btn.classList.remove("cam-on");
+    btn.classList.add("cam-off");
+  }
+}
+
+export function updateMicBtnState(isOn: boolean) {
+  const btn = document.getElementById("toggleMic");
+  if (isOn) {
+    btn.classList.remove("mic-off")
+    btn.classList.add("mic-on");
+  } else {
+    btn.classList.remove("mic-on");
+    btn.classList.add("mic-off");
+  }
+}
+
 export function registerLeaveBtnListener(f: () => void) {
   const leaveBtn = document.getElementById("leave");
   leaveBtn.onclick = () => {

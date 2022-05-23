@@ -2,9 +2,6 @@ import { DailyParticipant } from "@daily-co/daily-js";
 import { Team, TeamResult } from "../../shared/types";
 import { Call } from "../daily";
 
-import "../assets/audio/joined.wav";
-import "../assets/audio/start.wav";
-
 import WordGrid from "./wordGrid";
 import { GameData } from "../../shared/events";
 import { wordKindToTeam } from "../../shared/util";
@@ -12,7 +9,6 @@ import { Word, WordKind } from "../../shared/word";
 import ErrTileAlreadyExists from "./errors/errTileAlreadyExists";
 import {
   hideAllJoinBtns,
-  hideAllSpymasterBtns,
   hideEndTurnButtons,
   hideJoinBtn,
   hideSpymasterBtn,
@@ -23,7 +19,7 @@ import {
   showSpymasterBtn,
   toggleEndTurnButton,
 } from "./nav";
-import { SchemaTextFieldPhonetics } from "redis";
+import {startAudio} from  "../assets/audio/start.wav";
 
 export interface BoardData {
   roomURL: string;
@@ -242,6 +238,11 @@ export class Board {
   }
 
   toggleCurrentTurn(currentTurn: Team) {
+    if (this.currentTurn === Team.None) {
+      console.log("start audio", startAudio);
+      let audio = new Audio(startAudio);
+      audio.play();
+    }
     console.log("toggling turn", currentTurn);
     this.currentTurn = currentTurn;
     const teams = this.getTeamDivs(currentTurn);

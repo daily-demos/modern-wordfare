@@ -454,6 +454,24 @@ body {
   );
 }
 
+#board button.neutral {
+  background: linear-gradient(
+    106.36deg,
+    #b8b8b8 12.54%,
+    #e5e5e5 12.55%,
+    #e5e5e5 17.86%,
+    #b8b8b8 17.87%,
+    #b8b8b8 23.55%,
+    #e5e5e5 23.56%,
+    #e5e5e5 31.3%,
+    #b8b8b8 31.31%,
+    #b8b8b8 82.94%,
+    #e5e5e5 82.95%,
+    #e5e5e5 87.8%,
+    #b8b8b8 87.81%
+  );
+}
+
 #board button:hover:enabled {
   opacity: 1;
   cursor: pointer;
