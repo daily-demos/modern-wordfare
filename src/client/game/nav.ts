@@ -154,8 +154,7 @@ export function hideEndTurnButtons() {
 
 export function toggleEndTurnButton(activeTeam: Team, playerTeam: Team) {
   // No team to toggle to, erroneous call
-  if (activeTeam || activeTeam === Team.None) return;
-  console.log("toggling end turn button", activeTeam, playerTeam);
+  if (!activeTeam || activeTeam === Team.None) return;
 
   // If the player is an observer, nothing to do
   if (!playerTeam || playerTeam === Team.None) return;
