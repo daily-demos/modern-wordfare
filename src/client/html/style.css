@@ -1,0 +1,794 @@
+@font-face {
+  font-family: Jaldi;
+  src: url(../assets/Jaldi-Regular.ttf);
+}
+
+:root {
+  --grey-lightest: #f7f9fa;
+  --white: #ffffff;
+  --grey: #c8d1dc;
+  --dark-grey: #6b7785;
+  --dark-blue: #1f2d3d;
+  --dark-blue-border: #2b3f56;
+  --green: #72cc18;
+  --blue-bright: #3988ff;
+  --blue-dark: #4673e9;
+  --black: #1f1f1f;
+  --grid-black-bg: rgba(0, 0, 0, 0.1);
+  --grid-red-bg: rgba(255, 0, 0, 0.1);
+  --red-bright: #ff0000;
+  --red-dark: #97150d;
+  --gold: #e3c421;
+  --font-family: Jaldi, "Helvetica Neue", Sans-Serif;
+  --grid-bg: linear-gradient(to right, var(--grid-red-bg) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-red-bg) 1px, transparent 1px),
+    linear-gradient(to right, var(--grid-black-bg) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-black-bg) 1px, transparent 1px);
+  --grid-bg-size: 10px 10px, 10px 10px, 5px 5px, 5px 5px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-family);
+  margin: 0px;
+  padding: 0px;
+  background-color: #ffeed5;
+}
+
+.header {
+  background-color: #fff;
+  min-width: 100%;
+  height: 52px;
+  position: fixed;
+  top: 0;
+  box-shadow: inset 0px -1px 0p var(--grey);
+  border-bottom: 1px solid var(--grey);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 2;
+}
+
+.left-header {
+  display: flex;
+  align-items: center;
+  width: 325px;
+  margin-left: 16px;
+}
+
+.daily-logo {
+  height: 24px;
+  width: 60px;
+  margin-right: 24px;
+}
+
+.header-title {
+  font-size: 12px;
+  line-height: 16px;
+  font-family: var(--font-family);
+}
+
+.right-header {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-right: 24px;
+}
+
+.title {
+  margin: 0;
+  text-align: center;
+  padding-bottom: 20px;
+}
+
+.docs-button {
+  justify-content: space-between;
+}
+
+.white-button {
+  color: var(--dark-blue);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: var(--white);
+  border: 1px solid var(--grey);
+  padding: 8px 16px;
+  border-radius: 8px;
+  flex: none;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.link {
+  text-decoration: none;
+}
+
+.divider {
+  background: var(--grey);
+  margin: 0 16px;
+  display: block;
+  height: 32px;
+  width: 1px;
+}
+
+.octocat {
+  height: 24px;
+  width: 24px;
+}
+
+#container {
+  width: 100%;
+  top: 52px;
+  background: linear-gradient(
+    180deg,
+    var(--blue-dark) 0%,
+    var(--red-dark) 100%
+  );
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  font-family: var(--font-family);
+}
+
+#call {
+  position: absolute;
+  display: none;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+#world {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#entry {
+  width: 300px;
+  height: 228px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px;
+}
+
+#entry .prompt {
+  font-size: 16px;
+  line-height: 24px;
+  text-align: center;
+  padding-bottom: 20px;
+}
+
+#entry input {
+  width: 280px;
+  height: 32px;
+  padding: 8px 16px;
+  margin-bottom: 5px;
+  border-radius: 8px;
+  border: 1px solid var(--grey);
+  font-family: var(--font-family);
+}
+
+#entry button {
+  width: 280px;
+  height: 32px;
+  padding: 8px 16px;
+  font-weight: bold;
+  background: var(--green);
+  border-radius: 8px;
+  border-width: 0px;
+  cursor: pointer;
+}
+
+.fit {
+  /*  object-fit: cover; */
+  width: 100%;
+  height: 100%;
+}
+
+.contain {
+  /* object-fit: contain; */
+  width: 100%;
+  height: 100%;
+}
+
+#create-game-form {
+  display: block;
+  width: 250px;
+  margin-top: 50px;
+}
+
+#join-game-form {
+  display: block;
+  width: 250px;
+  margin-top: 50px;
+}
+
+#lobby {
+  display: flex;
+  justify-content: center;
+  background-color: #ffeed5;
+  flex-direction: column;
+  align-items: center;
+  align-content: center;
+  width: 800px;
+  padding: 0 24px 0 24px;
+  margin: auto;
+}
+
+#lobby h1 {
+  font-size: 64px;
+}
+
+#lobby h2 {
+  font-size: 32px;
+  text-align: center;
+  margin-top: 50px;
+}
+
+#lobby ul {
+  margin-left: 24px;
+}
+
+#lobby li {
+  font-size: 16px;
+}
+
+#lobby p {
+  font-size: 16px;
+  margin-top: 16px;
+}
+
+#lobby button {
+  background: var(--grid-bg), var(--red-bright);
+  background-size: var(--grid-bg-size), cover;
+  color: var(--white);
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  margin: 3px;
+
+  width: 100%;
+  height: 42px;
+
+  border: 2px solid var(--black);
+  box-shadow: 0px 4px 0px var(--black);
+  border-radius: 16px;
+  font-family: var(--font-family);
+  font-style: normal;
+  font-weight: 900;
+  font-size: 16px;
+  line-height: 27px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+  color: var(--black);
+  opacity: 1;
+}
+
+#lobby button:hover {
+  background-color: var(--gold);
+  columns: var(--black);
+  cursor: pointer;
+}
+
+#lobby input {
+  display: block;
+  width: 100%;
+  background: var(--grid-bg), white;
+  background-size: var(--grid-bg-size), cover;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  border: 2px solid var(--black);
+  box-shadow: 0px 4px 0px var(--black);
+  border-radius: 16px;
+  margin-bottom: 10px;
+}
+
+#lobby .instruction {
+  justify-content: left;
+}
+
+.destroyed {
+  display: none;
+}
+
+#game {
+  display: flex;
+  flex-direction: column;
+  margin-top: 52px;
+  width: 100%;
+}
+
+.team button {
+  border: 2px solid var(--black);
+  box-shadow: 0px 4px 0px var(--black);
+  border-radius: 16px;
+  width: 100%;
+  height: 64px;
+  font-family: "Jaldi";
+  font-style: normal;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 41px;
+  background: var(--grid-bg), white;
+  background-size: var(--grid-bg-size), cover;
+  text-align: center;
+}
+
+#team1 button {
+  color: var(--red-bright);
+}
+
+#team2 button {
+  color: var(--blue-bright);
+}
+
+.team button:hover {
+  background-color: var(--gold);
+  color: var(--black) !important;
+}
+
+#board .separator {
+  content: "";
+  width: 100%;
+}
+
+#board button {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  margin: 3px;
+
+  width: 100px;
+  height: 64px;
+  border: 2px solid var(--black);
+  box-shadow: 0px 4px 0px var(--black);
+  border-radius: 16px;
+
+  /* Inside auto layout */
+
+  flex: none;
+  flex-grow: 1;
+  background: var(--grid-bg),
+    linear-gradient(
+      106.36deg,
+      #f7eede 12.54%,
+      #ffffff 12.99%,
+      #ffffff 17.86%,
+      #f7eede 18.05%,
+      #f7eede 23.55%,
+      #ffffff 23.59%,
+      #ffffff 31.3%,
+      #f7eede 31.38%,
+      #f7eede 82.94%,
+      #ffffff 82.98%,
+      #ffffff 87.8%,
+      #f7eede 88.15%
+    ),
+    #f7eede;
+  background-size: var(--grid-bg-size), 164px 64px, 164px 64px;
+  font-family: var(--font-family);
+  font-style: normal;
+  font-weight: 900;
+  font-size: 16px;
+  line-height: 27px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+  color: var(--black);
+  opacity: 1;
+}
+
+#board button.team2 {
+  background: linear-gradient(
+      106.36deg,
+      #3988ff 12.54%,
+      #95b9ef 12.99%,
+      #95b9ef 17.84%,
+      #3988ff 17.85%,
+      #3988ff 23.55%,
+      #95b9ef 23.56%,
+      #95b9ef 31.3%,
+      #3988ff 31.31%,
+      #3988ff 82.94%,
+      #95b9ef 82.95%,
+      #95b9ef 87.8%,
+      #3988ff 87.81%
+    ),
+    #3988ff;
+}
+
+#board button.team1 {
+  background: linear-gradient(
+    106.36deg,
+    #ff0000 12.54%,
+    #ef8686 12.55%,
+    #ef8686 17.86%,
+    #ff0000 17.87%,
+    #ff0000 23.55%,
+    #ef8686 23.56%,
+    #ef8686 31.3%,
+    #ff0000 31.31%,
+    #ff0000 82.92%,
+    #ef8686 82.93%,
+    #ef8686 87.8%,
+    #ff0000 87.81%
+  );
+}
+
+#board button.assassin {
+  background: linear-gradient(
+    106.36deg,
+    #838383 12.54%,
+    #ababab 12.55%,
+    #ababab 17.86%,
+    #838383 17.87%,
+    #838383 23.55%,
+    #ababab 23.56%,
+    #ababab 31.3%,
+    #838383 31.31%,
+    #838383 82.94%,
+    #ababab 82.95%,
+    #ababab 87.8%,
+    #838383 87.81%
+  );
+}
+
+#board button:hover:enabled {
+  opacity: 1;
+  cursor: pointer;
+  border: 2px solid var(--gold);
+  box-shadow: 0px 4px 0px var(--gold);
+  animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both infinite;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+@keyframes shake {
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+  20%,
+  80% {
+    transform: translate3d(2px, 2px, 0);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 0, 2px);
+  }
+  40%,
+  60% {
+    transform: translate3d(4px, -2px, 0);
+  }
+}
+
+#controls {
+  display: flex;
+  /* position: absolute; */
+  /* z-index: 5; */
+  /* flex-direction: row; */
+  align-items: center;
+  height: 56px;
+  align-self: center;
+  padding-top: 40px;
+}
+
+#toggleCam,
+#toggleMic,
+#toggleScreenShare {
+  width: 50px;
+  height: 50px;
+  border: 2px solid var(--black);
+  box-shadow: 0px 4px 0px var(--black);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  gap: 8px;
+}
+/*
+#leave {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 16px;
+  color: #ffffff;
+  border-radius: 8px;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 16px;
+  border: none;
+  width: 95px;
+  height: 32px;
+} */
+
+#controls button {
+  margin: 0 5px;
+  cursor: pointer;
+  background: var(--grid-bg), white;
+  background-size: var(--grid-bg-size);
+  color: var(--black);
+  height: 50px;
+  padding-left: 25px;
+  padding-right: 25px;
+  border: 2px solid var(--black);
+  box-shadow: 0px 4px 0px var(--black);
+  border-radius: 8px;
+  font-family: var(--font-family);
+  font-weight: 600;
+  font-size: 18px;
+}
+
+#controls .cam-on {
+  background-image: url("./assets/camera.svg");
+  background-size: 24px 24px, var(--grid-bg-size), cover;
+  background-position: center;
+  background-repeat: no-repeat, repeat, no-repeat;
+}
+
+#controls .cam-off {
+  background: url(./assets/camera-off.svg), var(--grid-bg), white;
+  background-size: 24px 24px, var(--grid-bg-size), cover;
+  background-position: center;
+  background-repeat: no-repeat, repeat, no-repeat;
+}
+
+#controls .mic-on {
+  background-image: url("./assets/microphone.svg");
+  background-size: 24px 24px, var(--grid-bg-size), cover;
+  background-position: center;
+  background-repeat: no-repeat, repeat, no-repeat;
+}
+
+#controls .mic-off {
+  background-image: url("./assets/microphone-off.svg");
+  background-size: 24px 24px, var(--grid-bg-size), cover;
+  background-position: center;
+  background-repeat: no-repeat, repeat, no-repeat;
+}
+
+#controls button:hover {
+  background-color: var(--red-bright);
+}
+
+#toggleCam:hover,
+#toggleMic:hover {
+  background-color: var(--red-bright);
+}
+
+#team1 {
+  background-color: var(--red-bright);
+}
+
+#team2 {
+  background-color: var(--blue-bright);
+}
+
+.team .teamLabel {
+  display: flex;
+  justify-content: space-between;
+  color: white;
+  width: 100%;
+}
+
+.tiles .tile video {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+  border-radius: 16px;
+}
+
+.team {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 8px 16px 20px;
+  gap: 8px;
+  border: 2px solid var(--black);
+  box-shadow: 0px 4px 0px var(--black);
+  border-radius: 16px;
+  width: 248px;
+  max-height: 457px;
+  background: var(--grid-bg);
+  background-size: var(--grid-bg-size);
+}
+
+.team .tiles {
+  height: 100%;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.tiles .tile {
+  position: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 105px;
+  height: 100px;
+  border: 2px solid #1f1f1f;
+  filter: drop-shadow(0px 4px 0px #1f1f1f);
+  border-radius: 16px;
+  background-image: linear-gradient(45deg, #121a24, #2b3f56);
+}
+
+.name {
+  z-index: 1;
+  color: white;
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 16px;
+  position: absolute;
+  top: calc(100% - 20px);
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+.team .tiles .spymaster {
+  border-color: #f79400 !important;
+}
+
+.team h2 {
+  color: #e2fbfd;
+}
+
+.team h3 {
+  color: #e2fbfd;
+}
+.active {
+  color: green;
+}
+/*
+button {
+  justify-content: center;
+  align-items: center;
+  padding: 8px 16px;
+  height: auto;
+  cursor: pointer;
+  margin: 1px;
+
+  background: #1bebb9;
+  opacity: 0.6;
+  border-radius: 8px;
+  border: none;
+}
+
+button:hover:enabled {
+  opacity: 1;
+  cursor: pointer;
+} */
+
+#observers .tiles {
+  width: 100%;
+  display: flex;
+}
+
+#observers {
+  display: flex;
+  flex-direction: row;
+  align-self: center;
+  height: 100px;
+  padding-top: 10px;
+}
+
+#top {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+#gameOver {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.4);
+  align-content: center;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#gameOver .container {
+  background: var(--grid-bg), var(--gold);
+  background-size: var(--grid-bg-size), cover;
+  align-items: center;
+  padding: 16px;
+  margin: 3px;
+  width: 100%;
+  height: 64px;
+  border: 2px solid var(--black);
+  box-shadow: 0px 4px 0px var(--black);
+  border-radius: 16px;
+  color: var(--black);
+  font-weight: 600;
+  width: 200px;
+  height: 150px;
+  color: var(--black);
+}
+
+#gameOver button {
+  background: var(--grid-bg), white;
+  background-size: var(--grid-bg-size), cover;
+  align-items: center;
+  margin: 3px;
+  width: 100%;
+  height: 42px;
+  border: 2px solid var(--black);
+  box-shadow: 0px 4px 0px var(--black);
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 20px;
+  font-family: var(--font-family);
+}
+
+#gameOver button:hover {
+  background-color: var(--blue-bright);
+  color: white;
+}
+
+#game h2 {
+  color: white;
+}
+
+#game h3 {
+  color: white;
+}
+
+#gameStatus {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+#bottom {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+#board {
+  width: 816px;
+  justify-content: space-evenly;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.invisible {
+  display: none !important;
+}
+
+.hidden {
+  visibility: hidden;
+}

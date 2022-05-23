@@ -74,7 +74,7 @@ export class Game {
         this.teamResults[team].wordsLeft += 1;
       }
       // Create avatar image for each word
-      let svg = createAvatar(avatarStyle, {
+      /*    let svg = createAvatar(avatarStyle, {
         seed: w.value,
         scale: 65,
         mouth: ["default", "eating", "serious", "smile", "tongue", "twinkle"],
@@ -111,20 +111,26 @@ export class Game {
           "frownNatural",
         ],
       });
-      w.avatarSVG = svg;
+      w.avatarSVG = svg; */
     }
   }
 
-  addPlayer(playerID: string, team: Team) {
+  addPlayer(playerID: string, team: Team): Player {
     // See if this player is already on one of the teams
     for (let i = 0; i < this.players.length; i += 1) {
       const p = this.players[i];
       if (p.id === playerID) {
-        throw new DuplicatePlayer(p.id, p.team);
+        if (p.team === team) {
+          throw new DuplicatePlayer(p.id, p.team);
+        }
+        // Move player to new team
+        p.team = team;
+        return;
       }
     }
     const p = new Player(playerID, team);
     this.players.push(p);
+    return p;
   }
 
   removePlayer(playerID: string) {
@@ -138,39 +144,48 @@ export class Game {
     throw new PlayerNotFound(playerID);
   }
 
-  setSpymaster(id: string): Player {
-    let player: Player = null;
-    // First, find this player in our player list
+  setSpymaster(id: string, team: Team): Player {
+    if (
+      (team === Team.Team1 && this.team1SpymasterID) ||
+      (team === Team.Team2 && this.team2SpymasterID)
+    ) {
+      throw new SpymasterExists(team);
+    }
+
+    let player: Player;
+
     for (let i = 0; i < this.players.length; i += 1) {
       const p = this.players[i];
       if (p.id === id) {
         player = p;
-        break;
+        player.isSpymaster = true;
+        // If player is already a member of the team
+        // being requested to join, just set them as
+        // spymaster.
+        if (p.team === team) {
+          break;
+        }
+        // Move player to requested team
+        p.team = team;
       }
     }
+
+    // If player doesn't already exist, create one
     if (!player) {
-      throw new PlayerNotFound(id);
+      player = this.addPlayer(id, team);
     }
-    const { team } = player;
     if (team === Team.Team1) {
-      if (!this.team1SpymasterID) {
-        this.team1SpymasterID = id;
-        player.isSpymaster = true;
-        return player;
-      }
-      throw new SpymasterExists(player.team);
+      this.team1SpymasterID = player.id;
+      player.isSpymaster = true;
+      return player;
     }
-
     if (team === Team.Team2) {
-      if (!this.team2SpymasterID) {
-        this.team2SpymasterID = id;
-        player.isSpymaster = true;
-        return player;
-      }
-      throw new SpymasterExists(player.team);
+      this.team2SpymasterID = player.id;
+      player.isSpymaster = true;
+      return player;
     }
 
-    throw new Error(`player team unrecognized: ${player.team}`);
+    throw new Error(`requested team unrecognized: ${player.team}`);
   }
 
   spymastersReady(): boolean {
@@ -267,5 +282,26 @@ export class Game {
     this.team2SpymasterID = null;
     this.wordSet = newWordSet;
     this.currentTurn = Team.None;
+    this.teamResults = {
+      team1: {
+        team: Team.Team1,
+        wordsLeft: 0,
+        isAssassinated: false,
+      },
+      team2: {
+        team: Team.Team2,
+        wordsLeft: 0,
+        isAssassinated: false,
+      },
+    };
+
+    for (let i = 0; i < newWordSet.length; i += 1) {
+      const w = newWordSet[i];
+      const team = wordKindToTeam(w.kind);
+      if (team !== Team.None) {
+        this.teamResults[team].wordsLeft += 1;
+      }
+    }
+    this.state = GameState.Pending;
   }
 }

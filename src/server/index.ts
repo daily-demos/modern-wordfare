@@ -35,7 +35,6 @@ import {
 } from "../shared/events";
 import {
   ICreateGameRequest,
-  ICreateGameResponse,
   IJoinGameRequest,
   IJoinGameResponse,
   Team,
@@ -46,7 +45,7 @@ import Memory from "./store/memory";
 
 const app = express();
 const orchestrator = new GameOrchestrator(new Memory());
-const port = PORT || 3000;
+const port = PORT || 3001;
 
 function getClientPath(): string {
   const basePath = dirname(__dirname);
@@ -59,8 +58,9 @@ app.use("/", express.static(clientPath));
 
 app.use(express.json());
 
-app.post("/join", async (req: Request, res: Response) => {
+app.post("/join", (req: Request, res: Response) => {
   const body = <IJoinGameRequest>req.body;
+  console.log("joining game", body);
   const { gameID } = body;
   if (!gameID) {
     const err = "request must contain game ID";
@@ -68,8 +68,22 @@ app.post("/join", async (req: Request, res: Response) => {
     res.status(400).send(`{"error":"${err}}`);
     return;
   }
-  const game = await orchestrator.getGame(gameID);
-  if (!game) {
+  orchestrator.getGame(gameID).then((game) => {
+    if (!game) {
+      const err = `game id ${gameID} not found`;
+      console.error(err);
+      res.status(404).send(`{"error":"${err}}`);
+      return;
+    }
+    const data = <IJoinGameResponse>{
+      roomURL: game.dailyRoomURL,
+      gameName: game.name,
+      wordSet: game.wordSet,
+    };
+    console.log("join sending res:", data);
+    res.send(data);
+  });
+  /* if (!game) {
     const err = `game id ${gameID} not found`;
     console.error(err);
     res.status(404).send(`{"error":"${err}}`);
@@ -80,7 +94,8 @@ app.post("/join", async (req: Request, res: Response) => {
     gameName: game.name,
     wordSet: game.wordSet,
   };
-  res.send(data);
+  console.log("join sending res:", data);
+  res.send(data); */
 });
 
 app.post("/create", (req: Request, res: Response) => {
@@ -102,13 +117,10 @@ app.post("/create", (req: Request, res: Response) => {
       orchestrator
         .getMeetingToken(game.dailyRoomName)
         .then((token) => {
-          const data = <ICreateGameResponse>{
-            roomURL: game.dailyRoomURL,
-            meetingToken: token,
-            gameID: game.id,
-            wordSet: game.wordSet,
-          };
-          res.send(data);
+          // Set meeting token for this game
+          res.cookie(`meetingToken`, token);
+          console.log("GAME ID:", game.id);
+          res.redirect(`/?gameID=${game.id}&playerName=${body.playerName}`);
         })
         .catch((error) => {
           console.error("failed to get meeting token", error);
@@ -204,7 +216,7 @@ io.on("connection", (socket) => {
 
   socket.on(becomeSpymasterEventName, async (data: BecomeSpymasterData) => {
     orchestrator
-      .setGameSpymaster(data.gameID, data.sessionID)
+      .setGameSpymaster(data.gameID, data.sessionID, data.team)
       .then((res) => {
         const spymasterData = <SpymasterData>{
           spymasterID: data.sessionID,

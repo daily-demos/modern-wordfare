@@ -4,6 +4,7 @@ import DailyIframe, {
   DailyParticipant,
   DailyEventObjectTrack,
 } from "@daily-co/daily-js";
+import { keys } from "../../webpack.config";
 import { Team } from "../shared/types";
 
 export type JoinHandler = (e: DailyParticipant) => void;
@@ -48,6 +49,12 @@ export class Call {
       return participants.local;
     }
     return participants[sessionID];
+  }
+
+  getParticipants(): DailyParticipant[] {
+    const participants = this.callObject.participants();
+    const vals = Object.values(participants);
+    return vals;
   }
 
   toggleLocalVideo() {
@@ -105,11 +112,11 @@ export class Call {
 
     const mediaTracks: MediaStreamTrack[] = [];
     const vs = vt?.state;
-    if (vt.persistentTrack && vs === playableState || vs === "loading") {
+    if ((vt.persistentTrack && vs === playableState) || vs === "loading") {
       mediaTracks.push(vt.persistentTrack);
     }
     const as = at?.state;
-    if (at.persistentTrack && as === playableState || as === "loading") {
+    if ((at.persistentTrack && as === playableState) || as === "loading") {
       mediaTracks.push(at.persistentTrack);
     }
     return mediaTracks;

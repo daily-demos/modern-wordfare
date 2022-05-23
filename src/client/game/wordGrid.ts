@@ -1,42 +1,34 @@
-import { Team } from "../../../shared/types";
-import { Word } from "../../../shared/word";
-import { RenderedWord, textHeight, textWidth } from "./renderedWord";
+import { Team } from "../../shared/types";
+import { Word } from "../../shared/word";
+import { RenderedWord } from "./renderedWord";
 
 export default class WordGrid {
   private renderedWords: RenderedWord[] = [];
+  private board: HTMLDivElement;
 
-  constructor(scene: Phaser.Scene, words: Word[], onClick: (w: Word) => void) {
+  constructor(words: Word[], onClick: (w: Word) => void) {
     for (let i = 0; i < words.length; i += 1) {
       const word = words[i];
-      this.renderedWords.push(new RenderedWord(scene, word, onClick));
+      this.renderedWords.push(new RenderedWord(word, onClick));
     }
   }
 
-  drawGrid(space: Phaser.Geom.Rectangle) {
-    const wordsPerRow = Math.sqrt(this.renderedWords.length);
-
-    const wordWidth = textWidth;
-    const wordHeight = textHeight;
-    const wordBufferX = 15;
-    const wordBufferY = 25;
-
-    const totalWidth = (wordWidth + wordBufferX) * wordsPerRow;
-
-    const startX = space.x + (space.width - totalWidth) / 2;
-    const startY = space.y + 50;
-
-    let x = startX;
-    let y = startY;
+  drawGrid() {
+    this.board = <HTMLDivElement>document.getElementById("board");
+    this.board.classList.remove("hidden");
     for (let i = 0; i < this.renderedWords.length; i += 1) {
-      const word = this.renderedWords[i];
-      word.renderWordObject(x, y);
-      x += wordWidth + wordBufferX;
-      if (x >= wordWidth * wordsPerRow + startX) {
-        y += wordHeight + wordBufferY;
-        x = startX;
+      const rw = this.renderedWords[i];
+      const obj = rw.renderWordObject();
+      this.board.appendChild(obj);
+      if ((i + 1) % 5 === 0) {
+        const sep = <HTMLDivElement>document.createElement("div");
+        sep.classList.add("separator");
+        this.board.appendChild(sep);
       }
     }
   }
+
+  addSeparator() {}
 
   revealAllWords(ownTeam: Team) {
     for (let i = 0; i < this.renderedWords.length; i += 1) {
@@ -54,6 +46,7 @@ export default class WordGrid {
       const rw = this.renderedWords[i];
       if (rw.word.value === wordVal) {
         rw.colorize(ot);
+        rw.disableInteraction();
         return;
       }
     }

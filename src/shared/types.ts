@@ -3,6 +3,7 @@ import { Word } from "./word";
 export interface ICreateGameRequest {
   gameName: string;
   wordSet: Word[];
+  playerName: string;
 }
 
 export interface ICreateGameResponse {
