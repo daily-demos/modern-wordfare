@@ -1,6 +1,11 @@
+import { lchown } from "fs";
 import { Team } from "../../shared/types";
 
-let endTurnBtn: HTMLButtonElement = null;
+let endTurnBtns: { [key in Team]?: HTMLButtonElement } = {
+  team1: null,
+  team2: null,
+}
+
 
 export function registerCamBtnListener(f: () => void) {
   const toggleCamBtn = document.getElementById("toggleCam");
@@ -55,10 +60,10 @@ export function registerInviteBtnListener(f: () => void) {
 export function registerEndTurnBtnListener(team: Team, f: () => void) {
   // If this is the first time we're doing this, we may
   // need to retrieve the buttons for the first time
-  if (!endTurnBtn) {
+  if (!endTurnBtns[team]) {
     setEndTurnBtn(team);
   }
-  endTurnBtn.onclick = () => {
+  endTurnBtns[team].onclick = () => {
     f();
   };
 }
@@ -147,9 +152,8 @@ function showBtn(btn: HTMLButtonElement) {
 }
 
 export function hideEndTurnButtons() {
-  if (endTurnBtn) {
-    endTurnBtn.classList.add("invisible");
-  }
+    endTurnBtns[Team.Team1]?.classList.add("invisible");
+    endTurnBtns[Team.Team2]?.classList.add("invisible");
 }
 
 export function toggleEndTurnButton(activeTeam: Team, playerTeam: Team) {
@@ -160,18 +164,21 @@ export function toggleEndTurnButton(activeTeam: Team, playerTeam: Team) {
   if (!playerTeam || playerTeam === Team.None) return;
   // If this is the first time we're doing this, we may
   // need to retrieve the buttons for the first time
-  if (!endTurnBtn) {
-    setEndTurnBtn(playerTeam);
-  }
+  if (!endTurnBtns[Team.Team1]) setEndTurnBtn(Team.Team1);
+  if (!endTurnBtns[Team.Team2]) setEndTurnBtn(Team.Team2);
+  
+  
   if (activeTeam === playerTeam) {
-    endTurnBtn.classList.remove("invisible");
-    return;
+    endTurnBtns[activeTeam].classList.remove("invisible");
+  } else {
+    endTurnBtns[playerTeam].classList.add("invisible");
+    endTurnBtns[activeTeam].classList.add("invisible");
   }
-  endTurnBtn.classList.add("invisible");
+
 }
 
 function setEndTurnBtn(team: Team) {
   const teamDiv = document.getElementById(team);
   const btn = <HTMLButtonElement>teamDiv.getElementsByClassName("endTurn")[0];
-  endTurnBtn = btn;
+  endTurnBtns[team] = btn;
 }
