@@ -45,7 +45,7 @@ import Memory from "./store/memory";
 
 const app = express();
 const orchestrator = new GameOrchestrator(new Memory());
-const port = PORT || 3000;
+const port = PORT || 3001;
 
 function getClientPath(): string {
   const basePath = dirname(__dirname);
@@ -82,8 +82,8 @@ app.post("/join", (req: Request, res: Response) => {
     };
     console.log("join sending res:", data);
     res.send(data);
-  })
- /* if (!game) {
+  });
+  /* if (!game) {
     const err = `game id ${gameID} not found`;
     console.error(err);
     res.status(404).send(`{"error":"${err}}`);

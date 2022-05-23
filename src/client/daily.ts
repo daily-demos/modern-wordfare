@@ -4,6 +4,7 @@ import DailyIframe, {
   DailyParticipant,
   DailyEventObjectTrack,
 } from "@daily-co/daily-js";
+import { keys } from "../../webpack.config";
 import { Team } from "../shared/types";
 
 export type JoinHandler = (e: DailyParticipant) => void;
@@ -48,6 +49,12 @@ export class Call {
       return participants.local;
     }
     return participants[sessionID];
+  }
+
+  getParticipants(): DailyParticipant[] {
+    const participants = this.callObject.participants();
+    const vals = Object.values(participants);
+    return vals;
   }
 
   toggleLocalVideo() {

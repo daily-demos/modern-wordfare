@@ -43,6 +43,17 @@
     </header>
     <div id="container">
       <div id="game" class="invisible">
+        <div id="gameOver" class="invisible">
+          <div class="container">
+            <h3>Game over</h3>
+            <h2><span class="teamName"> wins!</span></h2>
+            <button>Create new game</button>
+          </div> 
+        </div>
+        <div id="gameStatus">
+          <h2>Team selection in progress</h2>
+          <h3>(Game needs two spymasters to start!)</h3>
+        </div>
         <div id="top">
           <div id="team1" class="team hidden">
             <span class="teamLabel">
@@ -52,6 +63,7 @@
             <div class="tiles"></div>
             <button class="join">Join as Player</button>
             <button class="beSpymaster">Join as Spymaster</button>
+            <button class="endTurn invisible">End turn</button>
           </div>
           <div id="board"></div>
           <div id="team2" class="team hidden">
@@ -62,6 +74,7 @@
             <div class="tiles"></div>
             <button class="join">Join as Player</button>
             <button class="beSpymaster">Join as Spymaster</button>
+            <button class="endTurn invisible">End turn</button>
           </div>
         </div>
         <div id="bottom">
@@ -79,13 +92,14 @@
               class="mic-off"
               aria-label="Toggle microphone"
             ></button>
-            <button id="endTurn" class="invisible">End turn</button>
             <button id="invite" aria-label="Invite">Invite</button>
-            <button id="leave">Leave Call</button>
+            <button id="leave">Leave game</button>
           </div>
         </div>
       </div>
       <div id="lobby">
+        <h2>Play Codewords online for free!
+          <br />Video chat built in.</h2>
         <form id="join-game-form" class="invisible">
           <h2>Join a game</h2>
           <input
@@ -94,10 +108,10 @@
             id="join-player-name"
             required
           />
-          <button type="submit" id="join-game">Start demo</button>
+          <button type="submit" id="join-game">Join game</button>
         </form>
         <form id="create-game-form" class="invisible">
-          <h2>Start a new game</h2>
+          <h3>Start a new game</h3>
           <input type="text" placeholder="Game Name" id="game-name" required />
           <input
             type="text"
@@ -105,8 +119,32 @@
             id="create-player-name"
             required
           />
-          <button type="submit" id="create-game">Start demo</button>
+          <button type="submit" id="create-game">Create game</button>
         </form>
+        <span class="instruction">
+          <p>Play directly in your browser with video chat. No need to install any other software. Just click the “Create game” button above. It will create a room and a link that you can share with people you want to play with. Invite your friends, family, students or coworkers!</p>
+          <h2>Quick start</h2>
+          <p>
+            <ul>
+              <li>The Spymaster gives verbal one-word hint and a number to their team. The word is the hint players use to associate with their team’s target words. The number indicates the number of words the hint ties together.</li>
+              <li>Players try to guess the Spymaster's hinted words, while avoiding the words of the other team.</li>
+              <li>Once Players have guessed the number of words given by their Spymaster, Players can click  "End Turn", so the other team can guess their words.</li>
+              <li>The first team with no words left to guess wins</li>
+            </ul>
+          </p>
+          <p>
+            The above are simplified rules to help you start playing fast, if you’d like more details of how to play the game, check out our more in-depth set of Codename rules.
+          </p>
+          <h2>About this site</h2>
+          <p>
+            This site was created by Daily to showcase the custom video chat capabilities of our WebRTC APIs. We were inspired by the board game, Codenames and have used the game play mechanics to create a free playable online version. Codenames is a popular game to play on Zoom with coworkers, but since we work with developing video conferencing APIs, we thought a social game would be a perfect candidtate to embed our video call capabilities into it.
+          </p>
+          <h2>Are you a software developer?</h2>
+          <p>If you are a developer and would like to see our source code, check out our Github. Feel free to use it as a starting point to develop your own social gaming app with video chat. You can also read the detailed writeup on our blog where we explain our code and the frameworks we used. You’ll want to first sign up and grab an API key.</p>
+          <p>Want other features? Email us or add your own and submit a pull request.</p>
+          <p>We at Daily have created this demo to show how easy it is to add video chat capabilities to any application. We have video SDKs for Android, iOS, JavaScript, React Native, and more. We have a lot more WebRTC demos to give you an idea of what is possible with fully customizable and embedable real-time video.</p>
+          <p>If you’d like to join us in making easy to use video call APIs, please visit our job postings. We are hiring!</p>
+        </span>
       </div>
     </div>
   </body>

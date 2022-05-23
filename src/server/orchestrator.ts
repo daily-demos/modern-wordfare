@@ -168,7 +168,7 @@ export default class GameOrchestrator {
   async setGameSpymaster(
     gameID: string,
     playerID: string,
-    team: Team,
+    team: Team
   ): Promise<{ spymaster: Player; currentTurn: Team }> {
     const game = await this.getGame(gameID);
     if (!game) {

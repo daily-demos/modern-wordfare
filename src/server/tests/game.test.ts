@@ -1,6 +1,7 @@
 import { wordsPerTeam } from "../../client/config";
 import InvalidTurn from "../../shared/errors/invalidTurn";
 import SpymasterExists from "../../shared/errors/spymasterExists";
+import Player from "../../shared/player";
 import { Team } from "../../shared/types";
 import { Word, WordKind } from "../../shared/word";
 import { Game } from "../game";
@@ -30,6 +31,25 @@ describe("Spymaster tests", () => {
     expect(() => {
       game.setSpymaster("player2", Team.Team1);
     }).toThrowError(SpymasterExists);
+  });
+
+  test("Player switches to other team spymaster", () => {
+    const game = new Game("test game", "test url", "test room", []);
+
+    const pid = "player1";
+
+    game.addPlayer(pid, Team.Team1);
+    game.setSpymaster(pid, Team.Team2);
+
+    let player: Player;
+    for (let i = 0; i < game["players"].length; i += 1) {
+      const p = game["players"][i];
+      if (p.id === pid) {
+        player = p;
+      }
+    }
+    expect(player.isSpymaster).toBe(true);
+    expect(game["team2SpymasterID"]).toBe(pid);
   });
 });
 

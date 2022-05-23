@@ -20,8 +20,15 @@ export default class WordGrid {
       const rw = this.renderedWords[i];
       const obj = rw.renderWordObject();
       this.board.appendChild(obj);
+      if ((i + 1) % 5 === 0) {
+        const sep = <HTMLDivElement>document.createElement("div");
+        sep.classList.add("separator");
+        this.board.appendChild(sep);
+      }
     }
   }
+
+  addSeparator() {}
 
   revealAllWords(ownTeam: Team) {
     for (let i = 0; i < this.renderedWords.length; i += 1) {
@@ -39,6 +46,7 @@ export default class WordGrid {
       const rw = this.renderedWords[i];
       if (rw.word.value === wordVal) {
         rw.colorize(ot);
+        rw.disableInteraction();
         return;
       }
     }

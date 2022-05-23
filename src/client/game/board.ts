@@ -10,7 +10,20 @@ import { GameData } from "../../shared/events";
 import { wordKindToTeam } from "../../shared/util";
 import { Word, WordKind } from "../../shared/word";
 import ErrTileAlreadyExists from "./errors/errTileAlreadyExists";
-import { hideAllJoinBtns, hideAllSpymasterBtns, hideSpymasterBtn, registerBeSpymasterBtnListener } from "./nav";
+import {
+  hideAllJoinBtns,
+  hideAllSpymasterBtns,
+  hideEndTurnButtons,
+  hideJoinBtn,
+  hideSpymasterBtn,
+  registerBeSpymasterBtnListener,
+  registerJoinBtnListener,
+  showAllJoinBtns,
+  showJoinBtn,
+  showSpymasterBtn,
+  toggleEndTurnButton,
+} from "./nav";
+import { SchemaTextFieldPhonetics } from "redis";
 
 export interface BoardData {
   roomURL: string;
@@ -40,19 +53,22 @@ export class Board {
   private readonly onJoinTeam: onJoinTeam;
   private readonly onBeSpymaster: onBeSpymaster;
 
-  private isSpymaster: boolean;
-
   private localPlayerID: string;
+
+  private currentTurn: Team = Team.None;
+
+  private spymasters: { [key in Team]?: string } = {
+    team1: null,
+    team2: null,
+  };
 
   constructor(
     bd: BoardData,
     localPlayerID: string,
     onClickWord: onClickWord,
     onJoinTeam: onJoinTeam,
-    onBeSpymaster: onBeSpymaster,
+    onBeSpymaster: onBeSpymaster
   ) {
-    console.log("constructing board!!");
-
     this.wordGrid = new WordGrid(bd.wordSet, (w: Word) => {
       onClickWord(w.value);
     });
@@ -61,10 +77,22 @@ export class Board {
 
     this.gameID = bd.gameID;
     this.localPlayerID = localPlayerID;
-    console.log("local player ID:", this.localPlayerID);
+
+    // Reset controls
+    hideEndTurnButtons();
+    showAllJoinBtns();
+  }
+
+  destroy() {
+    const board = document.getElementById("board");
+    board.innerHTML = "";
+
+    /*  const team1 = document.getElementById("team1");
+    const team2 = document.getElementById("team2"); */
   }
 
   processDataDump(data: GameData) {
+    console.log("processing data dump", data.scores);
     if (data.currentTurn && data.currentTurn !== Team.None) {
       this.toggleCurrentTurn(data.currentTurn);
     }
@@ -80,12 +108,11 @@ export class Board {
 
   setScores(res: TeamResult) {
     const teamDIV = this.teamDIVs[res.team];
-    console.log("teamDOM:", teamDIV);
     const score = teamDIV.getElementsByClassName("score")[0];
     score.innerHTML = res.wordsLeft.toString();
   }
 
-  private updateScore(team: Team, lastRevealedWord: Word) {
+  private updateScore(team: Team, lastRevealedWord: Word): Team {
     const lastWord = lastRevealedWord;
     if (lastWord.kind === WordKind.Assassin) {
       console.log("ASSASSINATED");
@@ -95,13 +122,12 @@ export class Board {
       } else if (team) {
         winningTeam = Team.Team1;
       }
-      this.showRestart(winningTeam); // TODO
-      return;
+      return winningTeam;
     }
 
     const wordTeam = wordKindToTeam(lastWord.kind);
     if (wordTeam === Team.None) {
-      return;
+      return Team.None;
     }
 
     const teamDIV = this.teamDIVs[wordTeam];
@@ -110,15 +136,24 @@ export class Board {
 
     const newScore = wordsLeft - 1;
     if (newScore === 0) {
-      this.showRestart(wordTeam);
-      return;
+      return wordTeam;
     }
     score.innerHTML = newScore.toString();
+    return Team.None;
   }
 
-  moveToTeam(p: DailyParticipant, team: Team) {
+  moveToObservers(participants: DailyParticipant[]) {
+    for (let i = 0; i < participants.length; i += 1) {
+      const p = participants[i];
+      this.moveToTeam(p, Team.None, true);
+    }
+  }
+
+  moveToTeam(p: DailyParticipant, team: Team, force = false) {
     console.log(
-      "session ID, local player ID:",
+      "moving to team:",
+      team,
+      this.currentTurn,
       p.session_id,
       this.localPlayerID
     );
@@ -126,47 +161,107 @@ export class Board {
       this.team = team;
     }
 
-    console.log("creating tile in joinedTeamEventName", p.user_name, team);
-    this.createTile(p, team);
+    this.createTile(p, team, force);
+    this.updateGameStatus();
+    this.updateInteraction();
+    toggleEndTurnButton(this.currentTurn, this.team);
+  }
+
+  private updateJoinButtons() {
+    console.log("updating join buttons", this.spymasters);
+    const spymasterOfTeam = this.isSpymaster();
+
+    if (this.isOnTeam()) {
+      const otherTeam = this.getOtherTeam();
+      console.log("other team:", this.team, otherTeam, spymasterOfTeam);
+      // If player is spymaster on a team, disable player-join buttons:
+      if (spymasterOfTeam !== Team.None) {
+        hideAllJoinBtns();
+      } else {
+        console.log("showing join btn for other team:", otherTeam);
+        hideJoinBtn(this.team);
+        showJoinBtn(otherTeam);
+      }
+    }
+    if (!this.spymasters[Team.Team1]) {
+      showSpymasterBtn(Team.Team1);
+    } else {
+      hideSpymasterBtn(Team.Team1);
+    }
+    if (!this.spymasters[Team.Team2]) {
+      showSpymasterBtn(Team.Team1);
+    } else {
+      hideSpymasterBtn(Team.Team2);
+    }
+  }
+
+  private getOtherTeam(): Team {
+    if (this.team === Team.Team1) {
+      return Team.Team2;
+    }
+    if (this.team === Team.Team2) {
+      return Team.Team1;
+    }
+    return Team.None;
+  }
+
+  private isOnTeam(): boolean {
+    return this.team && this.team !== Team.None;
   }
 
   revealWord(wordVal: string) {
     this.wordGrid.revealWord(wordVal, this.team);
   }
-  private showRestart(winner: Team) {
-    /*  const endDOM = this.add.dom(0, 0).createFromCache("end-dom");
-    const name = endDOM.getChildByID("teamName");
-    name.innerHTML = winner.toString();
-    const x = this.game.canvas.width / 2;
-    const y = this.game.canvas.height / 2;
-    endDOM.setPosition(x, y).setOrigin(0.5);
 
-    const restartBtn = <HTMLButtonElement>endDOM.getChildByID("restart");
-    restartBtn.onclick = () => {
-      this.restart();
-    }; */
+  private updateGameStatus() {
+    let heading: string;
+    let subheading: string;
+
+    const ct = this.currentTurn;
+    if (ct === Team.None) {
+      return;
+    }
+
+    if (ct === this.team) {
+      heading = "Your turn!";
+      if (this.isSpymaster() !== Team.None) {
+        subheading =
+          "Give a one-word clue and the number of words your teammates should guess";
+      } else {
+        subheading = "Select words based on your spymaster's clues";
+      }
+    } else if (this.team !== Team.None) {
+      heading = "Other team's turn!";
+      subheading = "Wait for the other team to make their guesses";
+    } else {
+      heading = `${ct}'s turn`;
+      subheading = "";
+    }
+    const gameStatus = document.getElementById("gameStatus");
+    gameStatus.innerHTML = `<h2>${heading}</h2><h3>${subheading}</h3>`;
   }
 
   toggleCurrentTurn(currentTurn: Team) {
+    console.log("toggling turn", currentTurn);
+    this.currentTurn = currentTurn;
     const teams = this.getTeamDivs(currentTurn);
-    console.log("teamDivs", teams);
     teams.activeTeam.classList.add("active");
     teams.otherTeam.classList.remove("active");
-    console.log("this team:", this.team, currentTurn);
-    if (!this.team || this.isSpymaster) {
+
+    this.updateGameStatus();
+    toggleEndTurnButton(currentTurn, this.team);
+    this.updateInteraction();
+  }
+
+  private updateInteraction() {
+    if (!this.team || this.isSpymaster() !== Team.None) {
       return;
     }
-
-    const endTurnBtn = document.getElementById("endTurn");
-
-    if (currentTurn === this.team) {
-      console.log("current team!", currentTurn, this.team);
+    if (this.currentTurn === this.team) {
       this.wordGrid.enableInteraction();
-      endTurnBtn.classList.remove("invisible");
       return;
     }
     this.wordGrid.disableInteraction();
-    endTurnBtn.classList.add("invisible");
   }
 
   private getTeamDivs(activeTeam: Team): {
@@ -191,10 +286,15 @@ export class Board {
     throw new Error(`invalid active team requested: ${activeTeam}`);
   }
 
-  processTurnResult(team: Team, lastRevealedWord: Word) {
-    this.updateScore(team, lastRevealedWord);
+  processTurnResult(team: Team, lastRevealedWord: Word): Team {
+    const winningTeam = this.updateScore(team, lastRevealedWord);
     // Reveal the word;
-    this.wordGrid.revealWord(lastRevealedWord.value, this.team);
+    if (winningTeam === Team.None) {
+      this.wordGrid.revealWord(lastRevealedWord.value, this.team);
+    } else {
+      this.wordGrid.revealAllWords(this.team);
+    }
+    return winningTeam;
   }
 
   showTeams() {
@@ -216,60 +316,52 @@ export class Board {
 
     teamDIV.classList.remove("hidden");
 
-    const teamJoinBtn = <HTMLButtonElement>(
-      teamDIV.getElementsByClassName("join")[0]
-    );
-  //  teamJoinBtn.classList.remove("hidden");
-    teamJoinBtn.onclick = () => {
-      if (this.onJoinTeam) {
+    if (this.onJoinTeam) {
+      registerJoinBtnListener(team, () => {
+        console.log("join btn clicked", team);
         this.onJoinTeam(team);
-      }
-
-      const joinButtons = document.getElementsByClassName("join");
-      for (let i = 0; i < joinButtons.length; i += 1) {
-        const btn = joinButtons[i];
-        btn.classList.add("hidden");
-      }
-      console.log("joinTeam() emitting joined team event name");
-
-      const hasSpymaster = teamDIV.getElementsByClassName("spymaster");
-      if (hasSpymaster && hasSpymaster.length > 0) {
-        console.log("team already has spymaster");
-        // Team already has spymaster, don't set up the button
-        return;
-      }
-    };
-
-    const beSpymasterBtn = <HTMLButtonElement>(
-      teamDIV.getElementsByClassName("beSpymaster")[0]
-    );
-    beSpymasterBtn.onclick = () => {
-      if (this.onBeSpymaster) {
-        this.onBeSpymaster(team);
-      }
+      });
     }
 
+    if (this.onBeSpymaster) {
+      registerBeSpymasterBtnListener(team, () => {
+        console.log("spymater btn clicked", team);
+        this.onBeSpymaster(team);
+      });
+    }
   }
 
   makeSpymaster(id: string, team: Team) {
     const participantTile = getTile(id);
     participantTile.classList.add("spymaster");
 
-    if (team === this.team) {
-      hideAllJoinBtns();
-      hideAllSpymasterBtns();
-    } else {
-      hideSpymasterBtn(team);
+    const isSpymaster = this.isSpymaster();
+    if (isSpymaster !== Team.None) {
+      this.spymasters[isSpymaster] = null;
     }
+    console.log("making spymaster", id, team);
+    this.spymasters[team] = id;
 
     if (id === this.localPlayerID) {
       // Show word colors in grid
       this.wordGrid.revealAllWords(this.team);
-      this.isSpymaster = true;
     }
+    this.updateJoinButtons();
   }
 
-  createTile(p: DailyParticipant, team: Team) {
+  private isSpymaster(): Team {
+    if (this.spymasters[Team.Team1] === this.localPlayerID) {
+      return Team.Team1;
+    }
+    if (this.spymasters[Team.Team2] === this.localPlayerID) {
+      return Team.Team2;
+    }
+    return Team.None;
+  }
+
+  createTile(p: DailyParticipant, team: Team, force = false) {
+    this.updateJoinButtons();
+    console.log("creating tile:", team, force);
     let name = p.user_name;
     if (p.local) {
       name = "You";
@@ -277,13 +369,13 @@ export class Board {
     const id = p.session_id;
 
     const tileTeam = this.getTileTeam(id);
-    console.log("tile team:", tileTeam);
-    if (team !== Team.None && tileTeam === Team.None) {
+    if (
+      (team !== Team.None && tileTeam === Team.None) ||
+      (tileTeam !== null && force)
+    ) {
       removeTile(id);
     }
     const div = this.teamDIVs[team];
-
-    console.log("creating tile", name, team);
 
     // See if there is already an existing tile by this ID, error out if so
     let participantTile = getTile(id);
@@ -322,7 +414,6 @@ export class Board {
   private getTileTeam(playerID: string): Team {
     const tileID = getParticipantTileID(playerID);
     const tile = document.getElementById(tileID);
-    console.log("getTileTeam tile:", tile, tileID);
     if (!tile) return;
 
     if (this.teamDIVs[Team.None].contains(tile)) {
@@ -367,7 +458,6 @@ export function updateMedia(participantID: string, tracks: MediaStreamTrack[]) {
     );
   }
   const video = videoTags[0];
-  console.log("tracks:", tracks);
   if (!tracks || tracks.length === 0) {
     video.srcObject = null;
     return;

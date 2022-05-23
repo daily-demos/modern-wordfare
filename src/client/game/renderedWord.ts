@@ -40,31 +40,12 @@ export class RenderedWord {
     const blob = new Blob([this.word.avatarSVG], { type: "image/svg+xml" });
   }
 
-  colorize(ownTeam: Team, withAvatar: boolean = true) {
-    console.log("colorizing word", this.word.value, withAvatar);
-    const wordTeam = wordKindToTeam(this.word.kind);
-
-    let tintShade;
-    /* let bgColor;
-    if (this.word.kind === WordKind.Assassin) {
-      bgColor = this.assassinConfig.backgroundColor;
-      tintShade = 0x666666;
-    } else if (this.word.kind === WordKind.Neutral) {
-      bgColor = this.neutralConfig.backgroundColor;
-      tintShade = 0xd7d7d7;
-    } else if (wordTeam === ownTeam) {
-      bgColor = this.ownTeamConfig.backgroundColor;
-      tintShade = 0x66ff00;
-    } else {
-      bgColor = this.otherTeamConfig.backgroundColor;
-      tintShade = 0xff0000;
-    } */
+  colorize(ownTeam: Team, withChime: boolean = true) {
     this.object.classList.add(this.word.kind.toString());
 
-    if (!withAvatar) return;
+    if (!withChime) return;
 
     this.playChime(ownTeam);
-    this.revealAvatar(tintShade);
   }
 
   renderWordObject(): HTMLButtonElement {
