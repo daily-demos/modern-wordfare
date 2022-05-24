@@ -240,6 +240,8 @@ export default class GameOrchestrator {
   }
 
   // toggleGameTurn() toggles the turn to the next team.
+  // Possible improvement: only allow a player on team
+  // which is active to end their turn.
   async toggleGameTurn(gameID: string): Promise<Team> {
     const game = await this.getGame(gameID);
     if (!game) {

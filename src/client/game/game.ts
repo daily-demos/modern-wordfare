@@ -133,7 +133,7 @@ export default class Game {
 
     // Start call event handler registration
     this.call.registerJoinedMeetingHandler((player: DailyParticipant) => {
-     this.handleJoinedMeeting(player);
+      this.handleJoinedMeeting(player);
     });
 
     this.call.registerParticipantJoinedHandler((p) => {
@@ -195,7 +195,7 @@ export default class Game {
     // End call control setup
   }
 
-  // setupSocket() sets up a socket connection 
+  // setupSocket() sets up a socket connection
   // to the game server
   private setupSocket() {
     const socket: Socket = io();
@@ -250,7 +250,7 @@ export default class Game {
         data.team,
         data.lastRevealedWord
       );
-      // If there is a winning team, display 
+      // If there is a winning team, display
       // the game over UI
       if (winningTeam !== Team.None) {
         this.showGameOver(winningTeam);
@@ -266,7 +266,6 @@ export default class Game {
       removeTile(data.playerID);
     });
     // End server socket event handling
-
   }
 
   private restart() {

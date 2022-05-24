@@ -10,7 +10,7 @@ To use this demo, you will need a Daily API key.
 
 To get a Daily API key, [create a free Daily account](https://dashboard.daily.co/signup)
 
-Once you have an account and are logged into the [Daily Dashboard](https://dashboard.daily.co/), copy your API key [here](https://dashboard.daily.co/developers). Your domain 
+Once you have an account and are logged into the [Daily Dashboard](https://dashboard.daily.co/), copy your API key [here](https://dashboard.daily.co/developers). Your domain
 
 Copy `.env.sample` in this repository's root to a file called `.env` and fill in the `DAILY_DOMAIN` and `DAILY_API_KEY` variables. Do not commit this file!
 

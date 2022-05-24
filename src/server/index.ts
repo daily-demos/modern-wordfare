@@ -126,11 +126,15 @@ const server = createServer(app);
 
 const io = new Server(server);
 
+// Listen for new connections
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
+
+  // Handle socket asking to join a game
   socket.on(joinGameEventName, (data: JoinGameData) => {
     socket.join(data.gameID);
-    // Send game data back:
+
+    // Send game data dump back to the socket
     orchestrator
       .getGame(data.gameID)
       .then((game) => {
@@ -141,7 +145,6 @@ io.on("connection", (socket) => {
           revealedWordVals: game.getRevealedWordVals(),
           scores: game.teamResults,
         };
-        console.log("sending data dump", socket.id, gameDataDump);
         io.to(socket.id).emit(gameDataDumpEventName, gameDataDump);
       })
       .catch((e) => {
@@ -150,9 +153,12 @@ io.on("connection", (socket) => {
       });
   });
 
+  // Handle client disconnecting
   socket.on("disconnect", async () => {
     console.log("user disconnected");
     try {
+      // Attempt to eject player from any game they
+      // are currently in.
       const ejectedPlayerInfo = await orchestrator.ejectPlayer(socket.id);
       io.to(ejectedPlayerInfo.gameID).emit(playerLeftgameEventName, <
         PlayerLeftData
@@ -160,10 +166,13 @@ io.on("connection", (socket) => {
         playerID: ejectedPlayerInfo.playerID,
       });
     } catch (e) {
+      // No point sending an error event back as the
+      // client is gone, so we just log the error.
       console.error(e);
     }
   });
 
+  // Handle player asking to leave game
   socket.on(leaveGameEventName, async () => {
     try {
       const ejectedPlayerInfo = await orchestrator.ejectPlayer(socket.id);
@@ -177,6 +186,7 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Handle player asking to restart game
   socket.on(restartGameEventName, async (data: RestartGameData) => {
     await orchestrator.restartGame(socket.id, data.gameID, data.newWordSet);
     io.to(data.gameID).emit(gameRestartedEventName, <GameRestartedData>{
@@ -184,8 +194,8 @@ io.on("connection", (socket) => {
     });
   });
 
+  // Handle player asking to join a team
   socket.on(joinTeamEventName, (data: JoinTeamData) => {
-    console.log("joining team", socket.id);
     orchestrator
       .joinGame(data.gameID, data.sessionID, data.teamID, socket.id)
       .then((game) => {
@@ -203,15 +213,18 @@ io.on("connection", (socket) => {
       });
   });
 
+  // Handle player asking to become spymaster
   socket.on(becomeSpymasterEventName, async (data: BecomeSpymasterData) => {
     orchestrator
       .setGameSpymaster(data.gameID, data.sessionID, data.team)
       .then((res) => {
+        // Send spymaster data back to the whole game
         const spymasterData = <SpymasterData>{
           spymasterID: data.sessionID,
           teamID: res.spymaster.team,
         };
         io.to(data.gameID).emit(newSpymasterEventName, spymasterData);
+        // If a turn has started, send next turn event to whole game
         if (res.currentTurn !== Team.None) {
           const turnData = <TurnData>{
             currentTurn: res.currentTurn,
@@ -224,6 +237,7 @@ io.on("connection", (socket) => {
       });
   });
 
+  // Handle player asking to end their turn
   socket.on(endTurnEventName, async (data: EndTurnData) => {
     orchestrator
       .toggleGameTurn(data.gameID)
@@ -237,11 +251,15 @@ io.on("connection", (socket) => {
       });
   });
 
+  // Handle player trying to select a word
   socket.on(wordSelectedEventName, async (data: SelectedWordData) => {
     orchestrator
       .selectGameWord(data.gameID, data.wordValue, data.playerID)
       .then((turnRes) => {
+        // Send turn result back to everyone in the game
         io.to(data.gameID).emit(turnResultEventName, turnRes);
+        // If the turn has toggled to the next team, send
+        // a next turn event to everyone in the game.
         if (turnRes.newCurrentTurn !== Team.None) {
           const turnData = <TurnData>{
             currentTurn: turnRes.newCurrentTurn,
