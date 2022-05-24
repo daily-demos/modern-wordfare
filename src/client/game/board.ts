@@ -81,7 +81,7 @@ export class Board {
 
   // destroy() resets the DOM state modified by the Board
   // back to its defaults.
-  destroy() {
+  static destroy() {
     const board = document.getElementById("board");
     board.innerHTML = "";
     hideEndTurnButtons();
@@ -124,7 +124,7 @@ export class Board {
     // If the last played team revealed the Assassin word,
     // the other team wins.
     if (lastWord.kind === WordKind.Assassin) {
-      let winningTeam = getOtherTeam(lastPlayedTeam);
+      const winningTeam = getOtherTeam(lastPlayedTeam);
       return winningTeam;
     }
 
@@ -438,7 +438,7 @@ export class Board {
   private getTileTeam(playerID: string): Team {
     const tileID = getParticipantTileID(playerID);
     const tile = document.getElementById(tileID);
-    if (!tile) return;
+    if (!tile) return null;
 
     if (this.teamDIVs[Team.None].contains(tile)) {
       return Team.None;

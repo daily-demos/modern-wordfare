@@ -35,7 +35,6 @@ export default async function initJoinProcess(params: any) {
     );
     const inputPlayerName = playerNameInput?.value;
     tryJoinGame(params.gameID, inputPlayerName);
-    return;
   };
 }
 
@@ -64,9 +63,9 @@ function tryJoinGame(gameID: string, playerName: string) {
       lobbyDiv.classList.add("invisible");
       const boardData = <BoardData>{
         roomURL: res.roomURL,
-        gameID: gameID,
+        gameID,
         gameName: res.gameName,
-        playerName: playerName,
+        playerName,
         wordSet: res.wordSet,
         meetingToken: token,
       };
@@ -94,7 +93,7 @@ async function joinGame(gameID: string): Promise<IJoinGameResponse> {
   const res = await fetch(url, {
     method: "POST",
     body: data,
-    headers: headers,
+    headers,
   }).catch((error) => {
     throw new Error(`failed to join game: ${error})`);
   });

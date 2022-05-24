@@ -320,7 +320,7 @@ export default class Game {
       console.log("new wordset:", data.newWordSet);
       this.data.wordSet = data.newWordSet;
 
-      this.board.destroy();
+      Board.destroy();
       this.board = new Board(
         this.data,
         this.localPlayerID,

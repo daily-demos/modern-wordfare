@@ -4,7 +4,7 @@ import { Word } from "../../shared/word";
 import successAudio from "../assets/audio/word-success.wav";
 import failureAudio from "../assets/audio/word-failure.wav";
 
-export class RenderedWord {
+export default class RenderedWord {
   word: Word;
 
   private button: HTMLButtonElement;

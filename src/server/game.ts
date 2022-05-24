@@ -90,7 +90,7 @@ export class Game {
         }
         // Move player to new team
         p.team = team;
-        return;
+        return p;
       }
     }
     // If player does not exist yet, create it

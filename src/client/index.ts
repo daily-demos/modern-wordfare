@@ -12,8 +12,8 @@ import "./assets/microphone-off.svg";
 import "./assets/microphone.svg";
 import "./assets/screen-off.svg";
 import "./assets/screen-on.svg";
-import { default as initJoinProcess } from "./join";
-import { default as initCreateProcess } from "./create";
+import initJoinProcess from "./join";
+import initCreateProcess from "./create";
 
 console.log("loading game!!");
 

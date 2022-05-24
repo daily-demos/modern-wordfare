@@ -1,6 +1,6 @@
 import { Team } from "../../shared/types";
 import { Word } from "../../shared/word";
-import { RenderedWord } from "./renderedWord";
+import RenderedWord from "./renderedWord";
 
 export default class WordGrid {
   private renderedWords: RenderedWord[] = [];
