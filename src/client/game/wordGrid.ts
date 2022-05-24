@@ -4,6 +4,7 @@ import { RenderedWord } from "./renderedWord";
 
 export default class WordGrid {
   private renderedWords: RenderedWord[] = [];
+
   private board: HTMLDivElement;
 
   constructor(words: Word[], onClick: (w: Word) => void) {
@@ -27,8 +28,6 @@ export default class WordGrid {
       }
     }
   }
-
-  addSeparator() {}
 
   revealAllWords(ownTeam: Team) {
     for (let i = 0; i < this.renderedWords.length; i += 1) {

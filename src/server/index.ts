@@ -42,6 +42,8 @@ import {
 import GameOrchestrator from "./orchestrator";
 import { PORT } from "./env";
 import Memory from "./store/memory";
+import GameNotFound from "../shared/errors/gameNotFound";
+import { getCookieVal } from "../shared/util";
 
 const app = express();
 const orchestrator = new GameOrchestrator(new Memory());
@@ -58,9 +60,9 @@ app.use("/", express.static(clientPath));
 
 app.use(express.json());
 
+// /join endpoint handles joining the game
 app.post("/join", (req: Request, res: Response) => {
   const body = <IJoinGameRequest>req.body;
-  console.log("joining game", body);
   const { gameID } = body;
   if (!gameID) {
     const err = "request must contain game ID";
@@ -70,7 +72,7 @@ app.post("/join", (req: Request, res: Response) => {
   }
   orchestrator.getGame(gameID).then((game) => {
     if (!game) {
-      const err = `game id ${gameID} not found`;
+      const err = new GameNotFound(gameID)
       console.error(err);
       res.status(404).send(`{"error":"${err}}`);
       return;
@@ -80,24 +82,11 @@ app.post("/join", (req: Request, res: Response) => {
       gameName: game.name,
       wordSet: game.wordSet,
     };
-    console.log("join sending res:", data);
     res.send(data);
   });
-  /* if (!game) {
-    const err = `game id ${gameID} not found`;
-    console.error(err);
-    res.status(404).send(`{"error":"${err}}`);
-    return;
-  }
-  const data = <IJoinGameResponse>{
-    roomURL: game.dailyRoomURL,
-    gameName: game.name,
-    wordSet: game.wordSet,
-  };
-  console.log("join sending res:", data);
-  res.send(data); */
 });
 
+// /create endpoint handles creating a game
 app.post("/create", (req: Request, res: Response) => {
   const body = <ICreateGameRequest>req.body;
   const { wordSet } = body;
@@ -117,9 +106,9 @@ app.post("/create", (req: Request, res: Response) => {
       orchestrator
         .getMeetingToken(game.dailyRoomName)
         .then((token) => {
-          // Set meeting token for this game
-          res.cookie(`meetingToken`, token);
-          console.log("GAME ID:", game.id);
+          // Set meeting token for this game as a cookie
+          const cookie = getCookieVal(token);
+          res.cookie(`meetingToken`, cookie);
           res.redirect(`/?gameID=${game.id}&playerName=${body.playerName}`);
         })
         .catch((error) => {

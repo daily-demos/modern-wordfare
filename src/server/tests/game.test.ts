@@ -42,8 +42,8 @@ describe("Spymaster tests", () => {
     game.setSpymaster(pid, Team.Team2);
 
     let player: Player;
-    for (let i = 0; i < game["players"].length; i += 1) {
-      const p = game["players"][i];
+    for (let i = 0; i < game.players.length; i += 1) {
+      const p = game.players[i];
       if (p.id === pid) {
         player = p;
       }

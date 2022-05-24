@@ -44,7 +44,7 @@ const client = {
         loader: "file-loader",
         options: {
           name: (f) => {
-            let dirName = path.relative(
+            const dirName = path.relative(
               path.join(__dirname, "src", "assets"),
               path.dirname(f)
             );

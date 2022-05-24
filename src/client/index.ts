@@ -12,12 +12,12 @@ import "./assets/microphone-off.svg";
 import "./assets/microphone.svg";
 import "./assets/screen-off.svg";
 import "./assets/screen-on.svg";
-import { initJoinProcess } from "./join";
-import { initCreateProcess } from "./create";
+import { default as initJoinProcess } from "./join";
+import { default as initCreateProcess } from "./create";
 
 console.log("loading game!!");
 
-window.addEventListener("DOMContentLoaded", (event) => {
+window.addEventListener("DOMContentLoaded", () => {
   console.log("DOM content loaded");
   // See if we have any query parameters indicating the user
   // is joining an existing game

@@ -4,22 +4,18 @@ import DailyIframe, {
   DailyParticipant,
   DailyEventObjectTrack,
 } from "@daily-co/daily-js";
-import { keys } from "../../webpack.config";
-import { Team } from "../shared/types";
+import { videoTileSize } from "./config";
 
+// Define handler types that the game class will use to specify
+// custom behavior based on call events
 export type JoinHandler = (e: DailyParticipant) => void;
-export type DataDumpHandler = (
-  p: DailyParticipant,
-  team: Team,
-  team1Score: number,
-  team2Score: number
-) => void;
-
 export type LeaveHandler = (e: DailyEventObjectParticipant) => void;
 export type TrackStartedHandler = (e: DailyEventObjectTrack) => void;
 export type TrackStoppedHandler = (e: DailyEventObjectTrack) => void;
 export type ParticipantUpdatedHandler = (e: DailyParticipant) => void;
+
 const playableState = "playable";
+const loadingState = "loading";
 
 export class Call {
   private url: string;
@@ -38,9 +34,16 @@ export class Call {
       subscribeToTracksAutomatically: true,
       dailyConfig: {
         experimentalChromeVideoMuteLightOff: true,
-        camSimulcastEncodings: [{ maxBitrate: 600000, maxFramerate: 30 }],
       },
     });
+    // Our tiles will always be 100px x 100px, so set the bandwidth
+    // to match
+    this.callObject.setBandwidth({
+      trackConstraints: {
+        width: videoTileSize,
+        height: videoTileSize,
+      },
+	 });
   }
 
   getParticipant(sessionID: string): DailyParticipant {
@@ -112,11 +115,11 @@ export class Call {
 
     const mediaTracks: MediaStreamTrack[] = [];
     const vs = vt?.state;
-    if ((vt.persistentTrack && vs === playableState) || vs === "loading") {
+    if ((vt.persistentTrack && vs === playableState) || vs === loadingState) {
       mediaTracks.push(vt.persistentTrack);
     }
     const as = at?.state;
-    if ((at.persistentTrack && as === playableState) || as === "loading") {
+    if ((at.persistentTrack && as === playableState) || as === loadingState) {
       mediaTracks.push(at.persistentTrack);
     }
     return mediaTracks;

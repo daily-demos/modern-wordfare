@@ -1,11 +1,9 @@
-import { lchown } from "fs";
 import { Team } from "../../shared/types";
 
-let endTurnBtns: { [key in Team]?: HTMLButtonElement } = {
+const endTurnBtns: { [key in Team]?: HTMLButtonElement } = {
   team1: null,
   team2: null,
-}
-
+};
 
 export function registerCamBtnListener(f: () => void) {
   const toggleCamBtn = document.getElementById("toggleCam");
@@ -24,7 +22,7 @@ export function registerMicBtnListener(f: () => void) {
 export function updateCamBtnState(isOn: boolean) {
   const btn = document.getElementById("toggleCam");
   if (isOn) {
-    btn.classList.remove("cam-off")
+    btn.classList.remove("cam-off");
     btn.classList.add("cam-on");
   } else {
     btn.classList.remove("cam-on");
@@ -35,7 +33,7 @@ export function updateCamBtnState(isOn: boolean) {
 export function updateMicBtnState(isOn: boolean) {
   const btn = document.getElementById("toggleMic");
   if (isOn) {
-    btn.classList.remove("mic-off")
+    btn.classList.remove("mic-off");
     btn.classList.add("mic-on");
   } else {
     btn.classList.remove("mic-on");
@@ -152,8 +150,8 @@ function showBtn(btn: HTMLButtonElement) {
 }
 
 export function hideEndTurnButtons() {
-    endTurnBtns[Team.Team1]?.classList.add("invisible");
-    endTurnBtns[Team.Team2]?.classList.add("invisible");
+  endTurnBtns[Team.Team1]?.classList.add("invisible");
+  endTurnBtns[Team.Team2]?.classList.add("invisible");
 }
 
 export function toggleEndTurnButton(activeTeam: Team, playerTeam: Team) {
@@ -166,15 +164,13 @@ export function toggleEndTurnButton(activeTeam: Team, playerTeam: Team) {
   // need to retrieve the buttons for the first time
   if (!endTurnBtns[Team.Team1]) setEndTurnBtn(Team.Team1);
   if (!endTurnBtns[Team.Team2]) setEndTurnBtn(Team.Team2);
-  
-  
+
   if (activeTeam === playerTeam) {
     endTurnBtns[activeTeam].classList.remove("invisible");
   } else {
     endTurnBtns[playerTeam].classList.add("invisible");
     endTurnBtns[activeTeam].classList.add("invisible");
   }
-
 }
 
 function setEndTurnBtn(team: Team) {

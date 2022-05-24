@@ -1,4 +1,5 @@
 import { io, Socket } from "socket.io-client";
+import { DailyParticipant } from "@daily-co/daily-js";
 import { Board, BoardData, removeTile, updateMedia } from "./board";
 import {
   BecomeSpymasterData,
@@ -31,7 +32,6 @@ import {
   PlayerLeftData,
 } from "../../shared/events";
 import { Call } from "../daily";
-import { DailyParticipant } from "@daily-co/daily-js";
 import {
   registerCamBtnListener,
   registerEndTurnBtnListener,
@@ -46,7 +46,6 @@ import { Team } from "../../shared/types";
 import ErrTileAlreadyExists from "./errors/errTileAlreadyExists";
 
 import joinedAudio from "../assets/audio/joined.wav";
-
 
 export default class Game {
   socket: Socket;
@@ -96,7 +95,7 @@ export default class Game {
     const resData = <BecomeSpymasterData>{
       gameID: this.data.gameID,
       sessionID: this.localPlayerID,
-      team: team,
+      team,
     };
     this.socket.emit(becomeSpymasterEventName, resData);
   }
@@ -164,7 +163,7 @@ export default class Game {
       console.log("creating tile participant joined", p.user_name, Team.None);
       if (Date.now() - this.joinedAt > 3000) {
         console.log("joinedAudio", joinedAudio);
-        let audio = new Audio(joinedAudio);
+        const audio = new Audio(joinedAudio);
         audio.play();
 
         // this.sound.play("joined");
@@ -186,7 +185,7 @@ export default class Game {
         updateCamBtnState(p.video);
         updateMicBtnState(p.audio);
       }
-    })
+    });
 
     this.call.registerTrackStartedHandler((p) => {
       const tracks = Call.getParticipantTracks(p.participant);
@@ -227,6 +226,7 @@ export default class Game {
       this.socket.emit(leaveGameEventName);
     });
   }
+
   private setupSocket() {
     const socket: Socket = io();
     this.socket = socket;

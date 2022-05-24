@@ -2,7 +2,7 @@ import { ICreateGameRequest } from "../shared/types";
 import { Word } from "../shared/word";
 import createWordSet from "./util/word";
 
-export function initCreateProcess() {
+export default function initCreateProcess() {
   const lobbyDiv = document.getElementById("lobby");
   lobbyDiv.classList.remove("invisible");
   console.log("showing creat form");
@@ -54,7 +54,7 @@ async function createGame(
     method: "POST",
     body: data,
     redirect: "follow",
-    headers: headers,
+    headers,
   };
 
   console.log("req:", req);

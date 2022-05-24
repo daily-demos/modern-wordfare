@@ -19,7 +19,8 @@ import {
   showSpymasterBtn,
   toggleEndTurnButton,
 } from "./nav";
-import {startAudio} from  "../assets/audio/start.wav";
+import { startAudio } from "../assets/audio/start.wav";
+import { getOtherTeam } from "../util/team";
 
 export interface BoardData {
   roomURL: string;
@@ -29,25 +30,28 @@ export interface BoardData {
   wordSet: Word[];
 }
 
-export type onClickWord = (wordVal: string) => void;
-export type onJoinTeam = (team: Team) => void;
-export type onBeSpymaster = (team: Team) => void;
+// Callbacks which will be provided by Game class 
+export type OnClickWord = (wordVal: string) => void;
+export type OnJoinTeam = (team: Team) => void;
+export type OnBeSpymaster = (team: Team) => void;
 
+// The board manages displaying the word grid, moving players
+// between teams, keeping score, and toggling relevant team 
+// controls.
 export class Board {
   private wordGrid: WordGrid;
 
-  gameID: string;
-
-  teamDIVs: { [key in Team]?: HTMLDivElement } = {
+  private teamDIVs: { [key in Team]?: HTMLDivElement } = {
     none: null,
     team1: null,
     team2: null,
   };
 
-  team = Team.None;
+  private team = Team.None;
 
-  private readonly onJoinTeam: onJoinTeam;
-  private readonly onBeSpymaster: onBeSpymaster;
+  private readonly onJoinTeam: OnJoinTeam;
+
+  private readonly onBeSpymaster: OnBeSpymaster;
 
   private localPlayerID: string;
 
@@ -61,53 +65,60 @@ export class Board {
   constructor(
     bd: BoardData,
     localPlayerID: string,
-    onClickWord: onClickWord,
-    onJoinTeam: onJoinTeam,
-    onBeSpymaster: onBeSpymaster
+    onClickWord: OnClickWord,
+    onJoinTeam: OnJoinTeam,
+    onBeSpymaster: OnBeSpymaster
   ) {
+    this.localPlayerID = localPlayerID;
+
+    // Create the word grid from the given word set
     this.wordGrid = new WordGrid(bd.wordSet, (w: Word) => {
       onClickWord(w.value);
     });
+
     this.onJoinTeam = onJoinTeam;
     this.onBeSpymaster = onBeSpymaster;
+  }
 
-    this.gameID = bd.gameID;
-    this.localPlayerID = localPlayerID;
-
-    // Reset controls
+  // destroy() resets the DOM state modified by the Board
+  // back to its defaults.
+  destroy() {
+    const board = document.getElementById("board");
+    board.innerHTML = "";
     hideEndTurnButtons();
     showAllJoinBtns();
   }
 
-  destroy() {
-    const board = document.getElementById("board");
-    board.innerHTML = "";
-
-    /*  const team1 = document.getElementById("team1");
-    const team2 = document.getElementById("team2"); */
-  }
-
+  // processDataDump() takes an initial game data dump sent by
+  // the server and updates the board state and relevant DOM 
+  // elements to reflect it.
   processDataDump(data: GameData) {
-    console.log("processing data dump", data.scores);
+    // If the data dump indicates that the game has started,
+    // toggle the turn.
     if (data.currentTurn && data.currentTurn !== Team.None) {
       this.toggleCurrentTurn(data.currentTurn);
     }
 
+    // Reveal all words that have already been guessed
     for (let i = 0; i < data.revealedWordVals.length; i += 1) {
       const val = data.revealedWordVals[i];
       this.revealWord(val);
     }
 
+    // Update score DOM for both teams
     this.setScores(data.scores.team1);
     this.setScores(data.scores.team2);
   }
 
+  // setScores() sets the score in the given team DOM as given,
+  // without any extra calculations.
   setScores(res: TeamResult) {
     const teamDIV = this.teamDIVs[res.team];
     const score = teamDIV.getElementsByClassName("score")[0];
     score.innerHTML = res.wordsLeft.toString();
   }
 
+  // updateScore() takes
   private updateScore(team: Team, lastRevealedWord: Word): Team {
     const lastWord = lastRevealedWord;
     if (lastWord.kind === WordKind.Assassin) {
@@ -192,13 +203,7 @@ export class Board {
   }
 
   private getOtherTeam(): Team {
-    if (this.team === Team.Team1) {
-      return Team.Team2;
-    }
-    if (this.team === Team.Team2) {
-      return Team.Team1;
-    }
-    return Team.None;
+    return getOtherTeam(this.team);
   }
 
   private isOnTeam(): boolean {
@@ -240,7 +245,7 @@ export class Board {
   toggleCurrentTurn(currentTurn: Team) {
     if (this.currentTurn === Team.None) {
       console.log("start audio", startAudio);
-      let audio = new Audio(startAudio);
+      const audio = new Audio(startAudio);
       audio.play();
     }
     console.log("toggling turn", currentTurn);
