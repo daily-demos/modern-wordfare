@@ -18,12 +18,14 @@ import { default as initCreateProcess } from "./create";
 console.log("loading game!!");
 
 window.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM content loaded");
   // See if we have any query parameters indicating the user
   // is joining an existing game
   const usp = new URLSearchParams(window.location.search);
   const params = Object.fromEntries(usp.entries());
 
+  // If a game ID was specified in the URL parameters,
+  // start the game join process. Otherwise, start
+  // game creation process.
   if (params.gameID) {
     initJoinProcess(params);
     return;

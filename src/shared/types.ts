@@ -34,3 +34,8 @@ export interface TeamResult {
   wordsLeft: number;
   isAssassinated: boolean;
 }
+
+export interface MeetingToken {
+  token: string;
+  gameID: string;
+}

@@ -2,10 +2,11 @@ import { ICreateGameRequest } from "../shared/types";
 import { Word } from "../shared/word";
 import createWordSet from "./util/word";
 
+// initCreateProcess() sets up the game creation form
 export default function initCreateProcess() {
   const lobbyDiv = document.getElementById("lobby");
   lobbyDiv.classList.remove("invisible");
-  console.log("showing creat form");
+
   const createForm = <HTMLFormElement>(
     document.getElementById("create-game-form")
   );
@@ -31,12 +32,13 @@ export default function initCreateProcess() {
   };
 }
 
+// createGame() makes a POST request to the /create
+// endpoint to make a new game.
 async function createGame(
   gameName: string,
   playerName: string,
   wordSet: Word[]
 ) {
-  // Create the game here
   const reqData = <ICreateGameRequest>{
     gameName,
     playerName,
@@ -57,11 +59,8 @@ async function createGame(
     headers,
   };
 
-  console.log("req:", req);
   await fetch(url, req)
     .then((res) => {
-      console.log("response!", res);
-      console.log(res.redirected);
       window.location.assign(res.url);
     })
     .catch((error) => {

@@ -27,6 +27,10 @@ interface ICreatedDailyRoomData {
   url: string;
 }
 
+// GameOrchestrator serves as the entry point into
+// all game actions. It also manages storage of
+// game state in whatever cache we are using
+// (basic in-memory cache by default)
 export default class GameOrchestrator {
   private readonly dailyAPIKey: string = DAILY_API_KEY;
 
@@ -38,7 +42,7 @@ export default class GameOrchestrator {
     this.storeClient = storeClient;
   }
 
-  // createGame() creates a new game using the given name and word set. 
+  // createGame() creates a new game using the given name and word set.
   // It does so by creating a Daily room and then an instance of Game.
   async createGame(name: string, wordSet: Word[]): Promise<Game> {
     const apiKey = DAILY_API_KEY;
@@ -163,7 +167,6 @@ export default class GameOrchestrator {
 
   // restartGame() restarts the given game with the new word set
   async restartGame(socketID: string, gameID: string, newWordSet: Word[]) {
-
     // First, find the game itself
     const game = await this.getGame(gameID);
     if (!game) {
@@ -176,7 +179,7 @@ export default class GameOrchestrator {
       throw new SocketMappingNotFound(socketID);
     }
 
-    // Only allow a member of the game to restart the game. 
+    // Only allow a member of the game to restart the game.
     // (Maybe in the future only the meeting owner/game host should be
     // allowed to do this? TBD)
     if (playerInfo.gameID !== gameID) {

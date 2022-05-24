@@ -47,6 +47,10 @@ import ErrTileAlreadyExists from "./errors/errTileAlreadyExists";
 
 import joinedAudio from "../assets/audio/joined.wav";
 
+// Game (client-side) manages three main components of our application:
+// * The play board/space
+// * The Daily call
+// * Interaction with the game server
 export default class Game {
   socket: Socket;
 
@@ -117,7 +121,6 @@ export default class Game {
   }
 
   private setupCall(bd: BoardData) {
-    console.log("meeting token:", bd.meetingToken);
     this.call = new Call(bd.roomURL, bd.playerName, bd.meetingToken);
 
     const controlsDOM = document.getElementById("controls");
@@ -146,11 +149,10 @@ export default class Game {
       };
 
       this.socket.emit(joinGameEventName, data);
-      this.board.showTeams();
+      this.board.showBoardElements();
       controlsDOM.classList.remove("hidden");
       const localID = this.localPlayerID;
       const p = this.call.getParticipant(localID);
-      console.log("creating tile in joined-meeting", p.user_name, Team.None);
       try {
         this.board.createTile(p, Team.None);
       } catch (e) {
@@ -237,7 +239,6 @@ export default class Game {
     });
 
     socket.on(joinedTeamEventName, (data: JoinedTeamData) => {
-      console.log("joined team event obtained", data.sessionID, data.teamID);
       const p = this.call.getParticipant(data.sessionID);
       if (!p) {
         console.error(`failed to find participant with ID ${data.sessionID}`);
@@ -333,7 +334,7 @@ export default class Game {
           this.onBeSpymaster(team);
         }
       );
-      this.board.showTeams();
+      this.board.showBoardElements();
 
       const joinGameData = <JoinGameData>{
         gameID: this.data.gameID,

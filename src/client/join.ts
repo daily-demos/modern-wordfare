@@ -1,20 +1,27 @@
+import NoMeetingToken from "../shared/errors/noMeetingToken";
 import { IJoinGameRequest, IJoinGameResponse } from "../shared/types";
+import { tryGetMeetingToken } from "../shared/util";
 import { BoardData } from "./game/board";
 import Game from "./game/game";
 
+// initGame() starts a game using the given
+// board data
 function initGame(boardData: BoardData) {
   const game = new Game();
   game.start(boardData);
 }
 
-export async function initJoinProcess(params: any) {
+// initJoinProcess() checks if the given parameters contain
+// a player name. If so, it joins the given game. If not,
+// it shows a form for the user to input their player name.
+export default async function initJoinProcess(params: any) {
   console.log("Joining!");
   // Player name param is included in the URL
   if (params.playerName) {
     tryJoinGame(params.gameID, params.playerName);
     return;
   }
-  console.log("no player name provided");
+  // No player name was provided, show join form
   const lobbyDiv = document.getElementById("lobby");
   lobbyDiv.classList.remove("invisible");
 
@@ -22,7 +29,6 @@ export async function initJoinProcess(params: any) {
   joinForm.classList.remove("invisible");
   joinForm.onsubmit = async (e) => {
     e.preventDefault();
-    console.log("join form submitted");
     joinForm.classList.add("invisible");
     const playerNameInput = <HTMLFormElement>(
       document.getElementById("join-player-name")
@@ -33,9 +39,27 @@ export async function initJoinProcess(params: any) {
   };
 }
 
+// tryJoinGame() tries to join a game using the given
+// game ID and player name.
 function tryJoinGame(gameID: string, playerName: string) {
   joinGame(gameID)
     .then((res: IJoinGameResponse) => {
+      // See if we have a cookie with the token
+      // for this game ID
+      const cookies = document.cookie;
+      let token: string;
+      try {
+        const mt = tryGetMeetingToken(cookies);
+        if (mt.gameID === gameID) {
+          token = mt.token;
+        }
+      } catch (e) {
+        if (!(e instanceof NoMeetingToken)) {
+          throw e;
+        }
+      }
+
+      // Hide the lobby UI and set up the board data
       const lobbyDiv = document.getElementById("lobby");
       lobbyDiv.classList.add("invisible");
       const boardData = <BoardData>{
@@ -44,6 +68,7 @@ function tryJoinGame(gameID: string, playerName: string) {
         gameName: res.gameName,
         playerName: playerName,
         wordSet: res.wordSet,
+        meetingToken: token,
       };
       initGame(boardData);
     })
@@ -52,6 +77,8 @@ function tryJoinGame(gameID: string, playerName: string) {
     });
 }
 
+// joinGame() makes a POST request to the /join endpoint, attempting
+// to join the requested game.
 async function joinGame(gameID: string): Promise<IJoinGameResponse> {
   console.log("joinGame()", gameID);
   const req = <IJoinGameRequest>{

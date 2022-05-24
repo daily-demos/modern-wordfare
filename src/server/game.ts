@@ -19,6 +19,9 @@ export enum GameState {
   Ended,
 }
 
+// Game (server-side) manages all game state,
+// including toggling turns, keeping score,
+// validating player actions, etc.
 export class Game {
   readonly id: string;
 
@@ -111,7 +114,7 @@ export class Game {
   // setSpymaster() sets the given player as spymaster for
   // the given team.
   setSpymaster(playerID: string, team: Team): Player {
-    // If the given team already has a spymaster, 
+    // If the given team already has a spymaster,
     // throw an error
     if (
       (team === Team.Team1 && this.team1SpymasterID) ||
@@ -170,10 +173,10 @@ export class Game {
     if (this.state !== GameState.Playing) {
       this.state = GameState.Playing;
     }
-    // If no team has yet gotten its turn, pick a first turn 
+    // If no team has yet gotten its turn, pick a first turn
     // at random.
     if (!this.currentTurn || this.currentTurn === Team.None) {
-      const r = rand(0,1);
+      const r = rand(0, 1);
       if (r === 0) {
         this.currentTurn = Team.Team1;
         return;
@@ -181,7 +184,7 @@ export class Game {
       this.currentTurn = Team.Team2;
       return;
     }
-    
+
     // Toggle turn to other team
     const otherTeam = getOtherTeam(this.currentTurn);
     this.currentTurn = otherTeam;
@@ -233,7 +236,7 @@ export class Game {
     if (player.team !== this.currentTurn) {
       throw new InvalidTurn();
     }
-  
+
     word.isRevealed = true;
 
     // Update the team results based o the selection

@@ -4,7 +4,7 @@ import { Call } from "../daily";
 
 import WordGrid from "./wordGrid";
 import { GameData } from "../../shared/events";
-import { wordKindToTeam } from "../../shared/util";
+import { getOtherTeam, wordKindToTeam } from "../../shared/util";
 import { Word, WordKind } from "../../shared/word";
 import ErrTileAlreadyExists from "./errors/errTileAlreadyExists";
 import {
@@ -20,7 +20,6 @@ import {
   toggleEndTurnButton,
 } from "./nav";
 import { startAudio } from "../assets/audio/start.wav";
-import { getOtherTeam } from "../util/team";
 
 export interface BoardData {
   roomURL: string;
@@ -30,13 +29,13 @@ export interface BoardData {
   wordSet: Word[];
 }
 
-// Callbacks which will be provided by Game class 
+// Callbacks which will be provided by Game class
 export type OnClickWord = (wordVal: string) => void;
 export type OnJoinTeam = (team: Team) => void;
 export type OnBeSpymaster = (team: Team) => void;
 
 // The board manages displaying the word grid, moving players
-// between teams, keeping score, and toggling relevant team 
+// between teams, keeping score, and toggling relevant team
 // controls.
 export class Board {
   private wordGrid: WordGrid;
@@ -90,7 +89,7 @@ export class Board {
   }
 
   // processDataDump() takes an initial game data dump sent by
-  // the server and updates the board state and relevant DOM 
+  // the server and updates the board state and relevant DOM
   // elements to reflect it.
   processDataDump(data: GameData) {
     // If the data dump indicates that the game has started,
@@ -118,20 +117,19 @@ export class Board {
     score.innerHTML = res.wordsLeft.toString();
   }
 
-  // updateScore() takes
-  private updateScore(team: Team, lastRevealedWord: Word): Team {
+  // updateScore() updates score information and detects if there
+  // is a winner using the last revealed word.
+  private updateScore(lastPlayedTeam: Team, lastRevealedWord: Word): Team {
     const lastWord = lastRevealedWord;
+    // If the last played team revealed the Assassin word,
+    // the other team wins.
     if (lastWord.kind === WordKind.Assassin) {
-      console.log("ASSASSINATED");
-      let winningTeam: Team;
-      if (team === Team.Team1) {
-        winningTeam = Team.Team2;
-      } else if (team) {
-        winningTeam = Team.Team1;
-      }
+      let winningTeam = getOtherTeam(lastPlayedTeam);
       return winningTeam;
     }
 
+    // If the last revealed word was a neutral word,
+    // no scores are updated and there is no winner.
     const wordTeam = wordKindToTeam(lastWord.kind);
     if (wordTeam === Team.None) {
       return Team.None;
@@ -141,6 +139,8 @@ export class Board {
     const score = teamDIV.getElementsByClassName("score")[0];
     const wordsLeft: number = +score.innerHTML;
 
+    // Subtract words left count from team whom the last
+    // revealed word belongs to.
     const newScore = wordsLeft - 1;
     if (newScore === 0) {
       return wordTeam;
@@ -149,6 +149,8 @@ export class Board {
     return Team.None;
   }
 
+  // moveToObservers() moves the given participants to the
+  // observers div.
   moveToObservers(participants: DailyParticipant[]) {
     for (let i = 0; i < participants.length; i += 1) {
       const p = participants[i];
@@ -156,14 +158,9 @@ export class Board {
     }
   }
 
+  // moveToTeam() moves the given participant to the given
+  // team div.
   moveToTeam(p: DailyParticipant, team: Team, force = false) {
-    console.log(
-      "moving to team:",
-      team,
-      this.currentTurn,
-      p.session_id,
-      this.localPlayerID
-    );
     if (p.session_id === this.localPlayerID) {
       this.team = team;
     }
@@ -174,22 +171,30 @@ export class Board {
     toggleEndTurnButton(this.currentTurn, this.team);
   }
 
+  // revealWord() reveals the given word by value.
+  revealWord(wordVal: string) {
+    this.wordGrid.revealWord(wordVal, this.team);
+  }
+
+  // updateJoinButtons() updates the visibility of team join
+  // buttons based on the player's current team state.
   private updateJoinButtons() {
-    console.log("updating join buttons", this.spymasters);
-    const spymasterOfTeam = this.isSpymaster();
+    const spymasterOfTeam = this.isSpymaster(this.localPlayerID);
 
     if (this.isOnTeam()) {
       const otherTeam = this.getOtherTeam();
-      console.log("other team:", this.team, otherTeam, spymasterOfTeam);
       // If player is spymaster on a team, disable player-join buttons:
       if (spymasterOfTeam !== Team.None) {
         hideAllJoinBtns();
       } else {
-        console.log("showing join btn for other team:", otherTeam);
+        // If player is on a team but is not a spymaster,
+        // allow them to join the other team.
         hideJoinBtn(this.team);
         showJoinBtn(otherTeam);
       }
     }
+    // If player is not on a team, show spymaster join buttons
+    // for teams which have no spymaster.
     if (!this.spymasters[Team.Team1]) {
       showSpymasterBtn(Team.Team1);
     } else {
@@ -202,30 +207,31 @@ export class Board {
     }
   }
 
+  // getOtherTeam() returns the opposing team
+  // of the player.
   private getOtherTeam(): Team {
     return getOtherTeam(this.team);
   }
 
+  // isOnTeam() returns true if the player is on a team
   private isOnTeam(): boolean {
     return this.team && this.team !== Team.None;
   }
 
-  revealWord(wordVal: string) {
-    this.wordGrid.revealWord(wordVal, this.team);
-  }
-
+  // updateGameStatus() updates the header label
+  // with the current status of the round.
   private updateGameStatus() {
     let heading: string;
     let subheading: string;
 
     const ct = this.currentTurn;
-    if (ct === Team.None) {
-      return;
-    }
 
-    if (ct === this.team) {
+    if (ct === Team.None) {
+      heading = "Team selection in progress";
+      subheading = "(Game needs two spymasters to start!)";
+    } else if (ct === this.team) {
       heading = "Your turn!";
-      if (this.isSpymaster() !== Team.None) {
+      if (this.isSpymaster(this.localPlayerID) !== Team.None) {
         subheading =
           "Give a one-word clue and the number of words your teammates should guess";
       } else {
@@ -239,28 +245,32 @@ export class Board {
       subheading = "";
     }
     const gameStatus = document.getElementById("gameStatus");
-    gameStatus.innerHTML = `<h2>${heading}</h2><h3>${subheading}</h3>`;
+    gameStatus.innerHTML = `<h2>${heading}</h2><br /><h3>${subheading}</h3>`;
   }
 
+  // toggleCurrntTurn() sets the current turn to the given team
   toggleCurrentTurn(currentTurn: Team) {
+    // If this is the first turn of the game, play
+    // game start audio.
     if (this.currentTurn === Team.None) {
-      console.log("start audio", startAudio);
       const audio = new Audio(startAudio);
       audio.play();
     }
-    console.log("toggling turn", currentTurn);
     this.currentTurn = currentTurn;
-    const teams = this.getTeamDivs(currentTurn);
-    teams.activeTeam.classList.add("active");
-    teams.otherTeam.classList.remove("active");
+    const otherTeam = getOtherTeam(currentTurn);
+
+    this.teamDIVs[currentTurn].classList.add("active");
+    this.teamDIVs[otherTeam].classList.remove("active");
 
     this.updateGameStatus();
-    toggleEndTurnButton(currentTurn, this.team);
     this.updateInteraction();
+    toggleEndTurnButton(currentTurn, this.team);
   }
 
+  // updateInteraction() enables or disabled word grid interaction
+  // as needed based on whose turn it is to play.
   private updateInteraction() {
-    if (!this.team || this.isSpymaster() !== Team.None) {
+    if (!this.team || this.isSpymaster(this.localPlayerID) !== Team.None) {
       return;
     }
     if (this.currentTurn === this.team) {
@@ -270,31 +280,14 @@ export class Board {
     this.wordGrid.disableInteraction();
   }
 
-  private getTeamDivs(activeTeam: Team): {
-    activeTeam: HTMLDivElement;
-    otherTeam: HTMLDivElement;
-  } {
-    const t1 = this.teamDIVs[Team.Team1];
-    const t2 = this.teamDIVs[Team.Team2];
-
-    if (activeTeam === Team.Team1) {
-      return {
-        activeTeam: t1,
-        otherTeam: t2,
-      };
-    }
-    if (activeTeam === Team.Team2) {
-      return {
-        activeTeam: t2,
-        otherTeam: t1,
-      };
-    }
-    throw new Error(`invalid active team requested: ${activeTeam}`);
-  }
-
+  // processTurnResult() processes the result of a turn, which is
+  // provided by the server.
   processTurnResult(team: Team, lastRevealedWord: Word): Team {
+    // Update score
     const winningTeam = this.updateScore(team, lastRevealedWord);
-    // Reveal the word;
+
+    // If nobody has won yet, reveal the single selected word which was
+    // selected last. If there is a winner, reveal ALL words.
     if (winningTeam === Team.None) {
       this.wordGrid.revealWord(lastRevealedWord.value, this.team);
     } else {
@@ -303,19 +296,28 @@ export class Board {
     return winningTeam;
   }
 
-  showTeams() {
+  // showBoardElements() shows the following DOM elements:
+  // * Both teams
+  // * Observers
+  // * Word grid
+  showBoardElements() {
     this.showTeam(Team.Team1);
     this.showTeam(Team.Team2);
     this.showObservers();
     this.wordGrid.drawGrid();
   }
 
+  // showObservers() shows the observers DOM element. It contains
+  // participants who have not yet joined a team.
   private showObservers() {
     const observers = document.getElementById("observers");
     observers.classList.remove("hidden");
     this.teamDIVs[Team.None] = <HTMLDivElement>observers;
   }
 
+  // showTeam() shows the DOM element of the given team.
+  // While doing so, it also sets up relevant
+  // team join button listeners.
   private showTeam(team: Team) {
     const teamDIV = <HTMLDivElement>document.getElementById(team.toString());
     this.teamDIVs[team] = teamDIV;
@@ -324,50 +326,59 @@ export class Board {
 
     if (this.onJoinTeam) {
       registerJoinBtnListener(team, () => {
-        console.log("join btn clicked", team);
         this.onJoinTeam(team);
       });
     }
 
     if (this.onBeSpymaster) {
       registerBeSpymasterBtnListener(team, () => {
-        console.log("spymater btn clicked", team);
         this.onBeSpymaster(team);
       });
     }
   }
 
-  makeSpymaster(id: string, team: Team) {
-    const participantTile = getTile(id);
+  // makeSpymaster() sets the given player ID as a spymaster
+  // for the given team.
+  makeSpymaster(playerID: string, team: Team) {
+    const participantTile = getTile(playerID);
     participantTile.classList.add("spymaster");
 
-    const isSpymaster = this.isSpymaster();
+    // If given player is already a spymaster and is just
+    // switching teams, update the spymaster var
+    const isSpymaster = this.isSpymaster(playerID);
     if (isSpymaster !== Team.None) {
       this.spymasters[isSpymaster] = null;
     }
-    console.log("making spymaster", id, team);
-    this.spymasters[team] = id;
+    this.spymasters[team] = playerID;
 
-    if (id === this.localPlayerID) {
+    // If the player ID is the local player,
+    // reveal all words.
+    if (playerID === this.localPlayerID) {
       // Show word colors in grid
       this.wordGrid.revealAllWords(this.team);
     }
+
+    // Update join buttons to reflect new state
     this.updateJoinButtons();
   }
 
-  private isSpymaster(): Team {
-    if (this.spymasters[Team.Team1] === this.localPlayerID) {
+  private isSpymaster(playerID: string): Team {
+    if (this.spymasters[Team.Team1] === playerID) {
       return Team.Team1;
     }
-    if (this.spymasters[Team.Team2] === this.localPlayerID) {
+    if (this.spymasters[Team.Team2] === playerID) {
       return Team.Team2;
     }
     return Team.None;
   }
 
+  // createTile() creates a new player tile for the given
+  // DailyParticipant. If "force" is true, it silently
+  // removes the player from any existing team if one exists.
+  // Otherwise, it throws an error if the given
+  // player is already on a team.
   createTile(p: DailyParticipant, team: Team, force = false) {
     this.updateJoinButtons();
-    console.log("creating tile:", team, force);
     let name = p.user_name;
     if (p.local) {
       name = "You";
@@ -375,6 +386,9 @@ export class Board {
     const id = p.session_id;
 
     const tileTeam = this.getTileTeam(id);
+    // If player is an observer OR on another team with
+    // "force" set to true, remove them from the
+    // observers div or other team.
     if (
       (team !== Team.None && tileTeam === Team.None) ||
       (tileTeam !== null && force)
@@ -383,7 +397,9 @@ export class Board {
     }
     const div = this.teamDIVs[team];
 
-    // See if there is already an existing tile by this ID, error out if so
+    // By the time the above is done, there should be no tile for this
+    // player. If one exists, error out (the player is probably on a team
+    // already)
     let participantTile = getTile(id);
     if (participantTile) {
       throw new ErrTileAlreadyExists(id);
@@ -413,10 +429,12 @@ export class Board {
     try {
       updateMedia(id, tracks);
     } catch (e) {
-      console.warn(e);
+      console.warn(e, tracks);
     }
   }
 
+  // getTileTeam() returns the team to which
+  // a player tile already belongs.
   private getTileTeam(playerID: string): Team {
     const tileID = getParticipantTileID(playerID);
     const tile = document.getElementById(tileID);
@@ -435,15 +453,19 @@ export class Board {
   }
 }
 
+// removeTile() removes a play tile, if any.
 export function removeTile(playerID: string) {
   const ele = document.getElementById(getParticipantTileID(playerID));
   ele?.remove();
 }
 
+// getParticipantTileID() returns an ID for the participant
+// tile div.
 function getParticipantTileID(sessionID: string): string {
   return `participant-${sessionID}`;
 }
 
+// getTile() returns a tile div for the given player.
 function getTile(participantID: string): HTMLDivElement {
   const participantTileID = getParticipantTileID(participantID);
   const participantTile = <HTMLDivElement>(
@@ -452,6 +474,8 @@ function getTile(participantID: string): HTMLDivElement {
   return participantTile;
 }
 
+// updateMedia() updates the video and audio tracks for
+// the given participant.
 export function updateMedia(participantID: string, tracks: MediaStreamTrack[]) {
   const participantTile = getTile(participantID);
   if (!participantTile) {

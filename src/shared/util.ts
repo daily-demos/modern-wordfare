@@ -1,5 +1,8 @@
-import { Team } from "./types";
+import NoMeetingToken from "./errors/noMeetingToken";
+import { MeetingToken, Team } from "./types";
 import { Word, WordKind } from "./word";
+
+export const meetingTokenCookieName = "meetingToken";
 
 export function wordKindToTeam(wk: WordKind): Team {
   if (wk === WordKind.Team1) {
@@ -26,18 +29,27 @@ export function getOtherTeam(team: Team): Team {
   return Team.None;
 }
 
-export function getCookieVal(token: string): string {
-  return `${token}-createdAt:${Date.now()}`
+export function tryGetMeetingToken(cookies: string): MeetingToken {
+  const parts = cookies.split(`${meetingTokenCookieName}=`);
+  if (parts.length !== 2) {
+    throw new NoMeetingToken();
+  }
+  const val = parts.pop().split("; ").shift();
+  return parseCookie(val);
 }
 
-export function parseCookie(cookie: string): {token: string, createdAt: number} {
-  const parts = cookie.split("-createdAt"); 
+export function getCookieVal(token: string, gameID: string): string {
+  return `${token}-gameID-${gameID}`;
+}
+
+function parseCookie(cookie: string): MeetingToken {
+  const parts = cookie.split("-gameID-");
   const l = parts.length;
   if (l !== 2) {
     throw new Error(`cookie format invalid. Expected 2 parts, got ${l}`);
   }
-  return {
+  return <MeetingToken>{
     token: parts[0],
-    createdAt: Date.parse(parts[1])
-  }
+    gameID: parts[1],
+  };
 }

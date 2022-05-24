@@ -43,7 +43,7 @@ import GameOrchestrator from "./orchestrator";
 import { PORT } from "./env";
 import Memory from "./store/memory";
 import GameNotFound from "../shared/errors/gameNotFound";
-import { getCookieVal } from "../shared/util";
+import { getCookieVal, meetingTokenCookieName } from "../shared/util";
 
 const app = express();
 const orchestrator = new GameOrchestrator(new Memory());
@@ -72,7 +72,7 @@ app.post("/join", (req: Request, res: Response) => {
   }
   orchestrator.getGame(gameID).then((game) => {
     if (!game) {
-      const err = new GameNotFound(gameID)
+      const err = new GameNotFound(gameID);
       console.error(err);
       res.status(404).send(`{"error":"${err}}`);
       return;
@@ -107,8 +107,8 @@ app.post("/create", (req: Request, res: Response) => {
         .getMeetingToken(game.dailyRoomName)
         .then((token) => {
           // Set meeting token for this game as a cookie
-          const cookie = getCookieVal(token);
-          res.cookie(`meetingToken`, cookie);
+          const cookie = getCookieVal(token, game.id);
+          res.cookie(meetingTokenCookieName, cookie);
           res.redirect(`/?gameID=${game.id}&playerName=${body.playerName}`);
         })
         .catch((error) => {

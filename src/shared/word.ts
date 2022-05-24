@@ -12,8 +12,6 @@ export class Word {
 
   isRevealed: boolean;
 
-  avatarSVG: string;
-
   constructor(val: string, kind: WordKind) {
     this.value = val;
     this.kind = kind;

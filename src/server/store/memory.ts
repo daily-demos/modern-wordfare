@@ -2,8 +2,13 @@ import NodeCache from "node-cache";
 import { Game } from "../game";
 import { PlayerInfo, StoreClient } from "./store";
 
-const gameTTL = 300;
+// TTL is by default 900 seconds. Any time
+// a game is updated, its expiry is reset.
+const gameTTLSeconds = 900;
 
+// Memory is a basic in-memory cache for game data.
+// It is cleared on each server restart and offers
+// zero persistence.
 export default class Memory implements StoreClient {
   client: NodeCache;
 
@@ -14,7 +19,7 @@ export default class Memory implements StoreClient {
   connect: () => void;
 
   storeGame(game: Game) {
-    this.client.set(getGameKey(game.id), game, gameTTL);
+    this.client.set(getGameKey(game.id), game, gameTTLSeconds);
   }
 
   async getGame(gameID: string): Promise<Game> {

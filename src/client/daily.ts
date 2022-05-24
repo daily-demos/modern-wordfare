@@ -43,9 +43,11 @@ export class Call {
         width: videoTileSize,
         height: videoTileSize,
       },
-	 });
+    });
   }
 
+  // getParticipant() returns a single participant by
+  // session ID
   getParticipant(sessionID: string): DailyParticipant {
     const participants = this.callObject.participants();
     if (participants.local.session_id === sessionID) {
@@ -54,17 +56,20 @@ export class Call {
     return participants[sessionID];
   }
 
+  // getParticipants() returns all call participants
   getParticipants(): DailyParticipant[] {
     const participants = this.callObject.participants();
     const vals = Object.values(participants);
     return vals;
   }
 
+  // toggleLocalVideo() turns local video on or off
   toggleLocalVideo() {
     const current = this.callObject.participants().local.video;
     this.callObject.setLocalVideo(!current);
   }
 
+  // toggleLocalAudio() turns local audio on or off
   toggleLocalAudio() {
     const current = this.callObject.participants().local.audio;
     this.callObject.setLocalAudio(!current);
@@ -106,6 +111,8 @@ export class Call {
     });
   }
 
+  // getParticipantTracks() retrieves video and audio tracks
+  // for the given participant, if they are usable.
   static getParticipantTracks(p: DailyParticipant): MediaStreamTrack[] {
     const tracks = p?.tracks;
     if (!tracks) return null;
@@ -115,16 +122,17 @@ export class Call {
 
     const mediaTracks: MediaStreamTrack[] = [];
     const vs = vt?.state;
-    if ((vt.persistentTrack && vs === playableState) || vs === loadingState) {
+    if (vt.persistentTrack && (vs === playableState || vs === loadingState)) {
       mediaTracks.push(vt.persistentTrack);
     }
     const as = at?.state;
-    if ((at.persistentTrack && as === playableState) || as === loadingState) {
+    if (at.persistentTrack && (as === playableState || as === loadingState)) {
       mediaTracks.push(at.persistentTrack);
     }
     return mediaTracks;
   }
 
+  // join() joins a Daily video call
   join() {
     const params: { [k: string]: string } = {
       url: this.url,
@@ -136,6 +144,7 @@ export class Call {
     this.callObject.join(params);
   }
 
+  // leave() leaves a Daily video call
   leave() {
     this.callObject.leave().then(() => {
       this.callObject.destroy();

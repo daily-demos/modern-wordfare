@@ -5,6 +5,8 @@ export interface PlayerInfo {
   gameID: string;
 }
 
+// StoreClient is an interface used by the GameOrchestrator class,
+// to save and retrieve game state data.
 export interface StoreClient {
   connect: () => void;
   storeGame: (game: Game) => void;
