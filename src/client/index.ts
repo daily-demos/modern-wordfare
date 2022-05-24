@@ -10,8 +10,6 @@ import "./assets/camera-off.svg";
 import "./assets/camera.svg";
 import "./assets/microphone-off.svg";
 import "./assets/microphone.svg";
-import "./assets/screen-off.svg";
-import "./assets/screen-on.svg";
 import initJoinProcess from "./join";
 import initCreateProcess from "./create";
 
