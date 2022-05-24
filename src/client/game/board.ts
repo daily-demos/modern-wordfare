@@ -245,7 +245,7 @@ export class Board {
       subheading = "";
     }
     const gameStatus = document.getElementById("gameStatus");
-    gameStatus.innerHTML = `<h2>${heading}</h2><br /><h3>${subheading}</h3>`;
+    gameStatus.innerHTML = `<h2>${heading}</h2><h3>${subheading}</h3>`;
   }
 
   // toggleCurrntTurn() sets the current turn to the given team
