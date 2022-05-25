@@ -18,10 +18,10 @@ export default class RenderedWord {
 
   colorize(ownTeam: Team, withChime: boolean = true) {
     this.button.classList.add(this.word.kind.toString());
-
     if (!withChime) return;
 
     this.playChime(ownTeam);
+    this.button.classList.add("revealed");
   }
 
   renderWordObject(): HTMLButtonElement {

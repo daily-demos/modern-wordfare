@@ -13,10 +13,16 @@ export default class Redis implements StoreClient {
       console.error("Redis client error: ", e);
     });
   }
+
   connect: () => void;
+
   storeGame: (game: Game) => void;
+
   getGame: (gameID: string) => Promise<Game>;
+
   storeSocketMapping: (socketID: string, playerInfo: PlayerInfo) => void;
+
   getSocketMapping: (socketID: string) => Promise<PlayerInfo>;
+
   deleteSocketMapping: (socketID: string) => void;
 }
