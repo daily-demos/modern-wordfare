@@ -2,7 +2,7 @@ import NodeCache from "node-cache";
 import { Game } from "../game";
 import { PlayerInfo, StoreClient } from "./store";
 
-// TTL is by default 900 seconds. Any time
+// TTL (Time to Live) is by default 900 seconds. Any time
 // a game is updated, its expiry is reset.
 const gameTTLSeconds = 900;
 
