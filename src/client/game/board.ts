@@ -248,7 +248,7 @@ export class Board {
     gameStatus.innerHTML = `<h2>${heading}</h2><h3>${subheading}</h3>`;
   }
 
-  // toggleCurrntTurn() sets the current turn to the given team
+  // toggleCurrentTurn() sets the current turn to the given team
   toggleCurrentTurn(currentTurn: Team) {
     // If this is the first turn of the game, play
     // game start audio.
