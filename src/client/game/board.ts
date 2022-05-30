@@ -400,7 +400,7 @@ export class Board {
     // By the time the above is done, there should be no tile for this
     // player. If one exists, error out (the player is probably on a team
     // already)
-    if ( getTile(id)) {
+    if (getTile(id)) {
       throw new ErrTileAlreadyExists(id);
     }
 
