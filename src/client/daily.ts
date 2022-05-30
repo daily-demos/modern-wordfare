@@ -34,6 +34,7 @@ export class Call {
       subscribeToTracksAutomatically: true,
       dailyConfig: {
         experimentalChromeVideoMuteLightOff: true,
+        camSimulcastEncodings: [{ maxBitrate: 600000, maxFramerate: 30 }],
       },
     });
     // Our tiles will always be 100px x 100px, so set the bandwidth
