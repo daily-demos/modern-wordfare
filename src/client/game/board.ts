@@ -62,7 +62,7 @@ export class Board {
   };
 
   constructor(
-    bd: BoardData,
+    boardData: BoardData,
     localPlayerID: string,
     onClickWord: OnClickWord,
     onJoinTeam: OnJoinTeam,
@@ -71,7 +71,7 @@ export class Board {
     this.localPlayerID = localPlayerID;
 
     // Create the word grid from the given word set
-    this.wordGrid = new WordGrid(bd.wordSet, (w: Word) => {
+    this.wordGrid = new WordGrid(boardData.wordSet, (w: Word) => {
       onClickWord(w.value);
     });
 
