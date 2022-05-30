@@ -162,7 +162,7 @@ export class Game {
     throw new Error(`requested team unrecognized: ${player.team}`);
   }
 
-  // spymaterReady() returns true if both teams have a spymaster
+  // spymastersReady() returns true if both teams have a spymaster
   spymastersReady(): boolean {
     return !!(this.team1SpymasterID && this.team2SpymasterID);
   }
