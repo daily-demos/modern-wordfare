@@ -191,6 +191,7 @@ export default class Game {
     registerLeaveBtnListener(() => {
       this.call.leave();
       this.socket.emit(leaveGameEventName);
+      document.location.href = "/";
     });
     // End call control setup
   }
