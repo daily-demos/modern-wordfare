@@ -263,7 +263,6 @@ export default class Game {
     });
 
     socket.on(playerLeftgameEventName, (data: PlayerLeftData) => {
-      console.log("removing player", data);
       removeTile(data.playerID);
     });
     // End server socket event handling

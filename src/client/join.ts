@@ -15,7 +15,6 @@ function initGame(boardData: BoardData) {
 // a player name. If so, it joins the given game. If not,
 // it shows a form for the user to input their player name.
 export default async function initJoinProcess(params: any) {
-  console.log("Joining!");
   // Player name param is included in the URL
   if (params.playerName) {
     tryJoinGame(params.gameID, params.playerName);
@@ -79,7 +78,6 @@ function tryJoinGame(gameID: string, playerName: string) {
 // joinGame() makes a POST request to the /join endpoint, attempting
 // to join the requested game.
 async function joinGame(gameID: string): Promise<IJoinGameResponse> {
-  console.log("joinGame()", gameID);
   const req = <IJoinGameRequest>{
     gameID,
   };

@@ -67,7 +67,6 @@ export function registerEndTurnBtnListener(team: Team, f: () => void) {
 }
 
 export function registerJoinBtnListener(team: Team, f: () => void) {
-  console.log("registering join btn listener");
   const teamDiv = document.getElementById(team);
   const btn = <HTMLButtonElement>teamDiv.getElementsByClassName("join")[0];
   btn.onclick = () => {
@@ -77,8 +76,6 @@ export function registerJoinBtnListener(team: Team, f: () => void) {
 }
 
 export function registerBeSpymasterBtnListener(team: Team, f: () => void) {
-  console.log("registering spymaster btn listener");
-
   const teamDiv = document.getElementById(team);
   const btn = <HTMLButtonElement>(
     teamDiv.getElementsByClassName("beSpymaster")[0]
@@ -108,7 +105,6 @@ export function hideAllSpymasterBtns() {
 }
 
 export function hideSpymasterBtn(team: Team) {
-  console.log("hiding spymaster btn", team);
   const teamDiv = <HTMLDivElement>document.getElementById(team);
   const btn = <HTMLButtonElement>(
     teamDiv.getElementsByClassName("beSpymaster")[0]
@@ -119,7 +115,6 @@ export function hideSpymasterBtn(team: Team) {
 
 export function showSpymasterBtn(team: Team) {
   if (team || team === Team.None) return;
-  console.log("showing spymaster btn");
   const teamDiv = <HTMLDivElement>document.getElementById(team);
   const btn = <HTMLButtonElement>(
     teamDiv.getElementsByClassName("beSpymaster")[0]

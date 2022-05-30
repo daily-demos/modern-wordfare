@@ -13,8 +13,6 @@ import "./assets/microphone.svg";
 import initJoinProcess from "./join";
 import initCreateProcess from "./create";
 
-console.log("loading game!!");
-
 window.addEventListener("DOMContentLoaded", () => {
   // See if we have any query parameters indicating the user
   // is joining an existing game

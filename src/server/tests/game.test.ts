@@ -27,7 +27,6 @@ describe("Spymaster tests", () => {
     game.addPlayer("player2", Team.Team1);
 
     game.setSpymaster("player1", Team.Team1);
-    console.log("set first spymaster");
     expect(() => {
       game.setSpymaster("player2", Team.Team1);
     }).toThrowError(SpymasterExists);
@@ -65,7 +64,6 @@ describe("Turn tests", () => {
     // You should be able to select all of a team's words without having to end the turn
     for (let i = 0; i < wordsPerTeam; i += 1) {
       const val = `${i}-team1`;
-      console.log("selecting val:", val);
       game.selectWord(val, "player1");
       expect(game.currentTurn).toBe(Team.Team1);
     }

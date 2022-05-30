@@ -128,7 +128,7 @@ const io = new Server(server);
 
 // Listen for new connections
 io.on("connection", (socket) => {
-  console.log("a user connected", socket.id);
+  console.log("user connected", socket.id);
 
   // Handle socket asking to join a game
   socket.on(joinGameEventName, (data: JoinGameData) => {
@@ -155,7 +155,7 @@ io.on("connection", (socket) => {
 
   // Handle client disconnecting
   socket.on("disconnect", async () => {
-    console.log("user disconnected");
+    console.log("user disconnected", socket.id);
     try {
       // Attempt to eject player from any game they
       // are currently in.
