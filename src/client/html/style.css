@@ -19,6 +19,7 @@
   --red-bright: #ff0000;
   --red-dark: #97150d;
   --gold: #e3c421;
+  --peach: #ffeed5;
   --font-family: Jaldi, "Helvetica Neue", Sans-Serif;
   --grid-bg: linear-gradient(to right, var(--grid-red-bg) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-red-bg) 1px, transparent 1px),
@@ -41,7 +42,7 @@ body {
   font-family: var(--font-family);
   margin: 0px;
   padding: 0px;
-  background-color: #ffeed5;
+  background-color: var(--peach);
 }
 
 .header {
@@ -207,7 +208,7 @@ body {
 #lobby {
   display: flex;
   justify-content: center;
-  background-color: #ffeed5;
+  background-color: var(--peach);
   flex-direction: column;
   align-items: center;
   align-content: center;
@@ -277,7 +278,7 @@ body {
 #lobby input {
   display: block;
   width: 100%;
-  background: var(--grid-bg), white;
+  background: var(--grid-bg), var(--white);
   background-size: var(--grid-bg-size), cover;
   display: flex;
   flex-direction: row;
@@ -315,7 +316,7 @@ body {
   font-weight: 600;
   font-size: 20px;
   line-height: 41px;
-  background: var(--grid-bg), white;
+  background: var(--grid-bg), var(--white);
   background-size: var(--grid-bg-size), cover;
   text-align: center;
 }
@@ -523,7 +524,7 @@ body {
 #controls button {
   margin: 0 5px;
   cursor: pointer;
-  background: var(--grid-bg), white;
+  background: var(--grid-bg), var(--white);
   background-size: var(--grid-bg-size);
   color: var(--black);
   height: 50px;
@@ -545,7 +546,7 @@ body {
 }
 
 #controls .cam-off {
-  background: url(./assets/camera-off.svg), var(--grid-bg), white;
+  background: url(./assets/camera-off.svg), var(--grid-bg), var(--white);
   background-size: 24px 24px, var(--grid-bg-size), cover;
   background-position: center;
   background-repeat: no-repeat, repeat, no-repeat;
@@ -585,7 +586,7 @@ body {
 .team .teamLabel {
   display: flex;
   justify-content: space-between;
-  color: white;
+  color: var(--white);
   width: 100%;
 }
 
@@ -636,7 +637,7 @@ body {
 
 .name {
   z-index: 1;
-  color: white;
+  color: var(--white);
   font-family: var(--font-family);
   font-weight: 400;
   font-size: 16px;
@@ -712,7 +713,7 @@ body {
 }
 
 #gameOver button {
-  background: var(--grid-bg), white;
+  background: var(--grid-bg), var(--white);
   background-size: var(--grid-bg-size), cover;
   align-items: center;
   margin: 3px;
@@ -728,15 +729,15 @@ body {
 
 #gameOver button:hover {
   background-color: var(--blue-bright);
-  color: white;
+  color: var(--white);
 }
 
 #game h2 {
-  color: white;
+  color: var(--white);
 }
 
 #game h3 {
-  color: white;
+  color: var(--white);
 }
 
 #gameStatus {
