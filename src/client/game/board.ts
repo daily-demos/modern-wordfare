@@ -400,15 +400,14 @@ export class Board {
     // By the time the above is done, there should be no tile for this
     // player. If one exists, error out (the player is probably on a team
     // already)
-    let participantTile = getTile(id);
-    if (participantTile) {
+    if ( getTile(id)) {
       throw new ErrTileAlreadyExists(id);
     }
 
     // Create participant tile with the video and name tags within
     const tiles = div.getElementsByClassName("tiles")[0];
 
-    participantTile = document.createElement("div");
+    const participantTile = document.createElement("div");
     participantTile.id = getParticipantTileID(id);
     participantTile.className = "tile";
 
