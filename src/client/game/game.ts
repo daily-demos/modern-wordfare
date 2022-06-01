@@ -70,6 +70,9 @@ export default class Game {
   start(boardData: BoardData) {
     const g = document.getElementById("game");
     g.classList.remove("invisible");
+
+    const c = document.getElementById("container");
+    c.classList.add("gradient-bg");
     this.data = boardData;
     this.setupCall(boardData);
     this.setupSocket();

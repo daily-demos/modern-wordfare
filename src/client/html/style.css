@@ -3,6 +3,11 @@
   src: url(../assets/Jaldi-Regular.ttf);
 }
 
+@font-face {
+  font-family: Jaldi-Bold;
+  src: url(../assets/Jaldi-Regular.ttf);
+}
+
 :root {
   --grey-lightest: #f7f9fa;
   --white: #ffffff;
@@ -21,6 +26,7 @@
   --gold: #e3c421;
   --peach: #ffeed5;
   --font-family: Jaldi, "Helvetica Neue", Sans-Serif;
+  --font-family-headings: Jaldi-Bold, "Helvetica Neue", Sans-Serif;
   --grid-bg: linear-gradient(to right, var(--grid-red-bg) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-red-bg) 1px, transparent 1px),
     linear-gradient(to right, var(--grid-black-bg) 1px, transparent 1px),
@@ -131,15 +137,18 @@ body {
 #container {
   width: 100%;
   top: 52px;
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  font-family: var(--font-family);
+}
+
+#container.gradient-bg {
   background: linear-gradient(
     180deg,
     var(--blue-dark) 0%,
     var(--red-dark) 100%
   );
-  position: relative;
-  justify-content: center;
-  align-items: center;
-  font-family: var(--font-family);
 }
 
 #call {
@@ -174,12 +183,13 @@ body {
 
 #entry input {
   width: 280px;
-  height: 32px;
+  height: 42px;
   padding: 8px 16px;
   margin-bottom: 5px;
   border-radius: 8px;
   border: 1px solid var(--grey);
   font-family: var(--font-family);
+  font-size: 16pt;
 }
 
 #entry button {
@@ -212,19 +222,22 @@ body {
   flex-direction: column;
   align-items: center;
   align-content: center;
-  width: 800px;
-  padding: 0 24px 0 24px;
+  width: 668px;
+  padding: 0 24px 120px 24px;
   margin: auto;
 }
 
 #lobby h1 {
   font-size: 64px;
+  font-family: var(--font-family-headings);
 }
 
 #lobby h2 {
   font-size: 32px;
   text-align: center;
   margin-top: 50px;
+  line-height: 38px;
+  font-family: var(--font-family-headings);
 }
 
 #lobby ul {
@@ -311,7 +324,7 @@ body {
   border-radius: 16px;
   width: 100%;
   height: 64px;
-  font-family: "Jaldi";
+  font-family: var(--font-family);
   font-style: normal;
   font-weight: 600;
   font-size: 20px;
@@ -654,10 +667,12 @@ body {
 
 .team h2 {
   color: #e2fbfd;
+  font-family: var(--font-family-headings);
 }
 
 .team h3 {
   color: #e2fbfd;
+  font-family: var(--font-family-headings);
 }
 .active {
   color: green;
@@ -732,10 +747,12 @@ body {
 
 #game h2 {
   color: var(--white);
+  font-family: var(--font-family-headings);
 }
 
 #game h3 {
   color: var(--white);
+  font-family: var(--font-family-headings);
 }
 
 #gameStatus {

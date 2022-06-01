@@ -3,6 +3,7 @@
 import "./html/index.html";
 import "./html/style.css";
 import "./assets/Jaldi-Regular.ttf";
+import "./assets/Jaldi-Bold.ttf";
 import "./assets/favicon.ico";
 import "./assets/daily.svg";
 import "./assets/github.png";
