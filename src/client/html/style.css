@@ -27,6 +27,7 @@
   --peach: #ffeed5;
   --font-family: Jaldi, "Helvetica Neue", Sans-Serif;
   --font-family-headings: Jaldi-Bold, "Helvetica Neue", Sans-Serif;
+  --font-family-header: "Helvetica Neue", Sans-Serif;
   --grid-bg: linear-gradient(to right, var(--grid-red-bg) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-red-bg) 1px, transparent 1px),
     linear-gradient(to right, var(--grid-black-bg) 1px, transparent 1px),
@@ -81,7 +82,7 @@ body {
 .header-title {
   font-size: 12px;
   line-height: 16px;
-  font-family: var(--font-family);
+  font-family: var(--font-family-header);
 }
 
 .right-header {
@@ -89,6 +90,11 @@ body {
   justify-content: space-around;
   align-items: center;
   margin-right: 24px;
+  font-family: var(--font-family-header);
+}
+
+.right-header a {
+  font-size: 0;
 }
 
 .title {
@@ -99,6 +105,12 @@ body {
 
 .docs-button {
   justify-content: space-between;
+}
+
+.arrow-icon {
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
 }
 
 .white-button {
@@ -149,58 +161,6 @@ body {
     var(--blue-dark) 0%,
     var(--red-dark) 100%
   );
-}
-
-#call {
-  position: absolute;
-  display: none;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-#world {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-#entry {
-  width: 300px;
-  height: 228px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 20px;
-}
-
-#entry .prompt {
-  font-size: 16px;
-  line-height: 24px;
-  text-align: center;
-  padding-bottom: 20px;
-}
-
-#entry input {
-  width: 280px;
-  height: 42px;
-  padding: 8px 16px;
-  margin-bottom: 5px;
-  border-radius: 8px;
-  border: 1px solid var(--grey);
-  font-family: var(--font-family);
-  font-size: 16pt;
-}
-
-#entry button {
-  width: 280px;
-  height: 32px;
-  padding: 8px 16px;
-  font-weight: bold;
-  background: var(--green);
-  border-radius: 8px;
-  border-width: 0px;
-  cursor: pointer;
 }
 
 #create-game-form {
@@ -301,6 +261,8 @@ body {
   box-shadow: 0px 4px 0px var(--black);
   border-radius: 16px;
   margin-bottom: 10px;
+  font-family: var(--font-family);
+  font-size: 16pt;
 }
 
 #lobby .instruction {

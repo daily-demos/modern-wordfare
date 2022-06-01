@@ -7,6 +7,7 @@ import "./assets/Jaldi-Bold.ttf";
 import "./assets/favicon.ico";
 import "./assets/daily.svg";
 import "./assets/github.png";
+import "./assets/new-tab-icon.png";
 import "./assets/camera-off.svg";
 import "./assets/camera.svg";
 import "./assets/microphone-off.svg";
