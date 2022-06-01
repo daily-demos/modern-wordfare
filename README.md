@@ -2,6 +2,8 @@
 
 This demo shows one way to implement a social gaming application with video integration using [Daily's call object](https://docs.daily.co/guides/products/call-object).
 
+This demo is still in development, with improvements and additional features still to come.
+
 ![Daily Codewords game board](./screenshot.png)
 
 ## Getting set up with Daily
@@ -27,3 +29,12 @@ This demo allows users to create and join Codewords games with their friends. Vi
 ## Contributing and feedback
 
 Let us know how experimenting with this demo goes! Feel free to reach out to us any time at `help@daily.co`.
+
+## Audio file credits
+
+- Game Start by plasterbrain: https://freesound.org/people/plasterbrain/sounds/243020/
+- 1-tone chime by skowm001: https://freesound.org/people/skowm001/sounds/268075/
+- Bell Chime Alert by plasterbrain: https://freesound.org/people/plasterbrain/sounds/419493/
+- Failure 01 by rhodesmas: https://freesound.org/people/rhodesmas/sounds/342756/
+- success_bell by MLaudio: https://freesound.org/people/MLaudio/sounds/511484/
+- tada2 by jobro: https://freesound.org/people/jobro/sounds/60444/

@@ -11,7 +11,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "BSD-2-Clause",
   "dependencies": {
     "@daily-co/daily-js": "^0.24.0",
     "@redis/client": "^1.1.0",
