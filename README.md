@@ -1,10 +1,10 @@
-# Daily Codewords
+# Code of Daily: Modern Wordfare
 
 This demo shows one way to implement a social gaming application with video integration using [Daily's call object](https://docs.daily.co/guides/products/call-object).
 
 This demo is still in development, with improvements and additional features still to come.
 
-![Daily Codewords game board](./screenshot.png)
+![Code of Daily: Modern Wordfare game board](./screenshot.png)
 
 ## Getting set up with Daily
 
@@ -18,7 +18,7 @@ Copy `.env.sample` in this repository's root to a file called `.env` and fill in
 
 ## How the demo works
 
-This demo allows users to create and join Codewords games with their friends. Video call participants join one of two teams as either a player or spymaster. The spymaster provides one-word clues tying one or more team words together. Players on that team then try to guess the correct words based on the spymaster's hint.
+This demo allows users to create and join Code of Daily: Modern Wordfare games with their friends. Video call participants join one of two teams as either a player or spymaster. The spymaster provides one-word clues tying one or more team words together. Players on that team then try to guess the correct words based on the spymaster's hint.
 
 ## Running locally
 
