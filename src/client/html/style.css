@@ -33,6 +33,13 @@
     linear-gradient(to right, var(--grid-black-bg) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-black-bg) 1px, transparent 1px);
   --grid-bg-size: 10px 10px, 10px 10px, 5px 5px, 5px 5px;
+  --dashed-border-bg: linear-gradient(90deg, var(--white) 50%, transparent 50%),
+    linear-gradient(90deg, var(--white) 50%, transparent 50%),
+    linear-gradient(0deg, var(--white) 50%, transparent 50%),
+    linear-gradient(0deg, var(--white) 50%, transparent 50%);
+  --dashed-border-bg-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  --dashed-border-bg-size: 16px 2px, 16px 2px, 2px 16px, 2px 16px;
+  --dashed-border-bg-position: 0% 0%, 100% 100%, 0% 100%, 100% 0px;
 }
 
 * {
@@ -368,6 +375,10 @@ body {
   color: var(--white);
 }
 
+#board button.neutral.revealed {
+  color: var(--black);
+}
+
 #board button.team2 {
   color: var(--white);
   background: linear-gradient(
@@ -576,7 +587,18 @@ body {
 }
 
 .team.active {
-  border-color: var(--gold);
+  border: none;
+  background: var(--dashed-border-bg);
+  background-size: var(--dashed-border-bg-size);
+  background-repeat: var(--dashed-border-bg-repeat);
+  background-position: var(--dashed-border-bg-position);
+  animation: rotate 6s infinite linear;
+}
+
+@keyframes rotate {
+  to {
+    background-position: 100% 0%, 0% 100%, 0% 0%, 100% 100%;
+  }
 }
 
 .tiles .tile video {
