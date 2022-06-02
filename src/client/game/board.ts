@@ -19,7 +19,7 @@ import {
   showSpymasterBtn,
   toggleEndTurnButton,
 } from "./nav";
-import { startAudio } from "../assets/audio/start.wav";
+import startAudio from "../assets/audio/start.wav";
 
 export interface BoardData {
   roomURL: string;
@@ -289,9 +289,9 @@ export class Board {
     // If nobody has won yet, reveal the single selected word which was
     // selected last. If there is a winner, reveal ALL words.
     if (winningTeam === Team.None) {
-      this.wordGrid.revealWord(lastRevealedWord.value, this.team);
+      this.wordGrid.revealWord(lastRevealedWord.value, team);
     } else {
-      this.wordGrid.revealAllWords(this.team);
+      this.wordGrid.revealAllWords();
     }
     return winningTeam;
   }
@@ -355,7 +355,7 @@ export class Board {
     // reveal all words.
     if (playerID === this.localPlayerID) {
       // Show word colors in grid
-      this.wordGrid.revealAllWords(this.team);
+      this.wordGrid.revealAllWords();
     }
 
     // Update join buttons to reflect new state

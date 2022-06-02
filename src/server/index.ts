@@ -56,7 +56,8 @@ function getClientPath(): string {
 
 const clientPath = getClientPath();
 
-app.use("/", express.static(clientPath));
+app.use(express.static(clientPath));
+app.use("/client", express.static(clientPath));
 
 app.use(express.json());
 

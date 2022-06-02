@@ -29,22 +29,18 @@ export default class WordGrid {
     }
   }
 
-  revealAllWords(ownTeam: Team) {
+  revealAllWords() {
     for (let i = 0; i < this.renderedWords.length; i += 1) {
       const word = this.renderedWords[i];
-      word.colorize(ownTeam, false);
+      word.colorize();
     }
   }
 
-  revealWord(wordVal: string, ownTeam: Team) {
-    let ot = ownTeam;
-    if (!ot || ot === Team.None) {
-      ot = Team.Team1;
-    }
+  revealWord(wordVal: string, selectingTeam: Team) {
     for (let i = 0; i < this.renderedWords.length; i += 1) {
       const rw = this.renderedWords[i];
       if (rw.word.value === wordVal) {
-        rw.colorize(ot);
+        rw.colorize(selectingTeam, true);
         rw.disableInteraction();
         return;
       }

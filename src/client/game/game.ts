@@ -288,6 +288,8 @@ export default class Game {
   // once they have joined the Daily video call
   private handleJoinedMeeting(player: DailyParticipant) {
     this.joinedAt = Date.now();
+    const audio = new Audio(joinedAudio);
+    audio.play();
 
     this.localPlayerID = player.session_id;
 

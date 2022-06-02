@@ -575,6 +575,10 @@ body {
   width: 100%;
 }
 
+.team.active {
+  border-color: var(--gold);
+}
+
 .tiles .tile video {
   width: 100px;
   height: 100px;

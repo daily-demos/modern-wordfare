@@ -16,11 +16,11 @@ export default class RenderedWord {
     this.onClick = onClick;
   }
 
-  colorize(ownTeam: Team, withChime: boolean = true) {
+  colorize(selectingTeam = Team.None, withChime: boolean = false) {
     this.button.classList.add(this.word.kind.toString());
     if (!withChime) return;
 
-    this.playChime(ownTeam);
+    this.playChime(selectingTeam);
     this.button.classList.add("revealed");
   }
 
@@ -43,10 +43,10 @@ export default class RenderedWord {
     this.button.disabled = true;
   }
 
-  private playChime(ownTeam: Team) {
+  private playChime(selectingTeam: Team) {
     const wordTeam = wordKindToTeam(this.word.kind);
     const audio = new Audio();
-    if (wordTeam === ownTeam) {
+    if (wordTeam === selectingTeam) {
       audio.src = successAudio;
       audio.play();
       return;
