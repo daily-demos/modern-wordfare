@@ -129,7 +129,6 @@ body {
   border: 1px solid var(--grey);
   padding: 8px 16px;
   border-radius: 8px;
-  flex: none;
   font-size: 12px;
   line-height: 16px;
   font-weight: bold;
