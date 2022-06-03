@@ -219,8 +219,8 @@ body {
 }
 
 #lobby button {
-  background: var(--grid-bg), var(--red-bright);
-  background-size: var(--grid-bg-size), cover;
+  background: var(--red-bright);
+  background-size: cover;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -255,8 +255,8 @@ body {
 #lobby input {
   display: block;
   width: 100%;
-  background: var(--grid-bg), var(--white);
-  background-size: var(--grid-bg-size), cover;
+  background: var(--white);
+  background-size: cover;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -297,8 +297,8 @@ body {
   font-weight: 600;
   font-size: 20px;
   line-height: 41px;
-  background: var(--grid-bg), var(--white);
-  background-size: var(--grid-bg-size), cover;
+  background: var(--white);
+  background-size: cover;
   text-align: center;
 }
 
@@ -338,8 +338,7 @@ body {
 
   flex: none;
   flex-grow: 1;
-  background: var(--grid-bg),
-    linear-gradient(
+  background: linear-gradient(
       106.36deg,
       #f7eede 12.54%,
       #ffffff 12.99%,
@@ -355,7 +354,7 @@ body {
       #f7eede 88.15%
     ),
     #f7eede;
-  background-size: var(--grid-bg-size), 164px 64px, 164px 64px;
+  background-size: 164px 64px, 164px 64px;
   font-family: var(--font-family);
   font-style: normal;
   font-weight: 900;
@@ -518,8 +517,7 @@ body {
 #controls button {
   margin: 0 5px;
   cursor: pointer;
-  background: var(--grid-bg), var(--white);
-  background-size: var(--grid-bg-size);
+  background: var(--white);
   color: var(--black);
   height: 50px;
   padding-left: 25px;
@@ -534,29 +532,28 @@ body {
 
 #controls .cam-on {
   background-image: url("./assets/camera.svg");
-  background-size: 24px 24px, var(--grid-bg-size), cover;
+  background-size: 24px 24px;
   background-position: center;
   background-repeat: no-repeat, repeat, no-repeat;
 }
 
 #controls .cam-off {
-  background: url(./assets/camera-off.svg), var(--grid-bg), var(--red-bright);
-  background-size: 24px 24px, var(--grid-bg-size), cover;
+  background: url(./assets/camera-off.svg), var(--red-bright);
+  background-size: 24px 24px, cover;
   background-position: center;
   background-repeat: no-repeat, repeat, no-repeat;
 }
 
 #controls .mic-on {
   background-image: url("./assets/microphone.svg");
-  background-size: 24px 24px, var(--grid-bg-size), cover;
+  background-size: 24px 24px;
   background-position: center;
   background-repeat: no-repeat, repeat, no-repeat;
 }
 
 #controls .mic-off {
-  background: url(./assets/microphone-off.svg), var(--grid-bg),
-    var(--red-bright);
-  background-size: 24px 24px, var(--grid-bg-size), cover;
+  background: url(./assets/microphone-off.svg), var(--red-bright);
+  background-size: 24px 24px, cover;
   background-position: center;
   background-repeat: no-repeat, repeat, no-repeat;
 }
@@ -621,8 +618,6 @@ body {
   border-radius: 16px;
   width: 300px;
   height: 350px;
-  background: var(--grid-bg);
-  background-size: var(--grid-bg-size);
 }
 
 .team .tiles {
@@ -708,8 +703,8 @@ body {
 }
 
 #gameOver .container {
-  background: var(--grid-bg), var(--gold);
-  background-size: var(--grid-bg-size), cover;
+  background: var(--gold);
+  background-size: cover;
   align-items: center;
   padding: 16px;
   margin: 3px;
@@ -724,8 +719,8 @@ body {
 }
 
 #gameOver button {
-  background: var(--grid-bg), var(--white);
-  background-size: var(--grid-bg-size), cover;
+  background: var(--white);
+  background-size: cover;
   align-items: center;
   margin: 3px;
   width: 100%;
