@@ -322,22 +322,17 @@ body {
 
 #board button {
   display: flex;
+  flex: 1 0 19%;
   flex-direction: row;
   justify-content: center;
   align-items: center;
   padding: 16px;
-  /* margin: 3px; */
 
   width: 100px;
   height: 64px;
   border: 2px solid var(--black);
   box-shadow: 0px 4px 0px var(--black);
   border-radius: 16px;
-
-  /* Inside auto layout */
-
-  flex: none;
-  flex-grow: 1;
   background: linear-gradient(
       106.36deg,
       #f7eede 12.54%,
@@ -362,7 +357,6 @@ body {
   line-height: 27px;
   text-align: center;
   text-transform: uppercase;
-  /* letter-spacing: -1px; */
   color: var(--black);
   opacity: 1;
 }
