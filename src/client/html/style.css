@@ -489,16 +489,19 @@ header {
 #controls {
   display: flex;
   align-items: center;
-  height: 56px;
   align-self: center;
+  justify-content: center;
+  height: 56px;
   padding-top: 40px;
   border-radius: 16px;
+  width: 100%;
+  max-width: 1450px;
+  position: relative;
 }
 
 #controls .right {
   position: absolute;
   right: 0;
-  margin-right: 24px;
 }
 
 #toggleCam,
@@ -689,7 +692,7 @@ header {
 #top {
   display: flex;
   width: 100%;
-  justify-content: space-evenly;
+  justify-content: center;
   margin-top: 24px;
 }
 
@@ -761,11 +764,6 @@ header {
   margin-top: 24px;
 }
 
-#bottom {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
 #board {
   width: 816px;
   height: fit-content;
