@@ -679,8 +679,6 @@ header {
 
 #gameOver {
   position: absolute;
-  height: 100%;
-  width: 100%;
   align-content: center;
   text-align: center;
   display: flex;
@@ -688,6 +686,11 @@ header {
   align-items: center;
   justify-content: center;
   z-index: 1;
+  margin: auto;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
 }
 
 #gameOver .container {
