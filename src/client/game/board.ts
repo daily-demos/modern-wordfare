@@ -20,6 +20,7 @@ import {
   toggleEndTurnButton,
 } from "./nav";
 import startAudio from "../assets/audio/start.wav";
+import { flyEmojis, Mood } from "../util/effects";
 
 export interface BoardData {
   roomURL: string;
@@ -293,7 +294,19 @@ export class Board {
     } else {
       this.wordGrid.revealAllWords();
     }
+    this.maybeToast(winningTeam);
     return winningTeam;
+  }
+
+  private maybeToast(winningTeam: Team) {
+    if (winningTeam === Team.None) return;
+    if (this.team && winningTeam !== this.team) {
+      // Losing team gets sad emoji
+      flyEmojis(Mood.Sad);
+      return;
+    }
+    // Winning team and observers can get happy emoji
+    flyEmojis(Mood.Happy);
   }
 
   // showBoardElements() shows the following DOM elements:

@@ -6,7 +6,6 @@ import SpymasterExists from "../shared/errors/spymasterExists";
 import PlayerNotFound from "../shared/errors/playerNotFound";
 import { TurnResultData } from "../shared/events";
 import { Team, TeamResult } from "../shared/types";
-import { DAILY_DOMAIN } from "./env";
 import { getOtherTeam, wordKindToTeam } from "../shared/util";
 import { Word, WordKind } from "../shared/word";
 import Player from "../shared/player";
@@ -67,7 +66,7 @@ export class Game {
     this.dailyRoomURL = roomURL;
     this.wordSet = wordSet;
     this.dailyRoomName = roomName;
-    this.id = `${DAILY_DOMAIN}-${roomName}`;
+    this.id = roomName;
 
     // Count how many words each team has to guess
     for (let i = 0; i < wordSet.length; i += 1) {
