@@ -25,7 +25,6 @@ export function flyEmojis(mood: Mood) {
     const emergeSpeed = rand(200, 400) / 100;
     emojiDiv.style.setProperty("animation", `emerge ${emergeSpeed}s forwards`);
     emojiDiv.style.transform = `rotate(${-30 + Math.random() * 60}deg)`;
-    console.log("transform:", emojiDiv.style.transform);
     emojiDiv.style.left = `${Math.random() * 100}%`;
 
     const body = document.getElementsByTagName("body")[0];
