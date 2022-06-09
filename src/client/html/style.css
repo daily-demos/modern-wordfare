@@ -477,6 +477,7 @@ header {
   width: 100%;
   max-width: 1450px;
   position: relative;
+  z-index: 3;
 }
 
 #controls .right {
