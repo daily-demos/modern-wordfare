@@ -466,26 +466,6 @@ header {
   perspective: 1000px;
 }
 
-@keyframes shake {
-  10%,
-  90% {
-    transform: translate3d(-1px, 0, 0);
-  }
-  20%,
-  80% {
-    transform: translate3d(2px, 2px, 0);
-  }
-  30%,
-  50%,
-  70% {
-    transform: translate3d(-4px, 0, 2px);
-  }
-  40%,
-  60% {
-    transform: translate3d(4px, -2px, 0);
-  }
-}
-
 #controls {
   display: flex;
   align-items: center;
@@ -497,6 +477,7 @@ header {
   width: 100%;
   max-width: 1450px;
   position: relative;
+  z-index: 3;
 }
 
 #controls .right {
@@ -698,14 +679,18 @@ header {
 
 #gameOver {
   position: absolute;
-  height: 100%;
-  width: 100%;
-  background-color: rgba(255, 255, 255, 0.4);
   align-content: center;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  z-index: 1;
+  margin: auto;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
 }
 
 #gameOver .container {
@@ -781,4 +766,44 @@ header {
 
 .hidden {
   visibility: hidden;
+}
+
+.emoji {
+  position: absolute;
+  bottom: 0px;
+  left: 50%;
+  font-size: 48px;
+  line-height: 1;
+  width: 48px;
+  height: 48px;
+}
+
+@keyframes shake {
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+  20%,
+  80% {
+    transform: translate3d(2px, 2px, 0);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 0, 2px);
+  }
+  40%,
+  60% {
+    transform: translate3d(4px, -2px, 0);
+  }
+}
+
+@keyframes emerge {
+  50% {
+    opacity: 1;
+  }
+  to {
+    bottom: 85%;
+    opacity: 0;
+  }
 }

@@ -14,7 +14,7 @@ To get a Daily API key, [create a free Daily account](https://dashboard.daily.co
 
 Once you have an account and are logged into the [Daily Dashboard](https://dashboard.daily.co/), copy your API key [here](https://dashboard.daily.co/developers). Your domain
 
-Copy `.env.sample` in this repository's root to a file called `.env` and fill in the `DAILY_DOMAIN` and `DAILY_API_KEY` variables. Do not commit this file!
+Copy `.env.sample` in this repository's root to a file called `.env` and fill in the `DAILY_API_KEY` variable. Do not commit this file!
 
 ## How the demo works
 
