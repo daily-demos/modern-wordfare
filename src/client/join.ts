@@ -1,5 +1,5 @@
 import NoMeetingToken from "../shared/errors/noMeetingToken";
-import { IJoinGameRequest, IJoinGameResponse } from "../shared/types";
+import { JoinGameRequest, JoinGameResponse } from "../shared/types";
 import { tryGetMeetingToken } from "../shared/util";
 import { BoardData } from "./game/board";
 import Game from "./game/game";
@@ -41,7 +41,7 @@ export default async function initJoinProcess(params: any) {
 // game ID and player name.
 function tryJoinGame(gameID: string, playerName: string) {
   joinGame(gameID)
-    .then((res: IJoinGameResponse) => {
+    .then((res: JoinGameResponse) => {
       // See if we have a cookie with the token
       // for this game ID
       const cookies = document.cookie;
@@ -77,8 +77,8 @@ function tryJoinGame(gameID: string, playerName: string) {
 
 // joinGame() makes a POST request to the /join endpoint, attempting
 // to join the requested game.
-async function joinGame(gameID: string): Promise<IJoinGameResponse> {
-  const req = <IJoinGameRequest>{
+async function joinGame(gameID: string): Promise<JoinGameResponse> {
+  const req = <JoinGameRequest>{
     gameID,
   };
 
@@ -97,6 +97,6 @@ async function joinGame(gameID: string): Promise<IJoinGameResponse> {
   });
 
   const body = await res.json();
-  const gameData = <IJoinGameResponse>body;
+  const gameData = <JoinGameResponse>body;
   return gameData;
 }

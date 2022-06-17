@@ -1,23 +1,23 @@
 import { Word } from "./word";
 
-export interface ICreateGameRequest {
+export interface CreateGameRequest {
   gameName: string;
   wordSet: Word[];
   playerName: string;
 }
 
-export interface ICreateGameResponse {
+export interface CreateGameResponse {
   roomURL: string;
   gameID: string;
   meetingToken: string;
   wordSet: Word[];
 }
 
-export interface IJoinGameRequest {
+export interface JoinGameRequest {
   gameID: string;
 }
 
-export interface IJoinGameResponse {
+export interface JoinGameResponse {
   gameName: string;
   roomURL: string;
   wordSet: Word[];
