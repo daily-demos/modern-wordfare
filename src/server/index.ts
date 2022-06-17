@@ -101,19 +101,19 @@ function startServer() {
   // /create endpoint handles creating a game
   app.post("/create", (req: Request, res: Response) => {
     const body = <CreateGameRequest>req.body;
-    const { wordSet } = body;
+    const { wordSet, gameName } = body;
     if (!wordSet) {
       const err = "word set must be defined";
       res.status(400).send(`{"error":"${err}}`);
       return;
     }
-    if (!body.gameName) {
+    if (!gameName) {
       const err = "game name must be defined";
       res.status(400).send(`{"error":"${err}}`);
       return;
     }
     orchestrator
-      .createGame(body.gameName, wordSet)
+      .createGame(gameName, wordSet)
       .then((game) => {
         orchestrator
           .getMeetingToken(game.dailyRoomName)
