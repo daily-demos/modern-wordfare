@@ -34,9 +34,9 @@ import {
   PlayerLeftData,
 } from "../shared/events";
 import {
-  ICreateGameRequest,
-  IJoinGameRequest,
-  IJoinGameResponse,
+  CreateGameRequest,
+  JoinGameRequest,
+  JoinGameResponse,
   Team,
 } from "../shared/types";
 import GameOrchestrator from "./orchestrator";
@@ -74,7 +74,7 @@ function startServer() {
 
   // /join endpoint handles joining the game
   app.post("/join", (req: Request, res: Response) => {
-    const body = <IJoinGameRequest>req.body;
+    const body = <JoinGameRequest>req.body;
     const { gameID } = body;
     if (!gameID) {
       const err = "request must contain game ID";
@@ -89,7 +89,7 @@ function startServer() {
         res.status(404).send(`{"error":"${err}}`);
         return;
       }
-      const data = <IJoinGameResponse>{
+      const data = <JoinGameResponse>{
         roomURL: game.dailyRoomURL,
         gameName: game.name,
         wordSet: game.wordSet,
@@ -100,20 +100,20 @@ function startServer() {
 
   // /create endpoint handles creating a game
   app.post("/create", (req: Request, res: Response) => {
-    const body = <ICreateGameRequest>req.body;
-    const { wordSet } = body;
+    const body = <CreateGameRequest>req.body;
+    const { wordSet, gameName } = body;
     if (!wordSet) {
       const err = "word set must be defined";
       res.status(400).send(`{"error":"${err}}`);
       return;
     }
-    if (!body.gameName) {
+    if (!gameName) {
       const err = "game name must be defined";
       res.status(400).send(`{"error":"${err}}`);
       return;
     }
     orchestrator
-      .createGame(body.gameName, wordSet)
+      .createGame(gameName, wordSet)
       .then((game) => {
         orchestrator
           .getMeetingToken(game.dailyRoomName)

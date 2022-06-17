@@ -1,4 +1,4 @@
-import { ICreateGameRequest } from "../shared/types";
+import { CreateGameRequest } from "../shared/types";
 import { Word } from "../shared/word";
 import createWordSet from "./util/word";
 
@@ -39,7 +39,7 @@ async function createGame(
   playerName: string,
   wordSet: Word[]
 ) {
-  const reqData = <ICreateGameRequest>{
+  const reqData = <CreateGameRequest>{
     gameName,
     playerName,
     wordSet,
