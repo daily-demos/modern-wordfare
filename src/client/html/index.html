@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
 
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://*.daily.co; connect-src https://*.daily.co https://*.pluot.blue https://*.herokuapp.com localhost:* wss: ws:; worker-src 'self' blob:; style-src 'self'; font-src 'self'"
+    />
+
     <link rel="stylesheet" type="text/css" href="style.css" />
     <link rel="shortcut icon" href="./assets/favicon.ico" />
 
