@@ -65,19 +65,20 @@ export default class GameOrchestrator {
 
     const url = `${dailyAPIURL}/rooms/`;
     const data = JSON.stringify(req);
+
+    const roomErrMsg = "failed to create room";
+
     const res = await axios.post(url, data, { headers }).catch((error) => {
-      console.log("failed to create room:", res);
-      throw new Error(`failed to create room: ${error})`);
+      console.error(roomErrMsg, res);
+      throw new Error(`${roomErrMsg}: ${error})`);
     });
 
     if (res.status !== 200 || !res.data) {
       console.error("unexpected room creation response:", res);
-      throw new Error("failed to create room");
+      throw new Error(roomErrMsg);
     }
-    const body = JSON.parse(JSON.stringify(res.data));
-
     // Cast Daily's response to our room data interface.
-    const roomData = <ICreatedDailyRoomData>body;
+    const roomData = <ICreatedDailyRoomData>res.data;
 
     // Workaround for bug with incorrect room url return for staging.
     let roomURL = roomData.url;
