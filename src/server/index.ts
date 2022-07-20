@@ -40,11 +40,10 @@ import {
   Team,
 } from "../shared/types";
 import GameOrchestrator from "./orchestrator";
-import { PORT } from "./env";
+import { DAILY_API_KEY, PORT } from "./env";
 import Memory from "./store/memory";
 import GameNotFound from "../shared/errors/gameNotFound";
 import { getCookieVal, meetingTokenCookieName } from "../shared/util";
-import { DAILY_API_KEY } from "./env";
 
 // Fail early if the server is not appropriately configured.
 if (!DAILY_API_KEY) {
