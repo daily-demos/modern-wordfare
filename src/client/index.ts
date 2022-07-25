@@ -1,6 +1,6 @@
 // These imports are here to ensure they're bundled into
 // the final distribution.
-import "./env"
+import "./env";
 import "./html/index.html";
 import "./html/style.css";
 import "./assets/Jaldi-Regular.ttf";

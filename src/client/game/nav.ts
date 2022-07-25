@@ -140,8 +140,9 @@ export function showJoinBtn(team: Team) {
 }
 
 function showBtn(btn: HTMLButtonElement) {
-  btn.classList.remove("invisible");
-  btn.disabled = false;
+  const ele = btn;
+  ele.classList.remove("invisible");
+  ele.disabled = false;
 }
 
 export function hideEndTurnButtons() {

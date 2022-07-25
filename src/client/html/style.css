@@ -633,8 +633,8 @@ header {
   font-family: var(--font-family);
   font-weight: 400;
   font-size: 16px;
-  position: absolute;
-  top: calc(100% - 20px);
+  position: relative;
+  top: -35px;
   left: 0;
   right: 0;
   text-align: center;
