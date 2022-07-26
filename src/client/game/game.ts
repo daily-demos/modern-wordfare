@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client";
 import { DailyParticipant } from "@daily-co/daily-js";
-import { Board, BoardData, removeTile, updateMedia } from "./board";
+import { Board, BoardData, updateMedia } from "./board";
 import {
   BecomeSpymasterData,
   becomeSpymasterEventName,
@@ -21,14 +21,13 @@ import {
   wordSelectedEventName,
   SelectedWordData,
   TurnResultData,
-  leaveGameEventName,
   restartGameEventName,
   RestartGameData,
   gameRestartedEventName,
   GameRestartedData,
   endTurnEventName,
   EndTurnData,
-  playerLeftgameEventName,
+  playerLeftGameEventName,
   PlayerLeftData,
 } from "../../shared/events";
 import { Call } from "../daily";
@@ -144,7 +143,7 @@ export default class Game {
     });
 
     this.call.registerParticipantLeftHandler((p) => {
-      removeTile(p.participant.session_id);
+      this.board.eject(p.participant.session_id);
     });
 
     this.call.registerParticipantUpdatedHandler((p) => {
@@ -193,7 +192,6 @@ export default class Game {
 
     registerLeaveBtnListener(() => {
       this.call.leave();
-      this.socket.emit(leaveGameEventName);
       document.location.href = "/";
     });
     // End call control setup
@@ -265,8 +263,8 @@ export default class Game {
       this.handleGameRestarted(data);
     });
 
-    socket.on(playerLeftgameEventName, (data: PlayerLeftData) => {
-      removeTile(data.playerID);
+    socket.on(playerLeftGameEventName, (data: PlayerLeftData) => {
+      this.board.eject(data.playerID);
     });
     // End server socket event handling
   }

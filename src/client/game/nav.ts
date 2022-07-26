@@ -114,7 +114,7 @@ export function hideSpymasterBtn(team: Team) {
 }
 
 export function showSpymasterBtn(team: Team) {
-  if (team || team === Team.None) return;
+  if (!team || team === Team.None) return;
   const teamDiv = <HTMLDivElement>document.getElementById(team);
   const btn = <HTMLButtonElement>(
     teamDiv.getElementsByClassName("beSpymaster")[0]

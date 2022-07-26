@@ -48,7 +48,37 @@ describe("Spymaster tests", () => {
       }
     }
     expect(player.isSpymaster).toBe(true);
-    expect(game["team2SpymasterID"]).toBe(pid);
+    const spymasters = game["spymasters"]
+    expect(spymasters.team2).toBe(pid);
+    expect(spymasters.team1).toBeFalsy();
+  });
+
+  test("Spymaster becomes other team's spymaster", () => {
+    const game = new Game("test game", "test url", "test room", []);
+
+    const pid = "player1";
+
+    game.setSpymaster(pid, Team.Team1);
+
+    let spymasters = game["spymasters"]
+    expect(spymasters.team1).toBe(pid);
+    expect(spymasters.team2).toBeFalsy();
+
+    game.setSpymaster(pid, Team.Team2);
+    spymasters = game["spymasters"];
+    expect(spymasters.team2).toBe(pid);
+    expect(spymasters.team1).toBeFalsy();
+  });
+
+  test("Spymaster leaves the game", () => {
+    const game = new Game("test game", "test url", "test room", []);
+    const pid = "player1";
+    game.addPlayer(pid, Team.Team1);
+    game.setSpymaster(pid, Team.Team1);
+
+    expect(game["spymasters"].team1).toBe(pid);
+    game.removePlayer(pid);
+    expect(game["spymasters"].team2).toBeNull();
   });
 });
 

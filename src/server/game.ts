@@ -36,9 +36,10 @@ export class Game {
 
   players: Player[] = [];
 
-  private team1SpymasterID: string;
-
-  private team2SpymasterID: string;
+  private spymasters: { [key in Team]?: string } = {
+    team1: null,
+    team2: null,
+  };
 
   currentTurn = Team.None;
 
@@ -104,6 +105,9 @@ export class Game {
       const p = this.players[i];
       if (p.id === playerID) {
         this.players.splice(i, 1);
+        if (p.isSpymaster) {
+          this.spymasters[p.team] = null;
+        }
         return;
       }
     }
@@ -115,10 +119,7 @@ export class Game {
   setSpymaster(playerID: string, team: Team): Player {
     // If the given team already has a spymaster,
     // throw an error
-    if (
-      (team === Team.Team1 && this.team1SpymasterID) ||
-      (team === Team.Team2 && this.team2SpymasterID)
-    ) {
+    if (this.spymasters[team]) {
       throw new SpymasterExists(team);
     }
 
@@ -129,15 +130,29 @@ export class Game {
       const p = this.players[i];
       if (p.id === playerID) {
         player = p;
-        player.isSpymaster = true;
+
+        // If player is already a spymaster for the
+        // other team, remove them.
+        const otherTeam = getOtherTeam(team);
+
+        if (
+          p.isSpymaster &&
+          p.team === otherTeam &&
+          this.spymasters[otherTeam] === player.id
+        ) {
+          this.spymasters[otherTeam] = null;
+        }
+
         // If player is already a member of the team
         // being requested to join, just set them as
         // spymaster.
         if (p.team === team) {
           break;
         }
+
         // Move player to requested team
         p.team = team;
+        player.isSpymaster = true;
         break;
       }
     }
@@ -147,23 +162,14 @@ export class Game {
       player = this.addPlayer(playerID, team);
     }
 
-    if (team === Team.Team1) {
-      this.team1SpymasterID = player.id;
-      player.isSpymaster = true;
-      return player;
-    }
-    if (team === Team.Team2) {
-      this.team2SpymasterID = player.id;
-      player.isSpymaster = true;
-      return player;
-    }
-
-    throw new Error(`requested team unrecognized: ${player.team}`);
+    this.spymasters[team] = player.id;
+    player.isSpymaster = true;
+    return player;
   }
 
   // spymastersReady() returns true if both teams have a spymaster
   spymastersReady(): boolean {
-    return !!(this.team1SpymasterID && this.team2SpymasterID);
+    return !!(this.spymasters[Team.Team1] && this.spymasters[Team.Team2]);
   }
 
   // nextTurn() toggles the next turn of the round
@@ -279,8 +285,8 @@ export class Game {
   // restart() resets the game's state
   restart(newWordSet: Word[]) {
     this.players = [];
-    this.team1SpymasterID = null;
-    this.team2SpymasterID = null;
+    this.spymasters[Team.Team1] = null;
+    this.spymasters[Team.Team2] = null;
     this.wordSet = newWordSet;
     this.currentTurn = Team.None;
     this.teamResults = {

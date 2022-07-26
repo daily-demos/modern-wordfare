@@ -165,11 +165,24 @@ export class Board {
     if (p.session_id === this.localPlayerID) {
       this.team = team;
     }
+    // Update join buttons to reflect new state
+    this.updateJoinButtons();
 
     this.createTile(p, team, force);
     this.updateGameStatus();
     this.updateInteraction();
     toggleEndTurnButton(this.currentTurn, this.team);
+  }
+
+  eject(playerID: string) {
+    removeTile(playerID);
+    if (this.spymasters.team1 === playerID) {
+      this.spymasters.team1 = null;
+      this.updateJoinButtons();
+    } else if (this.spymasters.team2 === playerID) {
+      this.spymasters.team2 = null;
+      this.updateJoinButtons();
+    }
   }
 
   // revealWord() reveals the given word by value.
@@ -180,9 +193,8 @@ export class Board {
   // updateJoinButtons() updates the visibility of team join
   // buttons based on the player's current team state.
   private updateJoinButtons() {
-    const spymasterOfTeam = this.isSpymaster(this.localPlayerID);
-
     if (this.isOnTeam()) {
+      const spymasterOfTeam = this.isSpymaster(this.localPlayerID);
       const otherTeam = this.getOtherTeam();
       // If player is spymaster on a team, disable player-join buttons:
       if (spymasterOfTeam !== Team.None) {
@@ -202,7 +214,7 @@ export class Board {
       hideSpymasterBtn(Team.Team1);
     }
     if (!this.spymasters[Team.Team2]) {
-      showSpymasterBtn(Team.Team1);
+      showSpymasterBtn(Team.Team2);
     } else {
       hideSpymasterBtn(Team.Team2);
     }
@@ -391,7 +403,6 @@ export class Board {
   // Otherwise, it throws an error if the given
   // player is already on a team.
   createTile(p: DailyParticipant, team: Team, force = false) {
-    this.updateJoinButtons();
     let name = p.user_name;
     if (p.local) {
       name = "You";

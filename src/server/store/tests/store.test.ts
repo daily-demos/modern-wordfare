@@ -1,6 +1,7 @@
 import { Word, WordKind } from "../../../shared/word";
 import { Game } from "../../game";
 import Memory from "../memory";
+import { PlayerInfo } from "../store";
 
 describe("Memory storage tests", () => {
   test("store game", async () => {
@@ -31,10 +32,29 @@ describe("Memory storage tests", () => {
     expect(gotGameAgain.wordSet.length).toBe(0);
 
     // Now, store the update:
-    await m.storeGame(gotGame);
+    m.storeGame(gotGame);
 
     // And retrieve again
     gotGameAgain = await m.getGame(simpleGame.id);
     expect(gotGameAgain.wordSet).toEqual(gotGame.wordSet);
+  });
+
+  test("store, retrieve, remove player", async () => {
+    const m = new Memory();
+    const socketID = "test-socket";
+
+    const pi = <PlayerInfo>{
+      playerID: "test-player",
+      gameID: "test-game",
+    };
+    m.storeSocketMapping(socketID, pi);
+
+    let gotPlayerInfo = await m.getSocketMapping(socketID);
+    expect(gotPlayerInfo).toStrictEqual(pi);
+
+    m.deleteSocketMapping(socketID);
+
+    gotPlayerInfo = await m.getSocketMapping(socketID);
+    expect(gotPlayerInfo).toBeFalsy();
   });
 });
