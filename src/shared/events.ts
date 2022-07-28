@@ -64,8 +64,6 @@ export interface TurnResultData {
   newCurrentTurn: Team;
 }
 
-export const leaveGameEventName = "leave-game";
-
 export const endTurnEventName = "end-turn";
 export interface EndTurnData {
   gameID: string;
@@ -83,7 +81,7 @@ export interface GameRestartedData {
   newWordSet: Word[];
 }
 
-export const playerLeftgameEventName = "player-left";
+export const playerLeftGameEventName = "player-left";
 export interface PlayerLeftData {
   playerID: string;
 }

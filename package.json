@@ -6,7 +6,6 @@
   "scripts": {
     "build": "webpack",
     "start": "node dist/server/index.js",
-    "dev": "nodemon src/server/index.ts",
     "test": "jest"
   },
   "keywords": [],

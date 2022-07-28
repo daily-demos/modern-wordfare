@@ -163,6 +163,7 @@ export default class GameOrchestrator {
     // Remove player from the game and delete socket mapping.
     game.removePlayer(playerInfo.playerID);
     this.storeClient.deleteSocketMapping(socketID);
+    this.storeClient.storeGame(game);
     return playerInfo;
   }
 
@@ -196,14 +197,18 @@ export default class GameOrchestrator {
   async setGameSpymaster(
     gameID: string,
     playerID: string,
-    team: Team
+    team: Team,
+    socketID: string
   ): Promise<{ spymaster: Player; currentTurn: Team }> {
     const game = await this.getGame(gameID);
     if (!game) {
       throw new GameNotFound(gameID);
     }
     const spymaster = game.setSpymaster(playerID, team);
-
+    this.storeClient.storeSocketMapping(socketID, <PlayerInfo>{
+      gameID,
+      playerID,
+    });
     // If both teams now have a spymaster, trigger the first turn!
     if (game.spymastersReady() && game.state === GameState.Pending) {
       game.nextTurn();

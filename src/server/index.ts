@@ -23,14 +23,13 @@ import {
   wordSelectedEventName,
   SelectedWordData,
   turnResultEventName,
-  leaveGameEventName,
   endTurnEventName,
   EndTurnData,
   restartGameEventName,
   RestartGameData,
   gameRestartedEventName,
   GameRestartedData,
-  playerLeftgameEventName,
+  playerLeftGameEventName,
   PlayerLeftData,
 } from "../shared/events";
 import {
@@ -171,7 +170,7 @@ function startServer() {
         // Attempt to eject player from any game they
         // are currently in.
         const ejectedPlayerInfo = await orchestrator.ejectPlayer(socket.id);
-        io.to(ejectedPlayerInfo.gameID).emit(playerLeftgameEventName, <
+        io.to(ejectedPlayerInfo.gameID).emit(playerLeftGameEventName, <
           PlayerLeftData
         >{
           playerID: ejectedPlayerInfo.playerID,
@@ -179,20 +178,6 @@ function startServer() {
       } catch (e) {
         // No point sending an error event back as the
         // client is gone, so we just log the error.
-        console.error(e);
-      }
-    });
-
-    // Handle player asking to leave game
-    socket.on(leaveGameEventName, async () => {
-      try {
-        const ejectedPlayerInfo = await orchestrator.ejectPlayer(socket.id);
-        io.to(ejectedPlayerInfo.gameID).emit(playerLeftgameEventName, <
-          PlayerLeftData
-        >{
-          playerID: ejectedPlayerInfo.playerID,
-        });
-      } catch (e) {
         console.error(e);
       }
     });
@@ -227,7 +212,7 @@ function startServer() {
     // Handle player asking to become spymaster
     socket.on(becomeSpymasterEventName, async (data: BecomeSpymasterData) => {
       orchestrator
-        .setGameSpymaster(data.gameID, data.sessionID, data.team)
+        .setGameSpymaster(data.gameID, data.sessionID, data.team, socket.id)
         .then((res) => {
           // Send spymaster data back to the whole game
           const spymasterData = <SpymasterData>{
