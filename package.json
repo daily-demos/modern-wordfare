@@ -18,6 +18,7 @@
     "express": "^4.17.3",
     "http-server": "^14.1.0",
     "install": "^0.13.0",
+    "jwt-decode": "^3.1.2",
     "node-cache": "^5.1.2",
     "npm": "^8.11.0",
     "redis": "^4.1.0",
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@types/express": "^4.17.13",
     "@types/jest": "^27.5.0",
+    "@types/jwt-decode": "^3.1.0",
     "@types/node": "^17.0.23",
     "@typescript-eslint/eslint-plugin": "^5.22.0",
     "@typescript-eslint/parser": "^5.22.0",

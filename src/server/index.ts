@@ -43,6 +43,7 @@ import { DAILY_API_KEY, PORT } from "./env";
 import Memory from "./store/memory";
 import GameNotFound from "../shared/errors/gameNotFound";
 import { getCookieVal, meetingTokenCookieName } from "../shared/util";
+import { getMeetingToken } from "./daily";
 
 // Fail early if the server is not appropriately configured.
 if (!DAILY_API_KEY) {
@@ -113,8 +114,7 @@ function startServer() {
     orchestrator
       .createGame(gameName, wordSet)
       .then((game) => {
-        orchestrator
-          .getMeetingToken(game.dailyRoomName)
+        getMeetingToken(game.dailyRoomName)
           .then((token) => {
             // Set meeting token for this game as a cookie
             const cookie = getCookieVal(token, game.id);
@@ -184,7 +184,12 @@ function startServer() {
 
     // Handle player asking to restart game
     socket.on(restartGameEventName, async (data: RestartGameData) => {
-      await orchestrator.restartGame(socket.id, data.gameID, data.newWordSet);
+      await orchestrator.restartGame(
+        socket.id,
+        data.gameID,
+        data.newWordSet,
+        data.token
+      );
       io.to(data.gameID).emit(gameRestartedEventName, <GameRestartedData>{
         newWordSet: data.newWordSet,
       });

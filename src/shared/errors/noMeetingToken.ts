@@ -4,7 +4,7 @@ export default class NoMeetingToken extends Error {
   msg: string;
 
   constructor() {
-    const msg = "no meeting token founr";
+    const msg = "no meeting token found";
     super(msg);
     this.msg = msg;
 

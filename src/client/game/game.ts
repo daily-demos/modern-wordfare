@@ -37,6 +37,7 @@ import {
   registerInviteBtnListener,
   registerLeaveBtnListener,
   registerMicBtnListener,
+  registerRestartButtonListener,
   updateCamBtnState,
   updateMicBtnState,
 } from "./nav";
@@ -45,6 +46,7 @@ import { Team } from "../../shared/types";
 import ErrTileAlreadyExists from "./errors/errTileAlreadyExists";
 
 import joinedAudio from "../assets/audio/joined.wav";
+import { tokenIsValid } from "../../server/daily";
 
 // Game (client-side) manages three main components of our application:
 // * The play board/space
@@ -170,6 +172,7 @@ export default class Game {
         console.warn(e);
       }
     });
+
     // End call event handler registration
 
     // Join the call
@@ -195,6 +198,20 @@ export default class Game {
       document.location.href = "/";
     });
     // End call control setup
+
+    // Register restart handler if user is an admin
+    const token = bd.meetingToken;
+    if (token) {
+      registerRestartButtonListener(() => {
+        try {
+          if (!tokenIsValid(token)) return;
+        } catch (e) {
+          console.error("failed to validate meeting token:", e);
+          return;
+        }
+        this.restart(token);
+      });
+    }
   }
 
   // setupSocket() sets up a socket connection
@@ -269,11 +286,12 @@ export default class Game {
     // End server socket event handling
   }
 
-  private restart() {
+  private restart(token: string = "") {
     const newWordSet = createWordSet();
     this.socket.emit(restartGameEventName, <RestartGameData>{
       gameID: this.data.gameID,
       newWordSet,
+      token,
     });
   }
 
