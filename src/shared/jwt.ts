@@ -3,7 +3,9 @@ import jwtDecode from "jwt-decode";
 interface DailyToken {
   exp: number;
   nbf: number;
-  room_name: string;
+  // r is going to be the claim
+  // that matches our room name
+  r: string;
 }
 
 // claimsAreValid checks if the claims in a JWT payload
@@ -26,7 +28,7 @@ export default function claimsAreValid(jwt: string, roomName: string): boolean {
 
   // We'll also require the token to contain
   // a room name, and for the room name to match.
-  if (!decodedToken.room_name || decodedToken.room_name !== roomName) {
+  if (!decodedToken.r || decodedToken.r !== roomName) {
     return false;
   }
 

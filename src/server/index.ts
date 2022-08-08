@@ -184,6 +184,7 @@ function startServer() {
 
     // Handle player asking to restart game
     socket.on(restartGameEventName, (data: RestartGameData) => {
+      console.log(`Got restart request for game ID ${data.gameID}`);
       orchestrator
         .restartGame(socket.id, data.gameID, data.newWordSet, data.token)
         .then(() => {
@@ -192,7 +193,9 @@ function startServer() {
           });
         })
         .catch((e) => {
-          console.error(e);
+          console.error(
+            `failed to restart game ${data.gameID}: ${e.toString()}`
+          );
           socket.to(socket.id).emit(errorEventName, e);
         });
     });

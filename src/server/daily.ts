@@ -66,7 +66,6 @@ export async function createRoom(): Promise<CreatedDailyRoomData> {
 
 // getMeetingToken() obtains a meeting token for a room from Daily
 export async function getMeetingToken(roomName: string): Promise<string> {
-  const api = this.dailyAPIKey;
   const req = {
     properties: {
       room_name: roomName,
@@ -77,7 +76,7 @@ export async function getMeetingToken(roomName: string): Promise<string> {
 
   const data = JSON.stringify(req);
   const headers = {
-    Authorization: `Bearer ${api}`,
+    Authorization: `Bearer ${DAILY_API_KEY}`,
     "Content-Type": "application/json",
   };
 
@@ -98,18 +97,18 @@ export async function tokenIsValid(
   roomName: string
 ): Promise<boolean> {
   // Check claims on the client-side first of all
-  if (!claimsAreValid(token, roomName)) return false;
+  if (!token || !claimsAreValid(token, roomName)) return false;
 
   // Call out to Daily's meeting token REST endpoint to verify validity
   const url = `${dailyAPIURL}/meeting-tokens/${token}`;
   const headers = {
-    Authorization: `Bearer ${token}`,
+    Authorization: `Bearer ${DAILY_API_KEY}`,
     "Content-Type": "application/json",
   };
 
   const errMsg = "failed to check meeting token validity";
-  const res = await axios.post(url, { headers }).catch((error) => {
-    throw new Error(`${errMsg}: ${error})`);
+  const res = await axios.get(url, { headers }).catch((error) => {
+    throw new Error(`${errMsg}: ${error}`);
   });
   if (res.status !== 200) {
     throw new Error(`${errMsg}: got status ${res.status})`);

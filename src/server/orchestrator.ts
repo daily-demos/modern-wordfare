@@ -94,31 +94,15 @@ export default class GameOrchestrator {
       throw new GameNotFound(gameID);
     }
 
-    // If someone is trying to restart while the game is still in progress,
-    // verify that they are the game host (ie, have a valid Daily token)
-    if (game.state === GameState.Playing) {
-      const isValid = await tokenIsValid(token, game.dailyRoomName);
-      if (!isValid) {
-        throw new OperationForbidden();
-      }
+    const isGameHost = await tokenIsValid(token, game.dailyRoomName);
+    // Game host can restart the game any time
+    if (isGameHost || isRestartAllowed(game, socketID)) {
+      game.restart(newWordSet);
+      this.storeClient.storeGame(game);
+      return;
     }
 
-    // Find the socket mapping associated with the user requesting this restart
-    const playerInfo = await this.storeClient.getSocketMapping(socketID);
-    if (!playerInfo) {
-      throw new SocketMappingNotFound(socketID);
-    }
-
-    // Only allow a member of the game to restart the game.
-    // (Maybe in the future only the meeting owner/game host should be
-    // allowed to do this? TBD)
-    if (playerInfo.gameID !== gameID) {
-      throw new Error(
-        `game ID mismatch between request (${gameID}) and socket mapping (${playerInfo.gameID})`
-      );
-    }
-    game.restart(newWordSet);
-    this.storeClient.storeGame(game);
+    throw new OperationForbidden();
   }
 
   // setGameSpymaster() sets the given player as the spymaster for the given team and game.
@@ -185,4 +169,29 @@ export default class GameOrchestrator {
     this.storeClient.storeGame(game);
     return game.currentTurn;
   }
+}
+
+// isRestartAllowed() verifies that the given non-host
+// player is allowed to restart a game
+async function isRestartAllowed(
+  game: Game,
+  socketID: string
+): Promise<boolean> {
+  // If user is not the game host and the game is in session,
+  // restarting is forbidden.
+  if (game.state === GameState.Playing) {
+    return false;
+  }
+
+  // Find the socket mapping associated with the user requesting this restart
+  const playerInfo = await this.storeClient.getSocketMapping(socketID);
+  if (!playerInfo) {
+    return false;
+  }
+
+  // Only allow a member of the game to restart the game.
+  if (playerInfo.gameID !== game.id) {
+    return false;
+  }
+  return true;
 }

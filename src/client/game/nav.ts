@@ -57,6 +57,7 @@ export function registerInviteBtnListener(f: () => void) {
 
 export function registerRestartButtonListener(f: () => void) {
   const restartBtn = document.getElementById("restart");
+  restartBtn.classList.remove("hidden");
   restartBtn.onclick = () => {
     f();
   };

@@ -10,7 +10,7 @@ describe("jwt tests", () => {
     const payload = {
       exp,
       nbf,
-      room_name: "my_test_room",
+      r: "my_test_room",
     };
     const token = jwt.sign(payload, "test_secret");
     const gotValid = claimsAreValid(token, "my_test_room");
@@ -20,7 +20,7 @@ describe("jwt tests", () => {
     const exp = Math.floor(Date.now() / 1000) - 100;
     const payload = {
       exp,
-      room_name: "my_test_room",
+      r: "my_test_room",
     };
     const token = jwt.sign(payload, "test_secret");
     const gotValid = claimsAreValid(token, "my_test_room");
@@ -29,7 +29,7 @@ describe("jwt tests", () => {
 
   test("token has no expiry claim", () => {
     const payload = {
-      room_name: "my_test_room",
+      r: "my_test_room",
     };
     const token = jwt.sign(payload, "test_secret");
     const gotValid = claimsAreValid(token, "my_test_room");
@@ -48,7 +48,7 @@ describe("jwt tests", () => {
     const exp = Math.floor(Date.now() / 1000) + 86400;
     const payload = {
       exp,
-      room_name: "my_test_room",
+      r: "my_test_room",
     };
     const token = jwt.sign(payload, "test_secret");
     const gotValid = claimsAreValid(token, "my_other_room");
