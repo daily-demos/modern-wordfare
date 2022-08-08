@@ -56,8 +56,8 @@ export function registerInviteBtnListener(f: () => void) {
 }
 
 export function registerRestartButtonListener(f: () => void) {
-  const toggleMicBtn = document.getElementById("restart");
-  toggleMicBtn.onclick = () => {
+  const restartBtn = document.getElementById("restart");
+  restartBtn.onclick = () => {
     f();
   };
 }

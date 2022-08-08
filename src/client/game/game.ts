@@ -46,7 +46,7 @@ import { Team } from "../../shared/types";
 import ErrTileAlreadyExists from "./errors/errTileAlreadyExists";
 
 import joinedAudio from "../assets/audio/joined.wav";
-import { tokenIsValid } from "../../server/daily";
+import claimsAreValid from "../../shared/jwt";
 
 // Game (client-side) manages three main components of our application:
 // * The play board/space
@@ -204,9 +204,12 @@ export default class Game {
     if (token) {
       registerRestartButtonListener(() => {
         try {
-          if (!tokenIsValid(token)) return;
+          if (!claimsAreValid(token)) {
+            console.error("token doesn't appear to be valid. Is it expired?")
+            return;
+          }
         } catch (e) {
-          console.error("failed to validate meeting token:", e);
+          console.error("failed to validate meeting token claims:", e);
           return;
         }
         this.restart(token);
