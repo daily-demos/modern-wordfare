@@ -6,7 +6,8 @@
   "scripts": {
     "build": "webpack",
     "start": "node dist/server/index.js",
-    "test": "jest"
+    "test": "jest",
+    "fix": "eslint src/ --fix"
   },
   "keywords": [],
   "author": "",
