@@ -35,15 +35,13 @@ export class Call {
       dailyConfig: {
         experimentalChromeVideoMuteLightOff: true,
         camSimulcastEncodings: [{ maxBitrate: 600000, maxFramerate: 30 }],
+        // Our tiles will always be 100px x 100px, so set the track
+        // constraints to match
+        userMediaVideoConstraints: {
+          width: videoTileSize,
+          height: videoTileSize,
+        },
         avoidEval: true,
-      },
-    });
-    // Our tiles will always be 100px x 100px, so set the bandwidth
-    // to match
-    this.callObject.setBandwidth({
-      trackConstraints: {
-        width: videoTileSize,
-        height: videoTileSize,
       },
     });
   }

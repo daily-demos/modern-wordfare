@@ -48,7 +48,8 @@ describe("Spymaster tests", () => {
       }
     }
     expect(player.isSpymaster).toBe(true);
-    const spymasters = game["spymasters"]
+    // eslint-disable-next-line prefer-destructuring,@typescript-eslint/dot-notation
+    const spymasters = game["spymasters"];
     expect(spymasters.team2).toBe(pid);
     expect(spymasters.team1).toBeFalsy();
   });
@@ -60,11 +61,13 @@ describe("Spymaster tests", () => {
 
     game.setSpymaster(pid, Team.Team1);
 
-    let spymasters = game["spymasters"]
+    // eslint-disable-next-line prefer-destructuring,@typescript-eslint/dot-notation
+    let spymasters = game["spymasters"];
     expect(spymasters.team1).toBe(pid);
     expect(spymasters.team2).toBeFalsy();
 
     game.setSpymaster(pid, Team.Team2);
+    // eslint-disable-next-line @typescript-eslint/dot-notation
     spymasters = game["spymasters"];
     expect(spymasters.team2).toBe(pid);
     expect(spymasters.team1).toBeFalsy();
@@ -76,9 +79,12 @@ describe("Spymaster tests", () => {
     game.addPlayer(pid, Team.Team1);
     game.setSpymaster(pid, Team.Team1);
 
-    expect(game["spymasters"].team1).toBe(pid);
+    // eslint-disable-next-line prefer-destructuring,@typescript-eslint/dot-notation
+    const spymasters = game["spymasters"];
+
+    expect(spymasters.team1).toBe(pid);
     game.removePlayer(pid);
-    expect(game["spymasters"].team2).toBeNull();
+    expect(spymasters.team2).toBeNull();
   });
 });
 
