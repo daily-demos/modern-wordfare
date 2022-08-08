@@ -97,7 +97,7 @@ export default class GameOrchestrator {
     // If someone is trying to restart while the game is still in progress,
     // verify that they are the game host (ie, have a valid Daily token)
     if (game.state === GameState.Playing) {
-      const isValid = await tokenIsValid(token);
+      const isValid = await tokenIsValid(token, game.dailyRoomName);
       if (!isValid) {
         throw new OperationForbidden();
       }

@@ -204,8 +204,9 @@ export default class Game {
     if (token) {
       registerRestartButtonListener(() => {
         try {
-          if (!claimsAreValid(token)) {
-            console.error("token doesn't appear to be valid. Is it expired?")
+          // gameID is identical to the room name
+          if (!claimsAreValid(token, bd.gameID)) {
+            console.error("token doesn't appear to be valid. Is it expired?");
             return;
           }
         } catch (e) {

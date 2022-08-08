@@ -184,19 +184,17 @@ function startServer() {
 
     // Handle player asking to restart game
     socket.on(restartGameEventName, (data: RestartGameData) => {
-      orchestrator.restartGame(
-        socket.id,
-        data.gameID,
-        data.newWordSet,
-        data.token
-      ).then(() => {
-        io.to(data.gameID).emit(gameRestartedEventName, <GameRestartedData>{
-          newWordSet: data.newWordSet,
+      orchestrator
+        .restartGame(socket.id, data.gameID, data.newWordSet, data.token)
+        .then(() => {
+          io.to(data.gameID).emit(gameRestartedEventName, <GameRestartedData>{
+            newWordSet: data.newWordSet,
+          });
+        })
+        .catch((e) => {
+          console.error(e);
+          socket.to(socket.id).emit(errorEventName, e);
         });
-      }).catch((e) => {
-        console.error(e);
-        socket.to(socket.id).emit(errorEventName, e);
-      });
     });
 
     // Handle player asking to join a team

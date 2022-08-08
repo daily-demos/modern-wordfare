@@ -93,9 +93,12 @@ export async function getMeetingToken(roomName: string): Promise<string> {
   return res.data?.token;
 }
 
-export async function tokenIsValid(token: string): Promise<boolean> {
+export async function tokenIsValid(
+  token: string,
+  roomName: string
+): Promise<boolean> {
   // Check claims on the client-side first of all
-  if (!claimsAreValid(token)) return false;
+  if (!claimsAreValid(token, roomName)) return false;
 
   // Call out to Daily's meeting token REST endpoint to verify validity
   const url = `${dailyAPIURL}/meeting-tokens/${token}`;
