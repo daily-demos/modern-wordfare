@@ -1,5 +1,3 @@
-import axios from "axios";
-import { DAILY_API_KEY, DAILY_STAGING } from "./env";
 import { Game, GameState } from "./game";
 import { Team } from "../shared/types";
 import SocketMappingNotFound from "../shared/errors/socketMappingNotFound";
@@ -8,32 +6,14 @@ import { TurnResultData } from "../shared/events";
 import { PlayerInfo, StoreClient } from "./store/store";
 import { Word } from "../shared/word";
 import Player from "../shared/player";
-
-const isStaging = DAILY_STAGING === "true";
-
-let dailyAPIDomain = "daily.co";
-if (isStaging) {
-  dailyAPIDomain = "staging.daily.co";
-}
-
-const dailyAPIURL = `https://api.${dailyAPIDomain}/v1`;
-
-// The data we'll expect to get from Daily on room creation.
-// Daily actually returns much more data, but these are the only
-// properties we'll be using.
-interface ICreatedDailyRoomData {
-  id: string;
-  name: string;
-  url: string;
-}
+import { createRoom, tokenIsValid } from "./daily";
+import OperationForbidden from "../shared/errors/operationForbidden";
 
 // GameOrchestrator serves as the entry point into
 // all game actions. It also manages storage of
 // game state in whatever cache we are using
 // (basic in-memory cache by default)
 export default class GameOrchestrator {
-  private readonly dailyAPIKey: string = DAILY_API_KEY;
-
   // storeClient() is our storage implementation, by default
   // a basic memory cache
   private readonly storeClient: StoreClient;
@@ -45,84 +25,18 @@ export default class GameOrchestrator {
   // createGame() creates a new game using the given name and word set.
   // It does so by creating a Daily room and then an instance of Game.
   async createGame(name: string, wordSet: Word[]): Promise<Game> {
-    const apiKey = DAILY_API_KEY;
-
-    // Prepare our desired room properties. Participants will start with
-    // mics and cams off, and the room will expire in 24 hours.
-    const req = {
-      properties: {
-        exp: Math.floor(Date.now() / 1000) + 86400,
-        start_audio_off: true,
-        start_video_off: true,
-      },
-    };
-
-    // Prepare our headers, containing our Daily API key
-    const headers = {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    };
-
-    const url = `${dailyAPIURL}/rooms/`;
-    const data = JSON.stringify(req);
-
-    const roomErrMsg = "failed to create room";
-
-    const res = await axios.post(url, data, { headers }).catch((error) => {
-      console.error(roomErrMsg, res);
-      throw new Error(`${roomErrMsg}: ${error})`);
-    });
-
-    if (res.status !== 200 || !res.data) {
-      console.error("unexpected room creation response:", res);
-      throw new Error(roomErrMsg);
-    }
-    // Cast Daily's response to our room data interface.
-    const roomData = <ICreatedDailyRoomData>res.data;
-
-    // Workaround for bug with incorrect room url return for staging.
-    let roomURL = roomData.url;
-
-    if (isStaging && !roomURL.includes("staging.daily.co")) {
-      roomURL = roomURL.replace("daily.co", "staging.daily.co");
-    }
+    const roomData = await createRoom();
 
     // Instantiate game with given room URL and name, and store
     // the newly created game.
-    const game = new Game(name, roomURL, roomData.name, wordSet);
+    const game = new Game(name, roomData.url, roomData.name, wordSet);
     await this.storeClient.storeGame(game);
     return game;
   }
 
-  // getMeetingToken() obtains a meeting token for a room from Daily
-  async getMeetingToken(roomName: string): Promise<string> {
-    const api = this.dailyAPIKey;
-    const req = {
-      properties: {
-        room_name: roomName,
-        exp: Math.floor(Date.now() / 1000) + 86400,
-        is_owner: true,
-      },
-    };
-
-    const data = JSON.stringify(req);
-    const headers = {
-      Authorization: `Bearer ${api}`,
-      "Content-Type": "application/json",
-    };
-
-    const url = `${dailyAPIURL}/meeting-tokens/`;
-    const res = await axios.post(url, data, { headers }).catch((error) => {
-      throw new Error(`failed to create meeting token: ${error})`);
-    });
-
-    return res.data?.token;
-  }
-
   // getGame() retrieves a game from storage
   async getGame(gameID: string): Promise<Game> {
-    const game = await this.storeClient.getGame(gameID);
-    return game;
+    return this.storeClient.getGame(gameID);
   }
 
   // joinGame adds a player to a game, if the game for their
@@ -168,29 +82,27 @@ export default class GameOrchestrator {
   }
 
   // restartGame() restarts the given game with the new word set
-  async restartGame(socketID: string, gameID: string, newWordSet: Word[]) {
+  async restartGame(
+    socketID: string,
+    gameID: string,
+    newWordSet: Word[],
+    token: string
+  ) {
     // First, find the game itself
     const game = await this.getGame(gameID);
     if (!game) {
       throw new GameNotFound(gameID);
     }
 
-    // Find the socket mapping associated with the user requesting this restart
-    const playerInfo = await this.storeClient.getSocketMapping(socketID);
-    if (!playerInfo) {
-      throw new SocketMappingNotFound(socketID);
+    const isGameHost = await tokenIsValid(token, game.dailyRoomName);
+    // Game host can restart the game any time
+    if (isGameHost || isRestartAllowed(game, socketID)) {
+      game.restart(newWordSet);
+      this.storeClient.storeGame(game);
+      return;
     }
 
-    // Only allow a member of the game to restart the game.
-    // (Maybe in the future only the meeting owner/game host should be
-    // allowed to do this? TBD)
-    if (playerInfo.gameID !== gameID) {
-      throw new Error(
-        `game ID mismatch between request (${gameID}) and socket mapping (${playerInfo.gameID})`
-      );
-    }
-    game.restart(newWordSet);
-    this.storeClient.storeGame(game);
+    throw new OperationForbidden();
   }
 
   // setGameSpymaster() sets the given player as the spymaster for the given team and game.
@@ -257,4 +169,29 @@ export default class GameOrchestrator {
     this.storeClient.storeGame(game);
     return game.currentTurn;
   }
+}
+
+// isRestartAllowed() verifies that the given non-host
+// player is allowed to restart a game
+async function isRestartAllowed(
+  game: Game,
+  socketID: string
+): Promise<boolean> {
+  // If user is not the game host and the game is in session,
+  // restarting is forbidden.
+  if (game.state === GameState.Playing) {
+    return false;
+  }
+
+  // Find the socket mapping associated with the user requesting this restart
+  const playerInfo = await this.storeClient.getSocketMapping(socketID);
+  if (!playerInfo) {
+    return false;
+  }
+
+  // Only allow a member of the game to restart the game.
+  if (playerInfo.gameID !== game.id) {
+    return false;
+  }
+  return true;
 }

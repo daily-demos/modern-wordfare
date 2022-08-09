@@ -55,6 +55,14 @@ export function registerInviteBtnListener(f: () => void) {
   };
 }
 
+export function registerRestartButtonListener(f: () => void) {
+  const restartBtn = document.getElementById("restart");
+  restartBtn.classList.remove("hidden");
+  restartBtn.onclick = () => {
+    f();
+  };
+}
+
 export function registerEndTurnBtnListener(team: Team, f: () => void) {
   // If this is the first time we're doing this, we may
   // need to retrieve the buttons for the first time

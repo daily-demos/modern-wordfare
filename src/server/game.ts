@@ -67,6 +67,8 @@ export class Game {
     this.dailyRoomURL = roomURL;
     this.wordSet = wordSet;
     this.dailyRoomName = roomName;
+    // Daily rooms are always unique per domain,
+    // so use the room name as the game ID.
     this.id = roomName;
 
     // Count how many words each team has to guess
