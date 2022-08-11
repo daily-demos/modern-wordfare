@@ -99,7 +99,7 @@ describe("Turn tests", () => {
 
     // You should be able to select all of a team's words without having to end the turn
     for (let i = 0; i < wordsPerTeam; i += 1) {
-      const val = `${i}-team1`;
+      const val = `${strFromNum(i)}-team-one`;
       game.selectWord(val, "player1");
       expect(game.currentTurn).toBe(Team.Team1);
     }
@@ -114,12 +114,12 @@ describe("Turn tests", () => {
     game.addPlayer("player1", Team.Team1);
     game.addPlayer("player2", Team.Team2);
 
-    game.selectWord("1-team2", "player1");
+    game.selectWord(`${strFromNum(1)}-team-two`, "player1");
     // Expect turn to toggle over
     expect(game.currentTurn).toBe(Team.Team2);
-    game.selectWord("2-team2", "player2");
+    game.selectWord(`${strFromNum(2)}-team-two`, "player2");
     expect(game.currentTurn).toBe(Team.Team2);
-    game.selectWord("1-team1", "player2");
+    game.selectWord(`${strFromNum(1)}-team-one`, "player2");
     expect(game.currentTurn).toBe(Team.Team1);
   });
 
@@ -132,7 +132,7 @@ describe("Turn tests", () => {
     game.addPlayer("player2", Team.Team2);
 
     expect(() => {
-      game.selectWord("1-team2", "player2");
+      game.selectWord(`${strFromNum(1)}-team-two`, "player2");
     }).toThrowError(InvalidTurn);
   });
 });
@@ -142,12 +142,12 @@ function getTestWordSet(): Word[] {
 
   // Team 1
   for (let i = 0; i < wordsPerTeam; i += 1) {
-    const nw = new Word(`${i}-team1`, WordKind.Team1);
+    const nw = new Word(`${strFromNum(i)}-team-one`, WordKind.Team1);
     words.push(nw);
   }
   // Team 2
   for (let i = 0; i < wordsPerTeam; i += 1) {
-    const nw = new Word(`${i}-team2`, WordKind.Team2);
+    const nw = new Word(`${strFromNum(i)}-team-two`, WordKind.Team2);
     words.push(nw);
   }
   // Assassin
@@ -156,8 +156,13 @@ function getTestWordSet(): Word[] {
 
   // Neutral
   for (let i = 0; i < wordsPerTeam; i += 1) {
-    const nw = new Word(`${i}-neutral`, WordKind.Neutral);
+    const nw = new Word(`${strFromNum(i)}-neutral`, WordKind.Neutral);
     words.push(nw);
   }
   return words;
+}
+
+function strFromNum(num: number): string {
+  const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  return charset[num];
 }

@@ -9,7 +9,7 @@ import { Team, TeamResult } from "../shared/types";
 import { getOtherTeam, wordKindToTeam } from "../shared/util";
 import { Word, WordKind } from "../shared/word";
 import Player from "../shared/player";
-import { rand } from "../client/util/math";
+import { rand } from "../shared/math";
 
 export enum GameState {
   Unknown = 0,

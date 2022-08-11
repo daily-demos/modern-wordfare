@@ -74,7 +74,6 @@ export const restartGameEventName = "restart-game";
 export interface RestartGameData {
   gameID: string;
   newWordSet: Word[];
-  token: string;
 }
 
 export const gameRestartedEventName = "game-restarted";

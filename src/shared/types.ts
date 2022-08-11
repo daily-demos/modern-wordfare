@@ -35,7 +35,4 @@ export interface TeamResult {
   isAssassinated: boolean;
 }
 
-export interface MeetingToken {
-  token: string;
-  gameID: string;
-}
+export type MeetingToken = string;

@@ -15,6 +15,7 @@ import "./assets/microphone-off.svg";
 import "./assets/microphone.svg";
 import initJoinProcess from "./join";
 import initCreateProcess from "./create";
+import showError from "./error";
 
 window.addEventListener("DOMContentLoaded", () => {
   // See if we have any query parameters indicating the user
@@ -25,9 +26,13 @@ window.addEventListener("DOMContentLoaded", () => {
   // If a game ID was specified in the URL parameters,
   // start the game join process. Otherwise, start
   // game creation process.
-  if (params.gameID) {
-    initJoinProcess(params);
-    return;
+  try {
+    if (params.gameID) {
+      initJoinProcess(params);
+      return;
+    }
+    initCreateProcess();
+  } catch (e) {
+    showError(e.toString());
   }
-  initCreateProcess();
 });

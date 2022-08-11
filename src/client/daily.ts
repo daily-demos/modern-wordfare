@@ -32,6 +32,7 @@ export class Call {
     this.meetingToken = meetingToken;
     this.callObject = DailyIframe.createCallObject({
       subscribeToTracksAutomatically: true,
+      token: meetingToken,
       dailyConfig: {
         experimentalChromeVideoMuteLightOff: true,
         camSimulcastEncodings: [{ maxBitrate: 600000, maxFramerate: 30 }],

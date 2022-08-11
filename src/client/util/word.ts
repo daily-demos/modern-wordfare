@@ -1,6 +1,6 @@
 import defaultWordlist from "../dictionaries/default.json";
 import { wordCount, wordsPerTeam } from "../config";
-import { rand, shuffle } from "./math";
+import { rand, shuffle } from "../../shared/math";
 import { setContainsDuplicateWords } from "../../shared/util";
 import { Word, WordKind } from "../../shared/word";
 

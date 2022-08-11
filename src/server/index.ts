@@ -42,8 +42,11 @@ import GameOrchestrator from "./orchestrator";
 import { DAILY_API_KEY, PORT } from "./env";
 import Memory from "./store/memory";
 import GameNotFound from "../shared/errors/gameNotFound";
-import { getCookieVal, meetingTokenCookieName } from "../shared/util";
+import { getMeetingTokenCookieName, tryGetMeetingToken } from "../shared/util";
 import { getMeetingToken } from "./daily";
+import { isValidName, isValidWord } from "../shared/input";
+import InvalidName from "../shared/errors/invalidName";
+import InvalidWord from "../shared/errors/invalidWord";
 
 // Fail early if the server is not appropriately configured.
 if (!DAILY_API_KEY) {
@@ -100,26 +103,43 @@ function startServer() {
   // /create endpoint handles creating a game
   app.post("/create", (req: Request, res: Response) => {
     const body = <CreateGameRequest>req.body;
-    const { wordSet, gameName } = body;
+    const { wordSet, gameName, playerName } = body;
     if (!wordSet) {
       const err = "word set must be defined";
-      res.status(400).send(`{"error":"${err}}`);
+      res.status(400).send(`{"error":"${err}"}`);
       return;
     }
-    if (!gameName) {
-      const err = "game name must be defined";
-      res.status(400).send(`{"error":"${err}}`);
+    for (let i = 0; i < wordSet.length; i += 1) {
+      const word = wordSet[i];
+      const val = word.value;
+      if (!isValidWord(val)) {
+        const err = new InvalidWord(val);
+        res.status(400).send(`{"error":"${err}"}`);
+        return;
+      }
+    }
+    if (!gameName || !isValidName(gameName)) {
+      const err = new InvalidName(gameName);
+      res.status(400).send(`{"error":"${err}"}`);
       return;
     }
+    if (!playerName || !isValidName(playerName)) {
+      const err = new InvalidName(playerName);
+      res.status(400).send(`{"error":"${err}"}`);
+      return;
+    }
+
     orchestrator
       .createGame(gameName, wordSet)
       .then((game) => {
         getMeetingToken(game.dailyRoomName)
           .then((token) => {
-            // Set meeting token for this game as a cookie
-            const cookie = getCookieVal(token, game.id);
-            res.cookie(meetingTokenCookieName, cookie);
-            res.redirect(`/?gameID=${game.id}&playerName=${body.playerName}`);
+            // Set meeting token for this game as a session cookie
+            res.cookie(getMeetingTokenCookieName(game.id), token, {
+              secure: true,
+              sameSite: "strict",
+            });
+            res.redirect(`/?gameID=${game.id}&playerName=${playerName}`);
           })
           .catch((error) => {
             console.error("failed to get meeting token", error);
@@ -149,7 +169,7 @@ function startServer() {
         .getGame(data.gameID)
         .then((game) => {
           const gameDataDump = <GameData>{
-            gameID: data.gameID,
+            gameID: game.id,
             players: game.players,
             currentTurn: game.currentTurn,
             revealedWordVals: game.getRevealedWordVals(),
@@ -185,8 +205,10 @@ function startServer() {
     // Handle player asking to restart game
     socket.on(restartGameEventName, (data: RestartGameData) => {
       console.log(`Got restart request for game ID ${data.gameID}`);
+      const cookies = socket.handshake.headers.cookie;
+      const token = tryGetMeetingToken(cookies, data.gameID);
       orchestrator
-        .restartGame(socket.id, data.gameID, data.newWordSet, data.token)
+        .restartGame(socket.id, data.gameID, data.newWordSet, token)
         .then(() => {
           io.to(data.gameID).emit(gameRestartedEventName, <GameRestartedData>{
             newWordSet: data.newWordSet,

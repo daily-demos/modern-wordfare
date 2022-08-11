@@ -213,7 +213,7 @@ export default class Game {
           console.error("failed to validate meeting token claims:", e);
           return;
         }
-        this.restart(token);
+        this.restart();
       });
     }
   }
@@ -290,12 +290,11 @@ export default class Game {
     // End server socket event handling
   }
 
-  private restart(token: string = "") {
+  private restart() {
     const newWordSet = createWordSet();
     this.socket.emit(restartGameEventName, <RestartGameData>{
       gameID: this.data.gameID,
       newWordSet,
-      token,
     });
   }
 

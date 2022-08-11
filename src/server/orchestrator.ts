@@ -1,5 +1,5 @@
 import { Game, GameState } from "./game";
-import { Team } from "../shared/types";
+import { MeetingToken, Team } from "../shared/types";
 import SocketMappingNotFound from "../shared/errors/socketMappingNotFound";
 import GameNotFound from "../shared/errors/gameNotFound";
 import { TurnResultData } from "../shared/events";
@@ -86,7 +86,7 @@ export default class GameOrchestrator {
     socketID: string,
     gameID: string,
     newWordSet: Word[],
-    token: string
+    token: MeetingToken
   ) {
     // First, find the game itself
     const game = await this.getGame(gameID);

@@ -1,8 +1,14 @@
+import InvalidName from "../shared/errors/invalidName";
 import NoMeetingToken from "../shared/errors/noMeetingToken";
+import { isValidName } from "../shared/input";
 import { JoinGameRequest, JoinGameResponse } from "../shared/types";
 import { tryGetMeetingToken } from "../shared/util";
+import showError from "./error";
 import { BoardData } from "./game/board";
 import Game from "./game/game";
+
+const lobbyDiv = document.getElementById("lobby");
+const joinForm = document.getElementById("join-game-form");
 
 // initGame() starts a game using the given
 // board data
@@ -21,19 +27,21 @@ export default async function initJoinProcess(params: any) {
     return;
   }
   // No player name was provided, show join form
-  const lobbyDiv = document.getElementById("lobby");
-  lobbyDiv.classList.remove("invisible");
-
-  const joinForm = document.getElementById("join-game-form");
-  joinForm.classList.remove("invisible");
+  showJoin();
   joinForm.onsubmit = async (e) => {
     e.preventDefault();
-    joinForm.classList.add("invisible");
+    hideJoin();
     const playerNameInput = <HTMLFormElement>(
       document.getElementById("join-player-name")
     );
     const inputPlayerName = playerNameInput?.value;
-    tryJoinGame(params.gameID, inputPlayerName);
+    try {
+      validateInput(inputPlayerName);
+      tryJoinGame(params.gameID, inputPlayerName);
+    } catch (error) {
+      showJoin();
+      showError(error.toString());
+    }
   };
 }
 
@@ -47,19 +55,13 @@ function tryJoinGame(gameID: string, playerName: string) {
       const cookies = document.cookie;
       let token: string;
       try {
-        const mt = tryGetMeetingToken(cookies);
-        if (mt.gameID === gameID) {
-          token = mt.token;
-        }
+        token = tryGetMeetingToken(cookies, gameID);
       } catch (e) {
         if (!(e instanceof NoMeetingToken)) {
           throw e;
         }
       }
 
-      // Hide the lobby UI and set up the board data
-      const lobbyDiv = document.getElementById("lobby");
-      lobbyDiv.classList.add("invisible");
       const boardData = <BoardData>{
         roomURL: res.roomURL,
         gameID,
@@ -99,4 +101,21 @@ async function joinGame(gameID: string): Promise<JoinGameResponse> {
   const body = await res.json();
   const gameData = <JoinGameResponse>body;
   return gameData;
+}
+
+function hideJoin() {
+  lobbyDiv.classList.add("invisible");
+  joinForm.setAttribute("disabled", "true");
+}
+
+function showJoin() {
+  lobbyDiv.classList.remove("invisible");
+  joinForm.classList.remove("invisible");
+  joinForm.setAttribute("disabled", "false");
+}
+
+function validateInput(playerName: string) {
+  if (!isValidName(playerName)) {
+    throw new InvalidName(playerName);
+  }
 }
