@@ -15,7 +15,7 @@ interface DailyToken {
 export default function claimsAreValid(jwt: string, roomName: string): boolean {
   const decodedToken = jwtDecode<DailyToken>(jwt);
   const now = Date.now() / 1000;
-  const { nbf, exp } = decodedToken;
+  const { nbf, exp, r } = decodedToken;
   if (nbf && nbf > now) {
     return false;
   }
@@ -28,7 +28,7 @@ export default function claimsAreValid(jwt: string, roomName: string): boolean {
 
   // We'll also require the token to contain
   // a room name, and for the room name to match.
-  if (!decodedToken.r || decodedToken.r !== roomName) {
+  if (!r || r !== roomName) {
     return false;
   }
 

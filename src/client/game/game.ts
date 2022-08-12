@@ -37,7 +37,8 @@ import {
   registerInviteBtnListener,
   registerLeaveBtnListener,
   registerMicBtnListener,
-  registerRestartButtonListener,
+  registerMuteAllBtnListener,
+  registerRestartBtnListener,
   updateCamBtnState,
   updateMicBtnState,
 } from "./nav";
@@ -202,15 +203,32 @@ export default class Game {
     // Register restart handler if user is an admin
     const token = bd.meetingToken;
     if (token) {
-      registerRestartButtonListener(() => {
+      const invalidTokenErrMsg =
+        "token doesn't appear to be valid. Is it expired?";
+      const failedToValidateErrMsg = "failed to validate meeting token claims";
+      registerMuteAllBtnListener(() => {
         try {
           // gameID is identical to the room name
           if (!claimsAreValid(token, bd.gameID)) {
-            console.error("token doesn't appear to be valid. Is it expired?");
+            console.error(invalidTokenErrMsg);
             return;
           }
         } catch (e) {
-          console.error("failed to validate meeting token claims:", e);
+          console.error(failedToValidateErrMsg, e);
+          return;
+        }
+        this.call.muteAll();
+      });
+
+      registerRestartBtnListener(() => {
+        try {
+          // gameID is identical to the room name
+          if (!claimsAreValid(token, bd.gameID)) {
+            console.error(invalidTokenErrMsg);
+            return;
+          }
+        } catch (e) {
+          console.error(failedToValidateErrMsg, e);
           return;
         }
         this.restart();

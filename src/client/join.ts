@@ -23,6 +23,7 @@ function initGame(boardData: BoardData) {
 export default async function initJoinProcess(params: any) {
   // Player name param is included in the URL
   if (params.playerName) {
+    hideJoin();
     tryJoinGame(params.gameID, params.playerName);
     return;
   }

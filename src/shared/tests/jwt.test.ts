@@ -16,7 +16,7 @@ describe("jwt tests", () => {
     const gotValid = claimsAreValid(token, "my_test_room");
     expect(gotValid).toBe(true);
   });
-  test("token has expired valid claims", () => {
+  test("token has expired", () => {
     const exp = Math.floor(Date.now() / 1000) - 100;
     const payload = {
       exp,

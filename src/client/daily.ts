@@ -26,6 +26,8 @@ export class Call {
 
   private meetingToken: string;
 
+  private roomExp: string;
+
   constructor(url: string, userName: string, meetingToken: string = null) {
     this.url = url;
     this.userName = userName;
@@ -68,6 +70,20 @@ export class Call {
   toggleLocalVideo() {
     const current = this.callObject.participants().local.video;
     this.callObject.setLocalVideo(!current);
+  }
+
+  // Mute all participants except yourself. Only participants
+  // with a meeting owner token can do this
+  muteAll() {
+    const updateList: { [key: string]: { [k: string]: boolean } } = {};
+    const participants = this.getParticipants();
+    for (let i = 0; i < participants.length; i += 1) {
+      const p = participants[i];
+      if (p.local) continue;
+
+      updateList[p.session_id] = { setAudio: false };
+    }
+    this.callObject.updateParticipants(updateList);
   }
 
   // toggleLocalAudio() turns local audio on or off
