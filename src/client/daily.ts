@@ -18,21 +18,14 @@ const playableState = "playable";
 const loadingState = "loading";
 
 export class Call {
-  private readonly url: string;
-
-  private readonly userName: string;
-
   private readonly callObject: DailyCall;
 
-  private readonly meetingToken: string;
-
-  constructor(url: string, userName: string, meetingToken: string = null) {
-    this.url = url;
-    this.userName = userName;
-    this.meetingToken = meetingToken;
+  constructor(url: string, userName: string, meetingToken: string = null) {   
     this.callObject = DailyIframe.createCallObject({
+      url: url,
       subscribeToTracksAutomatically: true,
       token: meetingToken,
+      userName,
       dailyConfig: {
         experimentalChromeVideoMuteLightOff: true,
         camSimulcastEncodings: [{ maxBitrate: 600000, maxFramerate: 30 }],
@@ -149,14 +142,7 @@ export class Call {
 
   // join() joins a Daily video call
   join() {
-    const params: { [k: string]: string } = {
-      url: this.url,
-      userName: this.userName,
-    };
-    if (this.meetingToken) {
-      params.token = this.meetingToken;
-    }
-    this.callObject.join(params);
+    this.callObject.join();
   }
 
   // leave() leaves a Daily video call
