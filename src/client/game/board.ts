@@ -39,21 +39,7 @@ export type OnBeSpymaster = (team: Team) => void;
 // between teams, keeping score, and toggling relevant team
 // controls.
 export class Board {
-  private wordGrid: WordGrid;
-
-  private teamDIVs: { [key in Team]?: HTMLDivElement } = {
-    none: null,
-    team1: null,
-    team2: null,
-  };
-
   private team = Team.None;
-
-  private readonly onJoinTeam: OnJoinTeam;
-
-  private readonly onBeSpymaster: OnBeSpymaster;
-
-  private localPlayerID: string;
 
   private currentTurn: Team = Team.None;
 
@@ -61,6 +47,20 @@ export class Board {
     team1: null,
     team2: null,
   };
+
+  private readonly wordGrid: WordGrid;
+
+  private readonly teamDIVs: { [key in Team]?: HTMLDivElement } = {
+    none: null,
+    team1: null,
+    team2: null,
+  };
+
+  private readonly onJoinTeam: OnJoinTeam;
+
+  private readonly onBeSpymaster: OnBeSpymaster;
+
+  private readonly localPlayerID: string;
 
   constructor(
     boardData: BoardData,

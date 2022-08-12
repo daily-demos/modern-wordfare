@@ -4,7 +4,15 @@ import xss from "xss";
 export const nameMinLength = 1;
 export const nameMaxLength = 30;
 
+// isValidName() checks whether the given game
+// or player name is valid
 export function isValidName(input: string): boolean {
+  const trimmed = input.trim();
+  const l = trimmed.length;
+  if (l > nameMaxLength || l < nameMinLength) {
+    return false;
+  }
+
   if (
     !validator.isAlphanumeric(input, "en-US", {
       ignore: " -",
@@ -12,13 +20,18 @@ export function isValidName(input: string): boolean {
   ) {
     return false;
   }
-  if (input.length > nameMaxLength) {
-    return false;
-  }
+
   return true;
 }
 
+// isValidWord() checks if the given word is valid
 export function isValidWord(input: string): boolean {
+  const trimmed = input.trim();
+  const l = trimmed.length;
+  if (l > 15 || l < 2) {
+    return false;
+  }
+
   if (
     !validator.isAlpha(input, "en-US", {
       ignore: " -",
@@ -26,17 +39,14 @@ export function isValidWord(input: string): boolean {
   ) {
     return false;
   }
-  if (input.length > nameMaxLength) {
-    return false;
-  }
+
   return true;
 }
 
-// sanitize() sanitizes given input
+// sanitize() sanitizes given input, specifically
+// HTML tags
 export function sanitize(input: any): typeof input {
-  console.log("pre:", input);
   if (typeof input === "string") {
-    console.log("thanks", xss(input));
     return xss(input);
   }
   if (Array.isArray(input) || typeof input === "object") {

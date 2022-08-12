@@ -18,15 +18,13 @@ const playableState = "playable";
 const loadingState = "loading";
 
 export class Call {
-  private url: string;
+  private readonly url: string;
 
-  private userName: string;
+  private readonly userName: string;
 
-  private callObject: DailyCall;
+  private readonly callObject: DailyCall;
 
-  private meetingToken: string;
-
-  private roomExp: string;
+  private readonly meetingToken: string;
 
   constructor(url: string, userName: string, meetingToken: string = null) {
     this.url = url;
