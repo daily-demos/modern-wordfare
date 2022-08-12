@@ -21,12 +21,13 @@ import {
 } from "./nav";
 import startAudio from "../assets/audio/start.wav";
 import { flyEmojis, Mood } from "../util/effects";
+import { MeetingToken } from "../../shared/jwt";
 
 export interface BoardData {
   roomURL: string;
   gameID: string;
   playerName: string;
-  meetingToken?: string;
+  meetingToken?: MeetingToken;
   wordSet: Word[];
 }
 

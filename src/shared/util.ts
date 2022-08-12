@@ -1,5 +1,6 @@
 import NoMeetingToken from "./errors/noMeetingToken";
-import { MeetingToken, Team } from "./types";
+import { MeetingToken } from "./jwt";
+import { Team } from "./types";
 import { Word, WordKind } from "./word";
 
 export function wordKindToTeam(wk: WordKind): Team {

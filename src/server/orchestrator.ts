@@ -1,5 +1,5 @@
 import { Game, GameState } from "./game";
-import { MeetingToken, Team } from "../shared/types";
+import { Team } from "../shared/types";
 import SocketMappingNotFound from "../shared/errors/socketMappingNotFound";
 import GameNotFound from "../shared/errors/gameNotFound";
 import { TurnResultData } from "../shared/events";
@@ -8,6 +8,7 @@ import { Word } from "../shared/word";
 import Player from "../shared/player";
 import { createRoom, tokenIsValid } from "./daily";
 import OperationForbidden from "../shared/errors/operationForbidden";
+import { MeetingToken } from "../shared/jwt";
 
 // GameOrchestrator serves as the entry point into
 // all game actions. It also manages storage of

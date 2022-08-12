@@ -1,5 +1,7 @@
 import jwtDecode from "jwt-decode";
 
+export type MeetingToken = string;
+
 interface DailyToken {
   exp: number;
   nbf: number;
@@ -12,7 +14,10 @@ interface DailyToken {
 // indicate that this token is still valid. This check
 // should be run before an online signature validation
 // to prevent redundant API requests.
-export default function claimsAreValid(jwt: string, roomName: string): boolean {
+export default function claimsAreValid(
+  jwt: MeetingToken,
+  roomName: string
+): boolean {
   const decodedToken = jwtDecode<DailyToken>(jwt);
   const now = Date.now() / 1000;
   const { nbf, exp, r } = decodedToken;

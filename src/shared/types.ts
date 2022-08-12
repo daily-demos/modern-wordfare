@@ -1,3 +1,4 @@
+import { MeetingToken } from "./jwt";
 import { Word } from "./word";
 
 export interface CreateGameRequest {
@@ -9,7 +10,7 @@ export interface CreateGameRequest {
 export interface CreateGameResponse {
   roomURL: string;
   gameID: string;
-  meetingToken: string;
+  meetingToken: MeetingToken;
   wordSet: Word[];
 }
 
@@ -34,5 +35,3 @@ export interface TeamResult {
   wordsLeft: number;
   isAssassinated: boolean;
 }
-
-export type MeetingToken = string;

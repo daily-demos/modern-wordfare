@@ -1,6 +1,7 @@
 import InvalidName from "../shared/errors/invalidName";
 import NoMeetingToken from "../shared/errors/noMeetingToken";
 import { isValidName } from "../shared/input";
+import { MeetingToken } from "../shared/jwt";
 import { JoinGameRequest, JoinGameResponse } from "../shared/types";
 import { tryGetMeetingToken } from "../shared/util";
 import showError from "./error";
@@ -54,7 +55,7 @@ function tryJoinGame(gameID: string, playerName: string) {
       // See if we have a cookie with the token
       // for this game ID
       const cookies = document.cookie;
-      let token: string;
+      let token: MeetingToken;
       try {
         token = tryGetMeetingToken(cookies, gameID);
       } catch (e) {

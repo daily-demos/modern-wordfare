@@ -57,7 +57,7 @@ export function registerInviteBtnListener(f: () => void) {
 
 export function registerRestartBtnListener(f: () => void) {
   const restartBtn = document.getElementById("restart");
-  restartBtn.classList.remove("hidden");
+  restartBtn.classList.remove("invisible");
   restartBtn.onclick = () => {
     f();
   };
@@ -65,7 +65,7 @@ export function registerRestartBtnListener(f: () => void) {
 
 export function registerMuteAllBtnListener(f: () => void) {
   const restartBtn = document.getElementById("muteAll");
-  restartBtn.classList.remove("hidden");
+  restartBtn.classList.remove("invisible");
   restartBtn.onclick = () => {
     f();
   };
