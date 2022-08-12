@@ -427,7 +427,7 @@ export default class Game {
     this.data.wordSet = data.newWordSet;
 
     // Destroy current board and create a new one.
-    Board.destroy();
+    this.board.destroy();
     this.board = new Board(
       this.data,
       this.localPlayerID,

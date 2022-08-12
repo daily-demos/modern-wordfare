@@ -72,7 +72,6 @@ function createGame(
 
   return fetch(url, req).then((res) => {
     if (res.status === 200) {
-      window.location.assign(res.url);
       return res.url;
     }
     // We'll expect the body to contain an error

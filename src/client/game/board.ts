@@ -78,13 +78,16 @@ export class Board {
 
     this.onJoinTeam = onJoinTeam;
     this.onBeSpymaster = onBeSpymaster;
+    this.updateGameStatus();
   }
 
   // destroy() resets the DOM state modified by the Board
   // back to its defaults.
-  static destroy() {
+  destroy() {
     const board = document.getElementById("board");
     board.innerHTML = "";
+    this.teamDIVs[Team.Team1]?.classList.remove("active");
+    this.teamDIVs[Team.Team2]?.classList.remove("active");
     hideEndTurnButtons();
     showAllJoinBtns();
   }
