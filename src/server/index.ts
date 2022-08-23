@@ -3,6 +3,7 @@ import { createServer } from "http";
 
 import { dirname, join } from "path";
 import { Server } from "socket.io";
+import cookieParser from "cookie-parser";
 
 import {
   BecomeSpymasterData,
@@ -42,11 +43,15 @@ import GameOrchestrator from "./orchestrator";
 import { DAILY_API_KEY, PORT } from "./env";
 import Memory from "./store/memory";
 import GameNotFound from "../shared/errors/gameNotFound";
-import { getMeetingTokenCookieName, tryGetMeetingToken } from "../shared/util";
 import { getMeetingToken } from "./daily";
 import { isValidName, isValidWord } from "../shared/input";
 import InvalidName from "../shared/errors/invalidName";
 import InvalidWord from "../shared/errors/invalidWord";
+import {
+  getGameHostCookie,
+  getGameHostCookieName,
+  isGameHostFromSignedCookies,
+} from "./cookie";
 
 // Fail early if the server is not appropriately configured.
 if (!DAILY_API_KEY) {
@@ -70,6 +75,7 @@ function startServer() {
   const clientPath = getClientPath();
 
   app.use(express.static(clientPath));
+  app.use(cookieParser(DAILY_API_KEY));
   app.use("/client", express.static(clientPath));
 
   app.use(express.json());
@@ -91,12 +97,34 @@ function startServer() {
         res.status(404).send(`{"error":"${err}}`);
         return;
       }
-      const data = <JoinGameResponse>{
-        roomURL: game.dailyRoomURL,
-        gameName: game.name,
-        wordSet: game.wordSet,
-      };
-      res.send(data);
+      const isHost = isGameHostFromSignedCookies(
+        req.signedCookies,
+        game.id,
+        game.createdAt
+      );
+      if (!isHost) {
+        const data = <JoinGameResponse>{
+          roomURL: game.dailyRoomURL,
+          gameName: game.name,
+          wordSet: game.wordSet,
+        };
+        res.send(data);
+        return;
+      }
+      getMeetingToken(game.dailyRoomName)
+        .then((token) => {
+          const data = <JoinGameResponse>{
+            roomURL: game.dailyRoomURL,
+            gameName: game.name,
+            wordSet: game.wordSet,
+            meetingToken: token,
+          };
+          res.send(data);
+        })
+        .catch((error) => {
+          console.error("failed to get meeting token", error);
+          res.sendStatus(500);
+        });
     });
   });
 
@@ -132,19 +160,14 @@ function startServer() {
     orchestrator
       .createGame(gameName, wordSet)
       .then((game) => {
-        getMeetingToken(game.dailyRoomName)
-          .then((token) => {
-            // Set meeting token for this game as a session cookie
-            res.cookie(getMeetingTokenCookieName(game.id), token, {
-              secure: true,
-              sameSite: "strict",
-            });
-            res.redirect(`/?gameID=${game.id}&playerName=${playerName}`);
-          })
-          .catch((error) => {
-            console.error("failed to get meeting token", error);
-            res.sendStatus(500);
-          });
+        // Set meeting token for this game as a session cookie
+        res.cookie(getGameHostCookieName(game.id), Date.now(), {
+          secure: true,
+          sameSite: "strict",
+          httpOnly: true,
+          signed: true,
+        });
+        res.redirect(`/?gameID=${game.id}&playerName=${playerName}`);
       })
       .catch((error) => {
         console.error("failed to create room:", error);
@@ -163,7 +186,6 @@ function startServer() {
     // Handle socket asking to join a game
     socket.on(joinGameEventName, (data: JoinGameData) => {
       socket.join(data.gameID);
-
       // Send game data dump back to the socket
       orchestrator
         .getGame(data.gameID)
@@ -206,9 +228,9 @@ function startServer() {
     socket.on(restartGameEventName, (data: RestartGameData) => {
       console.log(`Got restart request for game ID ${data.gameID}`);
       const cookies = socket.handshake.headers.cookie;
-      const token = tryGetMeetingToken(cookies, data.gameID);
+      const gameHostCookie = getGameHostCookie(cookies, data.gameID);
       orchestrator
-        .restartGame(socket.id, data.gameID, data.newWordSet, token)
+        .restartGame(socket.id, data.gameID, data.newWordSet, gameHostCookie)
         .then(() => {
           io.to(data.gameID).emit(gameRestartedEventName, <GameRestartedData>{
             newWordSet: data.newWordSet,

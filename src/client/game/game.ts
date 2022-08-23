@@ -47,7 +47,6 @@ import { Team } from "../../shared/types";
 import ErrTileAlreadyExists from "./errors/errTileAlreadyExists";
 
 import joinedAudio from "../assets/audio/joined.wav";
-import claimsAreValid from "../../shared/jwt";
 
 // Game (client-side) manages three main components of our application:
 // * The play board/space
@@ -203,34 +202,11 @@ export default class Game {
     // Register restart handler if user is an admin
     const token = bd.meetingToken;
     if (token) {
-      const invalidTokenErrMsg =
-        "token doesn't appear to be valid. Is it expired?";
-      const failedToValidateErrMsg = "failed to validate meeting token claims";
       registerMuteAllBtnListener(() => {
-        try {
-          // gameID is identical to the room name
-          if (!claimsAreValid(token, bd.gameID)) {
-            console.error(invalidTokenErrMsg);
-            return;
-          }
-        } catch (e) {
-          console.error(failedToValidateErrMsg, e);
-          return;
-        }
         this.call.muteAll();
       });
 
       registerRestartBtnListener(() => {
-        try {
-          // gameID is identical to the room name
-          if (!claimsAreValid(token, bd.gameID)) {
-            console.error(invalidTokenErrMsg);
-            return;
-          }
-        } catch (e) {
-          console.error(failedToValidateErrMsg, e);
-          return;
-        }
         this.restart();
       });
     }

@@ -26,6 +26,8 @@ export class Game {
 
   readonly name: string;
 
+  readonly createdAt: number;
+
   readonly dailyRoomURL: string;
 
   readonly dailyRoomName: string;
@@ -67,6 +69,7 @@ export class Game {
     this.dailyRoomURL = roomURL;
     this.wordSet = wordSet;
     this.dailyRoomName = roomName;
+    this.createdAt = Date.now();
     // Daily rooms are always unique per domain,
     // so use the room name as the game ID.
     this.id = roomName;

@@ -1,9 +1,6 @@
 import InvalidName from "../shared/errors/invalidName";
-import NoMeetingToken from "../shared/errors/noMeetingToken";
 import { isValidName } from "../shared/input";
-import { MeetingToken } from "../shared/jwt";
 import { JoinGameRequest, JoinGameResponse } from "../shared/types";
-import { tryGetMeetingToken } from "../shared/util";
 import showError from "./error";
 import { BoardData } from "./game/board";
 import Game from "./game/game";
@@ -52,25 +49,13 @@ export default async function initJoinProcess(params: any) {
 function tryJoinGame(gameID: string, playerName: string) {
   joinGame(gameID)
     .then((res: JoinGameResponse) => {
-      // See if we have a cookie with the token
-      // for this game ID
-      const cookies = document.cookie;
-      let token: MeetingToken;
-      try {
-        token = tryGetMeetingToken(cookies, gameID);
-      } catch (e) {
-        if (!(e instanceof NoMeetingToken)) {
-          throw e;
-        }
-      }
-
       const boardData = <BoardData>{
         roomURL: res.roomURL,
         gameID,
         gameName: res.gameName,
         playerName,
         wordSet: res.wordSet,
-        meetingToken: token,
+        meetingToken: res.meetingToken,
       };
       initGame(boardData);
     })

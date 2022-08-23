@@ -1,5 +1,4 @@
 import axios from "axios";
-import claimsAreValid from "../shared/jwt";
 import { DAILY_API_KEY, DAILY_STAGING } from "./env";
 
 const isStaging = DAILY_STAGING === "true";
@@ -90,28 +89,4 @@ export async function getMeetingToken(roomName: string): Promise<string> {
     throw new Error(`${errMsg}: got status ${res.status})`);
   }
   return res.data?.token;
-}
-
-export async function tokenIsValid(
-  token: string,
-  roomName: string
-): Promise<boolean> {
-  // Check claims on the client-side first of all
-  if (!token || !claimsAreValid(token, roomName)) return false;
-
-  // Call out to Daily's meeting token REST endpoint to verify validity
-  const url = `${dailyAPIURL}/meeting-tokens/${token}`;
-  const headers = {
-    Authorization: `Bearer ${DAILY_API_KEY}`,
-    "Content-Type": "application/json",
-  };
-
-  const errMsg = "failed to check meeting token validity";
-  const res = await axios.get(url, { headers }).catch((error) => {
-    throw new Error(`${errMsg}: ${error}`);
-  });
-  if (res.status !== 200) {
-    throw new Error(`${errMsg}: got status ${res.status})`);
-  }
-  return true;
 }

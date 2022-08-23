@@ -4,7 +4,6 @@ import DailyIframe, {
   DailyParticipant,
   DailyEventObjectTrack,
 } from "@daily-co/daily-js";
-import { MeetingToken } from "../shared/jwt";
 import { videoTileSize } from "./config";
 
 // Define handler types that the game class will use to specify
@@ -21,13 +20,9 @@ const loadingState = "loading";
 export class Call {
   private readonly callObject: DailyCall;
 
-  private readonly meetingToken: MeetingToken;
+  private readonly meetingToken: string;
 
-  constructor(
-    url: string,
-    userName: string,
-    meetingToken: MeetingToken = null
-  ) {
+  constructor(url: string, userName: string, meetingToken: string = null) {
     this.meetingToken = meetingToken;
     this.callObject = DailyIframe.createCallObject({
       url,

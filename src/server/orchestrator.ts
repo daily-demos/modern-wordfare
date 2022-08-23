@@ -6,9 +6,9 @@ import { TurnResultData } from "../shared/events";
 import { PlayerInfo, StoreClient } from "./store/store";
 import { Word } from "../shared/word";
 import Player from "../shared/player";
-import { createRoom, tokenIsValid } from "./daily";
+import { createRoom } from "./daily";
 import OperationForbidden from "../shared/errors/operationForbidden";
-import { MeetingToken } from "../shared/jwt";
+import { isGameHostValueValid } from "./cookie";
 
 // GameOrchestrator serves as the entry point into
 // all game actions. It also manages storage of
@@ -31,7 +31,7 @@ export default class GameOrchestrator {
     // Instantiate game with given room URL and name, and store
     // the newly created game.
     const game = new Game(name, roomData.url, roomData.name, wordSet);
-    await this.storeClient.storeGame(game);
+    this.storeClient.storeGame(game);
     return game;
   }
 
@@ -87,7 +87,7 @@ export default class GameOrchestrator {
     socketID: string,
     gameID: string,
     newWordSet: Word[],
-    token: MeetingToken
+    gameHostCookieVal: number
   ) {
     // First, find the game itself
     const game = await this.getGame(gameID);
@@ -95,9 +95,10 @@ export default class GameOrchestrator {
       throw new GameNotFound(gameID);
     }
 
-    const isGameHost = await tokenIsValid(token, game.dailyRoomName);
+    const isGameHost = isGameHostValueValid(gameHostCookieVal, game.createdAt);
     // Game host can restart the game any time
-    if (isGameHost || isRestartAllowed(game, socketID)) {
+    const playerRestartAllowed = await this.isRestartAllowed(game, socketID);
+    if (isGameHost || playerRestartAllowed) {
       game.restart(newWordSet);
       this.storeClient.storeGame(game);
       return;
@@ -170,29 +171,26 @@ export default class GameOrchestrator {
     this.storeClient.storeGame(game);
     return game.currentTurn;
   }
-}
 
-// isRestartAllowed() verifies that the given non-host
-// player is allowed to restart a game
-async function isRestartAllowed(
-  game: Game,
-  socketID: string
-): Promise<boolean> {
-  // If user is not the game host and the game is in session,
-  // restarting is forbidden.
-  if (game.state === GameState.Playing) {
-    return false;
-  }
+  // isRestartAllowed() verifies that the given non-host
+  // player is allowed to restart a game
+  async isRestartAllowed(game: Game, socketID: string): Promise<boolean> {
+    // If user is not the game host and the game is in session,
+    // restarting is forbidden.
+    if (game.state === GameState.Playing) {
+      return false;
+    }
 
-  // Find the socket mapping associated with the user requesting this restart
-  const playerInfo = await this.storeClient.getSocketMapping(socketID);
-  if (!playerInfo) {
-    return false;
-  }
+    // Find the socket mapping associated with the user requesting this restart
+    const playerInfo = await this.storeClient.getSocketMapping(socketID);
+    if (!playerInfo) {
+      return false;
+    }
 
-  // Only allow a member of the game to restart the game.
-  if (playerInfo.gameID !== game.id) {
-    return false;
+    // Only allow a member of the game to restart the game.
+    if (playerInfo.gameID !== game.id) {
+      return false;
+    }
+    return true;
   }
-  return true;
 }

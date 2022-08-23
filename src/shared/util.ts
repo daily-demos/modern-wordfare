@@ -1,5 +1,3 @@
-import NoMeetingToken from "./errors/noMeetingToken";
-import { MeetingToken } from "./jwt";
 import { Team } from "./types";
 import { Word, WordKind } from "./word";
 
@@ -26,20 +24,4 @@ export function getOtherTeam(team: Team): Team {
     return Team.Team1;
   }
   return Team.None;
-}
-
-export function getMeetingTokenCookieName(gameID: string): string {
-  return `mt-${gameID}`;
-}
-
-export function tryGetMeetingToken(
-  cookies: string,
-  gameID: string
-): MeetingToken {
-  const parts = cookies.split(`${getMeetingTokenCookieName(gameID)}=`);
-  if (parts.length !== 2) {
-    throw new NoMeetingToken();
-  }
-  const val = parts.pop().split("; ").shift();
-  return val;
 }
