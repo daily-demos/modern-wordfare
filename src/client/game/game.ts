@@ -230,16 +230,8 @@ export default class Game {
         console.error(`failed to find participant with ID ${data.sessionID}`);
         return;
       }
-      // Move participant to the team they just joined
-      this.board.moveToTeam(p, data.teamID, true);
 
-      // Set up end turn button listener
-      registerEndTurnBtnListener(data.teamID, () => {
-        this.socket.emit(endTurnEventName, <EndTurnData>{
-          gameID: this.data.gameID,
-          playerID: this.localPlayerID,
-        });
-      });
+      this.moveToTeam(p, data.teamID);
     });
 
     socket.on(gameDataDumpEventName, (data: GameData) => {
@@ -254,7 +246,7 @@ export default class Game {
       }
       // Move participant to relevant team and make them
       // a spymaster.
-      this.board.moveToTeam(p, data.teamID, true);
+      this.moveToTeam(p, data.teamID);
       this.board.makeSpymaster(data.spymasterID, data.teamID);
     });
 
@@ -282,6 +274,19 @@ export default class Game {
       this.board.eject(data.playerID);
     });
     // End server socket event handling
+  }
+
+  private moveToTeam(p: DailyParticipant, teamID: Team) {
+    // Move participant to the team they just joined
+    this.board.moveToTeam(p, teamID, true);
+
+    // Set up end turn button listener
+    registerEndTurnBtnListener(teamID, () => {
+      this.socket.emit(endTurnEventName, <EndTurnData>{
+        gameID: this.data.gameID,
+        playerID: this.localPlayerID,
+      });
+    });
   }
 
   private restart() {

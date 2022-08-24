@@ -3,7 +3,6 @@ import { createServer } from "http";
 
 import { dirname, join } from "path";
 import { Server } from "socket.io";
-import cookieParser from "cookie-parser";
 
 import {
   BecomeSpymasterData,
@@ -51,6 +50,7 @@ import {
   getGameHostCookie,
   getGameHostCookieName,
   isGameHostFromSignedCookies,
+  setupCookieParser,
 } from "./cookie";
 
 // Fail early if the server is not appropriately configured.
@@ -74,8 +74,8 @@ function startServer() {
 
   const clientPath = getClientPath();
 
+  setupCookieParser(app);
   app.use(express.static(clientPath));
-  app.use(cookieParser(DAILY_API_KEY));
   app.use("/client", express.static(clientPath));
 
   app.use(express.json());

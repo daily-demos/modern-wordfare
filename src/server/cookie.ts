@@ -1,7 +1,14 @@
 import cookieParser from "cookie-parser";
+import { Application } from "express";
 import { DAILY_API_KEY } from "./env";
 
 type Cookies = { [key in string]?: string };
+
+// setupMiddleware() has our application use the cookie parser
+// with the Daily API key as our cookie signing secret.
+export function setupCookieParser(app: Application) {
+  app.use(cookieParser(DAILY_API_KEY));
+}
 
 export function getGameHostCookieName(gameID: string): string {
   return `gh-${gameID}`;
@@ -41,13 +48,4 @@ export function isGameHostFromSignedCookies(
   const c = cookies[getGameHostCookieName(gameID)];
   const parsed: number = +c;
   return isGameHostValueValid(parsed, gameCreatedAt);
-}
-
-export function isGameHostFromPlainCookies(
-  cookies: string,
-  gameID: string,
-  gameCreatedAt: number
-): boolean {
-  const cookieSetDate = getGameHostCookie(cookies, gameID);
-  return isGameHostValueValid(cookieSetDate, gameCreatedAt);
 }
