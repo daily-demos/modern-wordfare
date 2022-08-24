@@ -20,7 +20,7 @@ const loadingState = "loading";
 export class Call {
   private readonly callObject: DailyCall;
 
-  private readonly meetingToken: string;
+  private meetingToken: string;
 
   constructor(url: string, userName: string, meetingToken: string = null) {
     this.meetingToken = meetingToken;
@@ -149,6 +149,9 @@ export class Call {
       params.token = this.meetingToken;
     }
     this.callObject.join(params);
+    // We no longer need the meeting token for anything
+    // after passing it to Daily.
+    delete this.meetingToken;
   }
 
   // leave() leaves a Daily video call
