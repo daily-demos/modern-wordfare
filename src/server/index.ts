@@ -97,11 +97,15 @@ function startServer() {
         res.status(404).send(`{"error":"${err}}`);
         return;
       }
+
+      // Check if the user joining has a valid game host cookie
       const isHost = isGameHostFromSignedCookies(
         req.signedCookies,
         game.id,
         game.createdAt
       );
+
+      // If they're not a host, just return normal game data
       if (!isHost) {
         const data = <JoinGameResponse>{
           roomURL: game.dailyRoomURL,
@@ -111,6 +115,9 @@ function startServer() {
         res.send(data);
         return;
       }
+
+      // If they are a host, retrieve a Daily meeting token and
+      // include it in the response.
       getMeetingToken(game.dailyRoomName)
         .then((token) => {
           const data = <JoinGameResponse>{
