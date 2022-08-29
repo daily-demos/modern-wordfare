@@ -98,6 +98,6 @@ function validateInput(playerName: string, gameName: string) {
     throw new InvalidName(playerName);
   }
   if (!isValidName(gameName)) {
-    throw new InvalidName(playerName);
+    throw new InvalidName(gameName);
   }
 }

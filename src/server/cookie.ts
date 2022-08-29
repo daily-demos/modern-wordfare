@@ -1,13 +1,23 @@
 import cookieParser from "cookie-parser";
 import { Application } from "express";
-import { DAILY_API_KEY } from "./env";
+import crypto from "crypto";
+import { COOKIE_SIGNING_SECRET } from "./env";
 
 type Cookies = { [key in string]?: string };
 
-// setupMiddleware() has our application use the cookie parser
-// with the Daily API key as our cookie signing secret.
+let signingSecret = COOKIE_SIGNING_SECRET;
+
+// setupCookieParser() has our application use the cookie parser
+// middleware. This will allow us to sign cookies.
 export function setupCookieParser(app: Application) {
-  app.use(cookieParser(DAILY_API_KEY));
+  // This can be provided in the `COOKIE_SIGNING_SECRET`
+  // environment variable. But if not, we'll just generate
+  // a secret at runtime.
+  if (!signingSecret) {
+    const buf = crypto.randomBytes(32);
+    signingSecret = buf.toString();
+  }
+  app.use(cookieParser(signingSecret));
 }
 
 // getGameHostCookieName() returns the intended name of the
@@ -30,7 +40,7 @@ export function getGameHostCookie(cookies: string, gameID: string): number {
   // We expect the cookie to be signed. If cookie parser returns
   // false or an identical value to what was passed in, something
   // went wrong and we don't have a valid game host cookie.
-  const parsed = cookieParser.signedCookie(decodedCookie, DAILY_API_KEY);
+  const parsed = cookieParser.signedCookie(decodedCookie, signingSecret);
   if (!parsed || decodedCookie === parsed) return -1;
 
   // Get numeric representation of cookie value.

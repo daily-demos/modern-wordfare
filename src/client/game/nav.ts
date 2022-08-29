@@ -64,9 +64,9 @@ export function registerRestartBtnListener(f: () => void) {
 }
 
 export function registerMuteAllBtnListener(f: () => void) {
-  const restartBtn = document.getElementById("muteAll");
-  restartBtn.classList.remove("invisible");
-  restartBtn.onclick = () => {
+  const muteBtn = document.getElementById("muteAll");
+  muteBtn.classList.remove("invisible");
+  muteBtn.onclick = () => {
     f();
   };
 }
