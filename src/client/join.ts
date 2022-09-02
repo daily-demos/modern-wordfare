@@ -1,8 +1,12 @@
-import NoMeetingToken from "../shared/errors/noMeetingToken";
+import InvalidName from "../shared/errors/invalidName";
+import { isValidName } from "../shared/input";
 import { JoinGameRequest, JoinGameResponse } from "../shared/types";
-import { tryGetMeetingToken } from "../shared/util";
+import showError from "./error";
 import { BoardData } from "./game/board";
 import Game from "./game/game";
+
+const lobbyDiv = document.getElementById("lobby");
+const joinForm = document.getElementById("join-game-form");
 
 // initGame() starts a game using the given
 // board data
@@ -17,23 +21,26 @@ function initGame(boardData: BoardData) {
 export default async function initJoinProcess(params: any) {
   // Player name param is included in the URL
   if (params.playerName) {
+    hideJoin();
     tryJoinGame(params.gameID, params.playerName);
     return;
   }
   // No player name was provided, show join form
-  const lobbyDiv = document.getElementById("lobby");
-  lobbyDiv.classList.remove("invisible");
-
-  const joinForm = document.getElementById("join-game-form");
-  joinForm.classList.remove("invisible");
+  showJoin();
   joinForm.onsubmit = async (e) => {
     e.preventDefault();
-    joinForm.classList.add("invisible");
+    hideJoin();
     const playerNameInput = <HTMLFormElement>(
       document.getElementById("join-player-name")
     );
     const inputPlayerName = playerNameInput?.value;
-    tryJoinGame(params.gameID, inputPlayerName);
+    try {
+      validateInput(inputPlayerName);
+      tryJoinGame(params.gameID, inputPlayerName);
+    } catch (error) {
+      showJoin();
+      showError(error.toString());
+    }
   };
 }
 
@@ -42,31 +49,13 @@ export default async function initJoinProcess(params: any) {
 function tryJoinGame(gameID: string, playerName: string) {
   joinGame(gameID)
     .then((res: JoinGameResponse) => {
-      // See if we have a cookie with the token
-      // for this game ID
-      const cookies = document.cookie;
-      let token: string;
-      try {
-        const mt = tryGetMeetingToken(cookies);
-        if (mt.gameID === gameID) {
-          token = mt.token;
-        }
-      } catch (e) {
-        if (!(e instanceof NoMeetingToken)) {
-          throw e;
-        }
-      }
-
-      // Hide the lobby UI and set up the board data
-      const lobbyDiv = document.getElementById("lobby");
-      lobbyDiv.classList.add("invisible");
       const boardData = <BoardData>{
         roomURL: res.roomURL,
         gameID,
         gameName: res.gameName,
         playerName,
         wordSet: res.wordSet,
-        meetingToken: token,
+        meetingToken: res.meetingToken,
       };
       initGame(boardData);
     })
@@ -99,4 +88,21 @@ async function joinGame(gameID: string): Promise<JoinGameResponse> {
   const body = await res.json();
   const gameData = <JoinGameResponse>body;
   return gameData;
+}
+
+function hideJoin() {
+  lobbyDiv.classList.add("invisible");
+  joinForm.setAttribute("disabled", "true");
+}
+
+function showJoin() {
+  lobbyDiv.classList.remove("invisible");
+  joinForm.classList.remove("invisible");
+  joinForm.setAttribute("disabled", "false");
+}
+
+function validateInput(playerName: string) {
+  if (!isValidName(playerName)) {
+    throw new InvalidName(playerName);
+  }
 }

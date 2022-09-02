@@ -107,12 +107,13 @@
             class="mic-off"
             aria-label="Toggle microphone"
           ></button>
+          <button id="muteAll" aria-label="Mute all" class="invisible">Mute all</button>
           <button id="leave">Leave game</button>
           <div class="right">
             <button id="invite" aria-label="Copy invite link">
               Copy invite link
             </button>
-            <button id="restart" aria-label="Restart" class="hidden">
+            <button id="restart" aria-label="Restart" class="invisible">
               Restart
             </button>
           </div>
@@ -120,27 +121,31 @@
       </div>
       <div id="lobby">
         <h2>Code of Daily: Modern Wordfare <br />Video chat built in.</h2>
-        <form id="join-game-form" class="invisible">
-          <h2>Join a game</h2>
-          <input
-            type="text"
-            placeholder="Your Name"
-            id="join-player-name"
-            required
-          />
-          <button type="submit" id="join-game">Join game</button>
-        </form>
-        <form id="create-game-form" class="invisible">
-          <h3>Start a new game</h3>
-          <input type="text" placeholder="Game Name" id="game-name" required />
-          <input
-            type="text"
-            placeholder="Your Name"
-            id="create-player-name"
-            required
-          />
-          <button type="submit" id="create-game">Create game</button>
-        </form>
+
+        <div id="forms">
+          <div id="error"></div>
+          <form id="join-game-form" class="invisible">
+            <h2>Join a game</h2>
+            <input
+              type="text"
+              placeholder="Your Name"
+              id="join-player-name"
+              required
+            />
+            <button type="submit" id="join-game">Join game</button>
+          </form>
+          <form id="create-game-form" class="invisible">
+            <h3>Start a new game</h3>
+            <input type="text" placeholder="Game Name" id="game-name" required />
+            <input
+              type="text"
+              placeholder="Your Name"
+              id="create-player-name"
+              required
+            />
+            <button type="submit" id="create-game">Create game</button>
+          </form>
+        </div>
         <div class="instruction">
           <p>
             Play directly in your browser with video chat. No need to install

@@ -9,7 +9,6 @@ export interface CreateGameRequest {
 export interface CreateGameResponse {
   roomURL: string;
   gameID: string;
-  meetingToken: string;
   wordSet: Word[];
 }
 
@@ -21,6 +20,7 @@ export interface JoinGameResponse {
   gameName: string;
   roomURL: string;
   wordSet: Word[];
+  meetingToken: string;
 }
 
 export enum Team {
@@ -33,9 +33,4 @@ export interface TeamResult {
   team: Team;
   wordsLeft: number;
   isAssassinated: boolean;
-}
-
-export interface MeetingToken {
-  token: string;
-  gameID: string;
 }

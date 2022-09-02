@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack",
-    "start": "node dist/server/index.js",
+    "start": "node  --enable-source-maps dist/server/index.js",
     "test": "jest",
     "fix": "eslint src/ --fix"
   },
@@ -16,6 +16,7 @@
     "@daily-co/daily-js": "^0.27.0",
     "@redis/client": "^1.1.0",
     "axios": "^0.26.1",
+    "cookie-parser": "^1.4.6",
     "express": "^4.17.3",
     "http-server": "^14.1.0",
     "install": "^0.13.0",
@@ -24,14 +25,18 @@
     "npm": "^8.11.0",
     "redis": "^4.1.0",
     "socket.io": "^4.5.0",
-    "socket.io-client": "^4.5.0"
+    "socket.io-client": "^4.5.0",
+    "validator": "^13.7.0",
+    "xss": "^1.0.13"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.3",
     "@types/express": "^4.17.13",
     "@types/jest": "^27.5.0",
     "@types/jsonwebtoken": "^8.5.8",
     "@types/jwt-decode": "^3.1.0",
     "@types/node": "^17.0.23",
+    "@types/validator": "^13.7.5",
     "@typescript-eslint/eslint-plugin": "^5.22.0",
     "@typescript-eslint/parser": "^5.22.0",
     "concurrently": "^7.1.0",

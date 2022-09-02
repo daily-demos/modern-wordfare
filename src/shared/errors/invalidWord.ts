@@ -1,10 +1,12 @@
+import { sanitize } from "../input";
+
 export default class InvalidWord extends Error {
   name = "invalid-word";
 
   msg: string;
 
   constructor(word: string) {
-    const msg = `word "${word}" is invalid`;
+    const msg = `word "${sanitize(word)}" is invalid`;
     super(msg);
     this.msg = msg;
 

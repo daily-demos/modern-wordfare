@@ -20,8 +20,8 @@ describe("Orchestrator game join and leave tests", () => {
 
     const dailyRoomName = "uniqueRoomName";
     const game = new Game("game name", "testURL", dailyRoomName, [
-      new Word("word1", WordKind.Neutral),
-      new Word("word2", WordKind.Neutral),
+      new Word("word-one", WordKind.Neutral),
+      new Word("word-two", WordKind.Neutral),
     ]);
     memstore.storeGame(game);
 

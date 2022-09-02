@@ -1,4 +1,4 @@
-import { rand } from "./math";
+import { rand } from "../../shared/math";
 
 const happyEmojis = ["🎉", "🎊", "🎈", "🥳", "✨"];
 

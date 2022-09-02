@@ -18,20 +18,16 @@ const playableState = "playable";
 const loadingState = "loading";
 
 export class Call {
-  private url: string;
-
-  private userName: string;
-
-  private callObject: DailyCall;
+  private readonly callObject: DailyCall;
 
   private meetingToken: string;
 
   constructor(url: string, userName: string, meetingToken: string = null) {
-    this.url = url;
-    this.userName = userName;
     this.meetingToken = meetingToken;
     this.callObject = DailyIframe.createCallObject({
+      url,
       subscribeToTracksAutomatically: true,
+      userName,
       dailyConfig: {
         experimentalChromeVideoMuteLightOff: true,
         camSimulcastEncodings: [{ maxBitrate: 600000, maxFramerate: 30 }],
@@ -67,6 +63,20 @@ export class Call {
   toggleLocalVideo() {
     const current = this.callObject.participants().local.video;
     this.callObject.setLocalVideo(!current);
+  }
+
+  // Mute all participants except yourself. Only participants
+  // with a meeting owner token can do this
+  muteAll() {
+    const updateList: { [key: string]: { [k: string]: boolean } } = {};
+    const participants = this.getParticipants();
+    for (let i = 0; i < participants.length; i += 1) {
+      const p = participants[i];
+      if (p.local) continue;
+
+      updateList[p.session_id] = { setAudio: false };
+    }
+    this.callObject.updateParticipants(updateList);
   }
 
   // toggleLocalAudio() turns local audio on or off
@@ -134,14 +144,14 @@ export class Call {
 
   // join() joins a Daily video call
   join() {
-    const params: { [k: string]: string } = {
-      url: this.url,
-      userName: this.userName,
-    };
+    const params: { [k: string]: string } = {};
     if (this.meetingToken) {
       params.token = this.meetingToken;
     }
     this.callObject.join(params);
+    // We no longer need the meeting token for anything
+    // after passing it to Daily.
+    delete this.meetingToken;
   }
 
   // leave() leaves a Daily video call

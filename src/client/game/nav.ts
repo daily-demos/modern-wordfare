@@ -55,10 +55,18 @@ export function registerInviteBtnListener(f: () => void) {
   };
 }
 
-export function registerRestartButtonListener(f: () => void) {
+export function registerRestartBtnListener(f: () => void) {
   const restartBtn = document.getElementById("restart");
-  restartBtn.classList.remove("hidden");
+  restartBtn.classList.remove("invisible");
   restartBtn.onclick = () => {
+    f();
+  };
+}
+
+export function registerMuteAllBtnListener(f: () => void) {
+  const muteBtn = document.getElementById("muteAll");
+  muteBtn.classList.remove("invisible");
+  muteBtn.onclick = () => {
     f();
   };
 }

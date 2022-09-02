@@ -177,16 +177,26 @@ header {
   );
 }
 
+#error {
+  color: red;
+}
+
+#forms {
+  margin-top: 50px;
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  align-items: center;
+}
+
 #create-game-form {
   display: block;
   width: 250px;
-  margin-top: 50px;
 }
 
 #join-game-form {
   display: block;
   width: 250px;
-  margin-top: 50px;
 }
 
 #lobby {

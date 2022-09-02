@@ -9,7 +9,7 @@ import { Team, TeamResult } from "../shared/types";
 import { getOtherTeam, wordKindToTeam } from "../shared/util";
 import { Word, WordKind } from "../shared/word";
 import Player from "../shared/player";
-import { rand } from "../client/util/math";
+import { rand } from "../shared/math";
 
 export enum GameState {
   Unknown = 0,
@@ -25,6 +25,8 @@ export class Game {
   readonly id: string;
 
   readonly name: string;
+
+  readonly createdAt: number;
 
   readonly dailyRoomURL: string;
 
@@ -67,6 +69,7 @@ export class Game {
     this.dailyRoomURL = roomURL;
     this.wordSet = wordSet;
     this.dailyRoomName = roomName;
+    this.createdAt = Date.now();
     // Daily rooms are always unique per domain,
     // so use the room name as the game ID.
     this.id = roomName;

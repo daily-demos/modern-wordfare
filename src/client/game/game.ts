@@ -37,7 +37,8 @@ import {
   registerInviteBtnListener,
   registerLeaveBtnListener,
   registerMicBtnListener,
-  registerRestartButtonListener,
+  registerMuteAllBtnListener,
+  registerRestartBtnListener,
   updateCamBtnState,
   updateMicBtnState,
 } from "./nav";
@@ -46,7 +47,6 @@ import { Team } from "../../shared/types";
 import ErrTileAlreadyExists from "./errors/errTileAlreadyExists";
 
 import joinedAudio from "../assets/audio/joined.wav";
-import claimsAreValid from "../../shared/jwt";
 
 // Game (client-side) manages three main components of our application:
 // * The play board/space
@@ -202,18 +202,12 @@ export default class Game {
     // Register restart handler if user is an admin
     const token = bd.meetingToken;
     if (token) {
-      registerRestartButtonListener(() => {
-        try {
-          // gameID is identical to the room name
-          if (!claimsAreValid(token, bd.gameID)) {
-            console.error("token doesn't appear to be valid. Is it expired?");
-            return;
-          }
-        } catch (e) {
-          console.error("failed to validate meeting token claims:", e);
-          return;
-        }
-        this.restart(token);
+      registerMuteAllBtnListener(() => {
+        this.call.muteAll();
+      });
+
+      registerRestartBtnListener(() => {
+        this.restart();
       });
     }
   }
@@ -236,16 +230,8 @@ export default class Game {
         console.error(`failed to find participant with ID ${data.sessionID}`);
         return;
       }
-      // Move participant to the team they just joined
-      this.board.moveToTeam(p, data.teamID, true);
 
-      // Set up end turn button listener
-      registerEndTurnBtnListener(data.teamID, () => {
-        this.socket.emit(endTurnEventName, <EndTurnData>{
-          gameID: this.data.gameID,
-          playerID: this.localPlayerID,
-        });
-      });
+      this.moveToTeam(p, data.teamID);
     });
 
     socket.on(gameDataDumpEventName, (data: GameData) => {
@@ -260,7 +246,7 @@ export default class Game {
       }
       // Move participant to relevant team and make them
       // a spymaster.
-      this.board.moveToTeam(p, data.teamID, true);
+      this.moveToTeam(p, data.teamID);
       this.board.makeSpymaster(data.spymasterID, data.teamID);
     });
 
@@ -290,12 +276,24 @@ export default class Game {
     // End server socket event handling
   }
 
-  private restart(token: string = "") {
+  private moveToTeam(p: DailyParticipant, teamID: Team) {
+    // Move participant to the team they just joined
+    this.board.moveToTeam(p, teamID, true);
+
+    // Set up end turn button listener
+    registerEndTurnBtnListener(teamID, () => {
+      this.socket.emit(endTurnEventName, <EndTurnData>{
+        gameID: this.data.gameID,
+        playerID: this.localPlayerID,
+      });
+    });
+  }
+
+  private restart() {
     const newWordSet = createWordSet();
     this.socket.emit(restartGameEventName, <RestartGameData>{
       gameID: this.data.gameID,
       newWordSet,
-      token,
     });
   }
 
@@ -410,7 +408,7 @@ export default class Game {
     this.data.wordSet = data.newWordSet;
 
     // Destroy current board and create a new one.
-    Board.destroy();
+    this.board.destroy();
     this.board = new Board(
       this.data,
       this.localPlayerID,
