@@ -13,6 +13,10 @@ export type LeaveHandler = (e: DailyEventObjectParticipant) => void;
 export type TrackStartedHandler = (e: DailyEventObjectTrack) => void;
 export type TrackStoppedHandler = (e: DailyEventObjectTrack) => void;
 export type ParticipantUpdatedHandler = (e: DailyParticipant) => void;
+export type Tracks = {
+  videoTrack: MediaStreamTrack;
+  audioTrack: MediaStreamTrack;
+};
 
 const playableState = "playable";
 const loadingState = "loading";
@@ -123,21 +127,24 @@ export class Call {
 
   // getParticipantTracks() retrieves video and audio tracks
   // for the given participant, if they are usable.
-  static getParticipantTracks(p: DailyParticipant): MediaStreamTrack[] {
+  static getParticipantTracks(p: DailyParticipant): Tracks {
     const tracks = p?.tracks;
     if (!tracks) return null;
 
     const vt = tracks.video;
     const at = tracks.audio;
 
-    const mediaTracks: MediaStreamTrack[] = [];
+    const mediaTracks: Tracks = {
+      videoTrack: null,
+      audioTrack: null,
+    };
     const vs = vt?.state;
     if (vt.persistentTrack && (vs === playableState || vs === loadingState)) {
-      mediaTracks.push(vt.persistentTrack);
+      mediaTracks.videoTrack = vt.persistentTrack;
     }
     const as = at?.state;
     if (at.persistentTrack && (as === playableState || as === loadingState)) {
-      mediaTracks.push(at.persistentTrack);
+      mediaTracks.audioTrack = at.persistentTrack;
     }
     return mediaTracks;
   }
