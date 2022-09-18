@@ -539,8 +539,8 @@ export function updateMedia(participantID: string, newTracks: Tracks) {
 
   refreshAudioTrack(existingStream, newAudio);
 
-  // We have an extra if check here compared to the audio track 
-  // handling above, because the video track also dictates 
+  // We have an extra if check here compared to the audio track
+  // handling above, because the video track also dictates
   // whether we should hide the video DOM element.
   if (newVideo) {
     refreshVideoTrack(existingStream, newVideo);

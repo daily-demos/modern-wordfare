@@ -128,16 +128,17 @@ export class Call {
   // getParticipantTracks() retrieves video and audio tracks
   // for the given participant, if they are usable.
   static getParticipantTracks(p: DailyParticipant): Tracks {
-    const tracks = p?.tracks;
-    if (!tracks) return null;
-
-    const vt = tracks.video;
-    const at = tracks.audio;
-
     const mediaTracks: Tracks = {
       videoTrack: null,
       audioTrack: null,
     };
+
+    const tracks = p?.tracks;
+    if (!tracks) return mediaTracks;
+
+    const vt = tracks.video;
+    const at = tracks.audio;
+
     const vs = vt?.state;
     if (vt.persistentTrack && (vs === playableState || vs === loadingState)) {
       mediaTracks.videoTrack = vt.persistentTrack;
