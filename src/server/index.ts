@@ -197,6 +197,12 @@ function startServer() {
       orchestrator
         .getGame(data.gameID)
         .then((game) => {
+          if (!game) {
+            const e = new GameNotFound(data.gameID);
+            io.to(socket.id).emit(errorEventName, e);
+            return;
+          }
+
           const gameDataDump = <GameData>{
             gameID: game.id,
             players: game.players,
@@ -235,7 +241,9 @@ function startServer() {
     socket.on(restartGameEventName, (data: RestartGameData) => {
       console.log(`Got restart request for game ID ${data.gameID}`);
       const cookies = socket.handshake.headers.cookie;
-      const gameHostCookie = getGameHostCookie(cookies, data.gameID);
+      const gameHostCookie = cookies
+        ? getGameHostCookie(cookies, data.gameID)
+        : -1;
       orchestrator
         .restartGame(socket.id, data.gameID, data.newWordSet, gameHostCookie)
         .then(() => {

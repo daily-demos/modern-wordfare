@@ -16,13 +16,14 @@ export default class Memory implements StoreClient {
     this.client = new NodeCache();
   }
 
-  connect: () => void;
+  // eslint-disable-next-line class-methods-use-this
+  connect() {}
 
   storeGame(game: Game) {
     this.client.set(getGameKey(game.id), game, gameTTLSeconds);
   }
 
-  async getGame(gameID: string): Promise<Game> {
+  async getGame(gameID: string): Promise<Game | undefined> {
     return this.client.get(getGameKey(gameID));
   }
 
@@ -30,7 +31,7 @@ export default class Memory implements StoreClient {
     this.client.set(getSocketMappingKey(socketID), playerInfo);
   }
 
-  async getSocketMapping(socketID: string): Promise<PlayerInfo> {
+  async getSocketMapping(socketID: string): Promise<PlayerInfo | undefined> {
     return this.client.get(getSocketMappingKey(socketID));
   }
 

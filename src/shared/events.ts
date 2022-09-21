@@ -22,7 +22,7 @@ export interface GameData {
   players: Player[];
   currentTurn: Team;
   revealedWordVals: string[];
-  scores: { [key in Team]?: TeamResult };
+  scores: { [key in Team]: TeamResult };
 }
 
 export const joinGameEventName = "join-game";

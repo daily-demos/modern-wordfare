@@ -21,6 +21,7 @@ import {
 } from "./nav";
 import startAudio from "../assets/audio/start.wav";
 import { flyEmojis, Mood } from "../util/effects";
+import ErrNoTeamDOM from "./errors/errNoTeamDOM";
 
 export interface BoardData {
   roomURL: string;
@@ -44,13 +45,13 @@ export class Board {
   private currentTurn: Team = Team.None;
 
   private spymasters: { [key in Team]?: string } = {
-    team1: null,
-    team2: null,
+    team1: "",
+    team2: "",
   };
 
   private readonly wordGrid: WordGrid;
 
-  private readonly teamDIVs: { [key in Team]?: HTMLDivElement } = {
+  private readonly teamDIVs: { [key in Team]?: HTMLDivElement | null } = {
     none: null,
     team1: null,
     team2: null,
@@ -85,7 +86,9 @@ export class Board {
   // back to its defaults.
   destroy() {
     const board = document.getElementById("board");
-    board.innerHTML = "";
+    if (board) {
+      board.innerHTML = "";
+    }
     this.teamDIVs[Team.Team1]?.classList.remove("active");
     this.teamDIVs[Team.Team2]?.classList.remove("active");
     hideEndTurnButtons();
@@ -117,6 +120,10 @@ export class Board {
   // without any extra calculations.
   setScores(res: TeamResult) {
     const teamDIV = this.teamDIVs[res.team];
+    if (!teamDIV) {
+      console.warn(new ErrNoTeamDOM(res.team));
+      return;
+    }
     const score = teamDIV.getElementsByClassName("score")[0];
     score.innerHTML = res.wordsLeft.toString();
   }
@@ -140,6 +147,10 @@ export class Board {
     }
 
     const teamDIV = this.teamDIVs[wordTeam];
+    if (!teamDIV) {
+      console.warn(new ErrNoTeamDOM(wordTeam));
+      return Team.None;
+    }
     const score = teamDIV.getElementsByClassName("score")[0];
     const wordsLeft: number = +score.innerHTML;
 
@@ -180,10 +191,10 @@ export class Board {
   eject(playerID: string) {
     removeTile(playerID);
     if (this.spymasters.team1 === playerID) {
-      this.spymasters.team1 = null;
+      delete this.spymasters.team1;
       this.updateJoinButtons();
     } else if (this.spymasters.team2 === playerID) {
-      this.spymasters.team2 = null;
+      delete this.spymasters.team2;
       this.updateJoinButtons();
     }
   }
@@ -261,6 +272,9 @@ export class Board {
       subheading = "";
     }
     const gameStatus = document.getElementById("gameStatus");
+    if (!gameStatus) {
+      throw new Error("Game status DOM element not found");
+    }
     gameStatus.innerHTML = `<h2>${heading}</h2><h3>${subheading}</h3>`;
   }
 
@@ -275,8 +289,8 @@ export class Board {
     this.currentTurn = currentTurn;
     const otherTeam = getOtherTeam(currentTurn);
 
-    this.teamDIVs[currentTurn].classList.add("active");
-    this.teamDIVs[otherTeam].classList.remove("active");
+    this.teamDIVs[currentTurn]?.classList.add("active");
+    this.teamDIVs[otherTeam]?.classList.remove("active");
 
     this.updateGameStatus();
     this.updateInteraction();
@@ -339,6 +353,9 @@ export class Board {
   // participants who have not yet joined a team.
   private showObservers() {
     const observers = document.getElementById("observers");
+    if (!observers) {
+      throw new Error("Observers DOM element not found");
+    }
     observers.classList.remove("hidden");
     this.teamDIVs[Team.None] = <HTMLDivElement>observers;
   }
@@ -375,7 +392,7 @@ export class Board {
     // switching teams, update the spymaster var
     const isSpymaster = this.isSpymaster(playerID);
     if (isSpymaster !== Team.None) {
-      this.spymasters[isSpymaster] = null;
+      delete this.spymasters[isSpymaster];
     }
     this.spymasters[team] = playerID;
 
@@ -423,6 +440,9 @@ export class Board {
       removeTile(id);
     }
     const div = this.teamDIVs[team];
+    if (!div) {
+      throw new ErrNoTeamDOM(team);
+    }
 
     // By the time the above is done, there should be no tile for this
     // player. If one exists, error out (the player is probably on a team
@@ -461,18 +481,18 @@ export class Board {
 
   // getTileTeam() returns the team to which
   // a player tile already belongs.
-  private getTileTeam(playerID: string): Team {
+  private getTileTeam(playerID: string): Team | null {
     const tileID = getParticipantTileID(playerID);
     const tile = document.getElementById(tileID);
     if (!tile) return null;
 
-    if (this.teamDIVs[Team.None].contains(tile)) {
+    if (this.teamDIVs[Team.None]?.contains(tile)) {
       return Team.None;
     }
-    if (this.teamDIVs[Team.Team1].contains(tile)) {
+    if (this.teamDIVs[Team.Team1]?.contains(tile)) {
       return Team.Team1;
     }
-    if (this.teamDIVs[Team.Team2].contains(tile)) {
+    if (this.teamDIVs[Team.Team2]?.contains(tile)) {
       return Team.Team2;
     }
     return null;

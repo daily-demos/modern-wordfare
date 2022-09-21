@@ -3,6 +3,7 @@ import { isValidName } from "../shared/input";
 import { CreateGameRequest } from "../shared/types";
 import { Word } from "../shared/word";
 import showError from "./error";
+import ErrNoLobby from "./game/errors/errNoLobby";
 import createWordSet from "./util/word";
 
 const lobbyDiv = document.getElementById("lobby");
@@ -28,7 +29,9 @@ export default function initCreateProcess() {
       validateInput(inputPlayerName, inputGameName);
     } catch (error) {
       showCreation();
-      showError(error.toString());
+      const msg =
+        error instanceof Error ? error.message : "Failed to validate input";
+      showError(msg);
       return;
     }
 
@@ -83,11 +86,13 @@ function createGame(
 }
 
 function hideCreation() {
+  if (!lobbyDiv) throw new ErrNoLobby();
   lobbyDiv.classList.add("invisible");
   createForm.setAttribute("disabled", "true");
 }
 
 function showCreation() {
+  if (!lobbyDiv) throw new ErrNoLobby();
   lobbyDiv.classList.remove("invisible");
   createForm.classList.remove("invisible");
   createForm.setAttribute("disabled", "false");

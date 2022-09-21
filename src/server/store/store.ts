@@ -10,8 +10,8 @@ export interface PlayerInfo {
 export interface StoreClient {
   connect: () => void;
   storeGame: (game: Game) => void;
-  getGame: (gameID: string) => Promise<Game>;
+  getGame: (gameID: string) => Promise<Game | undefined>;
   storeSocketMapping: (socketID: string, playerInfo: PlayerInfo) => void;
-  getSocketMapping: (socketID: string) => Promise<PlayerInfo>;
+  getSocketMapping: (socketID: string) => Promise<PlayerInfo | undefined>;
   deleteSocketMapping: (socketID: string) => void;
 }

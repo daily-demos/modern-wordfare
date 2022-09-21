@@ -7,7 +7,7 @@ import failureAudio from "../assets/audio/word-failure.wav";
 export default class RenderedWord {
   word: Word;
 
-  private button: HTMLButtonElement;
+  private button: HTMLButtonElement | undefined;
 
   private onClick: (w: Word) => void;
 
@@ -17,6 +17,8 @@ export default class RenderedWord {
   }
 
   colorize(selectingTeam = Team.None, withChime: boolean = false) {
+    if (!this.button) return;
+
     this.button.classList.add(this.word.kind.toString());
     if (!withChime) return;
 
@@ -36,10 +38,12 @@ export default class RenderedWord {
   }
 
   enableInteraction() {
+    if (!this.button) return;
     this.button.disabled = false;
   }
 
   disableInteraction() {
+    if (!this.button) return;
     this.button.disabled = true;
   }
 

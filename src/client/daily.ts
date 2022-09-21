@@ -20,9 +20,9 @@ const loadingState = "loading";
 export class Call {
   private readonly callObject: DailyCall;
 
-  private meetingToken: string;
+  private meetingToken: string | undefined;
 
-  constructor(url: string, userName: string, meetingToken: string = null) {
+  constructor(url: string, userName: string, meetingToken: string = "") {
     this.meetingToken = meetingToken;
     this.callObject = DailyIframe.createCallObject({
       url,
@@ -87,36 +87,45 @@ export class Call {
 
   registerJoinedMeetingHandler(h: JoinHandler) {
     this.callObject.on("joined-meeting", (e) => {
-      h(e.participants.local);
+      const p = e?.participants.local;
+      if (!p) return;
+      h(p);
     });
   }
 
   registerParticipantJoinedHandler(h: JoinHandler) {
     this.callObject.on("participant-joined", (e) => {
-      h(e.participant);
+      const p = e?.participant;
+      if (!p) return;
+      h(p);
     });
   }
 
   registerParticipantLeftHandler(h: LeaveHandler) {
     this.callObject.on("participant-left", (e) => {
+      if (!e) return;
       h(e);
     });
   }
 
   registerParticipantUpdatedHandler(h: ParticipantUpdatedHandler) {
     this.callObject.on("participant-updated", (e) => {
-      h(e.participant);
+      const p = e?.participant;
+      if (!p) return;
+      h(p);
     });
   }
 
   registerTrackStartedHandler(h: TrackStartedHandler) {
     this.callObject.on("track-started", (e) => {
+      if (!e) return;
       h(e);
     });
   }
 
   registerTrackStoppedHandler(h: TrackStoppedHandler) {
     this.callObject.on("track-stopped", (e) => {
+      if (!e) return;
       h(e);
     });
   }
@@ -125,7 +134,7 @@ export class Call {
   // for the given participant, if they are usable.
   static getParticipantTracks(p: DailyParticipant): MediaStreamTrack[] {
     const tracks = p?.tracks;
-    if (!tracks) return null;
+    if (!tracks) return [];
 
     const vt = tracks.video;
     const at = tracks.audio;

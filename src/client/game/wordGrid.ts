@@ -5,7 +5,7 @@ import RenderedWord from "./renderedWord";
 export default class WordGrid {
   private renderedWords: RenderedWord[] = [];
 
-  private board: HTMLDivElement;
+  private board: HTMLDivElement | undefined;
 
   constructor(words: Word[], onClick: (w: Word) => void) {
     for (let i = 0; i < words.length; i += 1) {

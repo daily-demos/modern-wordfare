@@ -5,7 +5,7 @@ export default class Player {
 
   team: Team = Team.None;
 
-  isSpymaster: boolean;
+  isSpymaster: boolean = false;
 
   constructor(id: string, team: Team) {
     this.id = id;
