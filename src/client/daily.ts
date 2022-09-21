@@ -14,8 +14,8 @@ export type TrackStartedHandler = (e: DailyEventObjectTrack) => void;
 export type TrackStoppedHandler = (e: DailyEventObjectTrack) => void;
 export type ParticipantUpdatedHandler = (e: DailyParticipant) => void;
 export type Tracks = {
-  videoTrack: MediaStreamTrack;
-  audioTrack: MediaStreamTrack;
+  videoTrack: MediaStreamTrack | null;
+  audioTrack: MediaStreamTrack | null;
 };
 
 const playableState = "playable";
