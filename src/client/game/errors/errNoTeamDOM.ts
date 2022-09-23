@@ -1,12 +1,18 @@
-export default class ErrNoTeamDOM extends Error {
+import { GameError } from "./error";
+
+export default class ErrNoTeamDOM extends Error implements GameError {
   name = "no-team-dom";
 
   msg: string;
 
+  unrecoverable = true;
+
   constructor(teamID: string) {
-    const msg = `team DOM element not found; is '${teamID}' a valid team?'`;
-    super(msg);
-    this.msg = msg;
+    // We call `getMsg()` twice here to avoid an error
+    // related to `super()` needing to be the first call
+    // in the constructor.
+    super(getMsg(teamID));
+    this.msg = getMsg(teamID);
 
     Object.setPrototypeOf(this, ErrNoTeamDOM.prototype);
   }
@@ -19,4 +25,8 @@ export default class ErrNoTeamDOM extends Error {
       },
     };
   }
+}
+
+function getMsg(teamID: string): string {
+  return `Team DOM element not found; is '${teamID}' a valid team?`;
 }

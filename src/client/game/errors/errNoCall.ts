@@ -1,12 +1,14 @@
-export default class ErrNoCall extends Error {
+import { GameError } from "./error";
+
+const msg = "Call not initialized";
+
+export default class ErrNoCall extends Error implements GameError {
   name = "no-call";
 
-  msg: string;
+  unrecoverable = true;
 
   constructor() {
-    const msg = "call not initialized";
     super(msg);
-    this.msg = msg;
 
     Object.setPrototypeOf(this, ErrNoCall.prototype);
   }
@@ -15,7 +17,7 @@ export default class ErrNoCall extends Error {
     return {
       error: {
         name: this.name,
-        message: this.msg,
+        message: msg,
       },
     };
   }

@@ -51,6 +51,8 @@ import ErrNoBoardData from "./errors/errNoBoardData";
 import ErrNoSocket from "./errors/errNoSocket";
 import ErrNoBoard from "./errors/errNoBoard";
 import ErrNoCall from "./errors/errNoCall";
+import showGameError from "./errors/error";
+import ErrGeneric from "./errors/errGeneric";
 
 // Game (client-side) manages three main components of our application:
 // * The play board/space
@@ -75,13 +77,15 @@ export default class Game {
   start(boardData: BoardData) {
     const g = document.getElementById("game");
     if (!g) {
-      throw new Error("Game DOM element not found");
+      showGameError(new ErrGeneric("Game DOM element not found"));
+      return;
     }
     g.classList.remove("invisible");
 
     const c = document.getElementById("container");
     if (!c) {
-      throw new Error("Game container DOM element not found");
+      showGameError(new ErrGeneric("Game container DOM element not found"));
+      return;
     }
     c.classList.add("gradient-bg");
     this.data = boardData;
@@ -136,7 +140,8 @@ export default class Game {
   private showGameOver(winningTeam: Team) {
     const gameOverDiv = document.getElementById("gameOver");
     if (!gameOverDiv) {
-      throw new Error("Game over DOM element not found");
+      showGameError(new ErrGeneric("Game over DOM element not found"));
+      return;
     }
     gameOverDiv.classList.remove("invisible");
     const teamName = <HTMLSpanElement>(
@@ -263,7 +268,10 @@ export default class Game {
     });
 
     socket.on(newSpymasterEventName, (data: SpymasterData) => {
-      if (!this.board) throw new ErrNoBoard();
+      if (!this.board) {
+        showGameError(new ErrNoBoard());
+        return;
+      }
       const p = this.call?.getParticipant(data.spymasterID);
       if (!p) {
         console.error(`failed to find participant with ID ${data.spymasterID}`);
@@ -276,12 +284,18 @@ export default class Game {
     });
 
     socket.on(nextTurnEventName, (data: TurnData) => {
-      if (!this.board) throw new ErrNoBoard();
+      if (!this.board) {
+        showGameError(new ErrNoBoard());
+        return;
+      }
       this.board.toggleCurrentTurn(data.currentTurn);
     });
 
     socket.on(turnResultEventName, (data: TurnResultData) => {
-      if (!this.board) throw new ErrNoBoard();
+      if (!this.board) {
+        showGameError(new ErrNoBoard());
+        return;
+      }
       const winningTeam = this.board.processTurnResult(
         data.team,
         data.lastRevealedWord
@@ -298,14 +312,16 @@ export default class Game {
     });
 
     socket.on(playerLeftGameEventName, (data: PlayerLeftData) => {
-      if (!this.board) throw new ErrNoBoard();
-      this.board.eject(data.playerID);
+      this.board?.eject(data.playerID);
     });
     // End server socket event handling
   }
 
   private moveToTeam(p: DailyParticipant, teamID: Team) {
-    if (!this.board) throw new ErrNoBoard();
+    if (!this.board) {
+      showGameError(new ErrNoBoard());
+      return;
+    }
     // Move participant to the team they just joined
     this.board.moveToTeam(p, teamID, true);
 
@@ -322,8 +338,14 @@ export default class Game {
   }
 
   private restart() {
-    if (!this.data) throw new ErrNoBoardData();
-    if (!this.socket) throw new ErrNoSocket();
+    if (!this.data) {
+      showGameError(new ErrNoBoardData());
+      return;
+    }
+    if (!this.socket) {
+      showGameError(new ErrNoSocket());
+      return;
+    }
 
     const newWordSet = createWordSet();
     this.socket.emit(restartGameEventName, <RestartGameData>{
@@ -340,9 +362,14 @@ export default class Game {
   // handleJoinedMeeting() handles the local player
   // once they have joined the Daily video call
   private handleJoinedMeeting(player: DailyParticipant) {
-    if (!this.data) throw new ErrNoBoardData();
-    if (!this.socket) throw new ErrNoSocket();
-
+    if (!this.data) {
+      showGameError(new ErrNoBoardData());
+      return;
+    }
+    if (!this.socket) {
+      showGameError(new ErrNoSocket());
+      return;
+    }
     this.joinedAt = Date.now();
     const audio = new Audio(joinedAudio);
     audio.play();
@@ -379,7 +406,8 @@ export default class Game {
     const localID = this.localPlayerID;
     const p = this.call?.getParticipant(localID);
     if (!p) {
-      throw new Error("Local participant not found");
+      showGameError(new ErrGeneric("Local participant not found"));
+      return;
     }
     try {
       this.board.createTile(p, Team.None);
@@ -392,7 +420,10 @@ export default class Game {
   // handleParticipantJoined() handles a remote participant
   // joining the Daily call.
   private handleParticipantJoined(p: DailyParticipant) {
-    if (!this.board) throw new ErrNoBoardData();
+    if (!this.board) {
+      showGameError(new ErrNoBoard());
+      return;
+    }
     // If the local participant joined more than 3 seconds ago,
     // play the participant joined chime. We have this check
     // to make sure that we don't play multiple chimes in close
@@ -412,7 +443,10 @@ export default class Game {
   // processDataDump() processes game data sent from
   // the game server once a user joins the game.
   private processDataDump(data: GameData) {
-    if (!this.board) throw new ErrNoBoardData();
+    if (!this.board) {
+      showGameError(new ErrNoBoard());
+      return;
+    }
     this.board.processDataDump(data);
 
     // Iterate through all players who are registered
@@ -423,8 +457,10 @@ export default class Game {
       // We do this in a setInterval in case the server gave us
       // all the players _before_ the Daily call made them available
       this.pendingTiles[player.id] = setInterval(() => {
-        if (!this.board) throw new ErrNoBoardData();
-
+        if (!this.board) {
+          showGameError(new ErrNoBoard());
+          return;
+        }
         // Get Daily participant for this player ID
         const participant = this.call?.getParticipant(player.id);
         if (!participant) {
@@ -444,12 +480,26 @@ export default class Game {
   // handleGameRestarted() restarts the game with
   // the given game data.
   private handleGameRestarted(data: GameRestartedData) {
-    if (!this.board) throw new ErrNoBoard();
-    if (!this.data) throw new ErrNoBoardData();
-    if (!this.call) throw new ErrNoCall();
-    if (!this.socket) throw new ErrNoSocket();
+    if (!this.board) {
+      showGameError(new ErrNoBoard());
+      return;
+    }
+    if (!this.data) {
+      showGameError(new ErrNoBoardData());
+      return;
+    }
+    if (!this.call) {
+      showGameError(new ErrNoCall());
+      return;
+    }
+    if (!this.socket) {
+      showGameError(new ErrNoSocket());
+      return;
+    }
+
     if (!this.localPlayerID) {
-      throw new Error("Local player not initialized");
+      showGameError(new ErrGeneric("Local player not initialized"));
+      return;
     }
 
     // Remove game over screen

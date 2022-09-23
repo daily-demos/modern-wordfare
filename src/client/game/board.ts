@@ -22,6 +22,8 @@ import {
 import startAudio from "../assets/audio/start.wav";
 import { flyEmojis, Mood } from "../util/effects";
 import ErrNoTeamDOM from "./errors/errNoTeamDOM";
+import showGameError from "./errors/error";
+import ErrGeneric from "./errors/errGeneric";
 
 export interface BoardData {
   roomURL: string;
@@ -273,7 +275,8 @@ export class Board {
     }
     const gameStatus = document.getElementById("gameStatus");
     if (!gameStatus) {
-      throw new Error("Game status DOM element not found");
+      showGameError(new ErrGeneric("Game status DOM element not found"));
+      return;
     }
     gameStatus.innerHTML = `<h2>${heading}</h2><h3>${subheading}</h3>`;
   }
@@ -354,7 +357,8 @@ export class Board {
   private showObservers() {
     const observers = document.getElementById("observers");
     if (!observers) {
-      throw new Error("Observers DOM element not found");
+      showGameError(new ErrGeneric("Observers DOM element not found"));
+      return;
     }
     observers.classList.remove("hidden");
     this.teamDIVs[Team.None] = <HTMLDivElement>observers;
@@ -441,14 +445,16 @@ export class Board {
     }
     const div = this.teamDIVs[team];
     if (!div) {
-      throw new ErrNoTeamDOM(team);
+      showGameError(new ErrNoTeamDOM(team));
+      return;
     }
 
     // By the time the above is done, there should be no tile for this
     // player. If one exists, error out (the player is probably on a team
     // already)
     if (getTile(id)) {
-      throw new ErrTileAlreadyExists(id);
+      showGameError(new ErrTileAlreadyExists(id));
+      return;
     }
 
     // Create participant tile with the video and name tags within
@@ -525,13 +531,19 @@ function getTile(participantID: string): HTMLDivElement {
 export function updateMedia(participantID: string, tracks: MediaStreamTrack[]) {
   const participantTile = getTile(participantID);
   if (!participantTile) {
-    throw new Error(`tile for participant ID ${participantID} does not exist`);
+    showGameError(
+      new ErrGeneric(`tile for participant ID ${participantID} does not exist`)
+    );
+    return;
   }
   const videoTags = participantTile.getElementsByTagName("video");
   if (!videoTags || videoTags.length === 0) {
-    throw new Error(
-      `video tile for participant ID ${participantID} does not exist`
+    showGameError(
+      new ErrGeneric(
+        `video tile for participant ID ${participantID} does not exist`
+      )
     );
+    return;
   }
   const video = videoTags[0];
   if (!tracks || tracks.length === 0) {

@@ -1,12 +1,13 @@
-export default class ErrNoBoard extends Error {
+import { GameError } from "./error";
+
+const msg = "Board not initialized";
+export default class ErrNoBoard extends Error implements GameError {
   name = "no-board";
 
-  msg: string;
+  unrecoverable: boolean = true;
 
   constructor() {
-    const msg = "board not initialized";
     super(msg);
-    this.msg = msg;
 
     Object.setPrototypeOf(this, ErrNoBoard.prototype);
   }
@@ -15,7 +16,7 @@ export default class ErrNoBoard extends Error {
     return {
       error: {
         name: this.name,
-        message: this.msg,
+        message: msg,
       },
     };
   }

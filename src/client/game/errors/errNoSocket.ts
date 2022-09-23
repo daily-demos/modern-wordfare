@@ -1,12 +1,14 @@
-export default class ErrNoSocket extends Error {
+import { GameError } from "./error";
+
+const msg = "WebSocket not initialized";
+
+export default class ErrNoSocket extends Error implements GameError {
   name = "no-websocket";
 
-  msg: string;
+  unrecoverable = true;
 
   constructor() {
-    const msg = "websocket not initialized";
     super(msg);
-    this.msg = msg;
 
     Object.setPrototypeOf(this, ErrNoSocket.prototype);
   }
@@ -15,7 +17,7 @@ export default class ErrNoSocket extends Error {
     return {
       error: {
         name: this.name,
-        message: this.msg,
+        message: msg,
       },
     };
   }

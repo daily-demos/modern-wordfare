@@ -1,12 +1,15 @@
-export default class ErrTileAlreadyExists extends Error {
-  name = "duplicate-player";
+import { GameError } from "./error";
+
+export default class ErrTileAlreadyExists extends Error implements GameError {
+  name = "duplicate-player-tile";
+
+  unrecoverable = true;
 
   msg: string;
 
   constructor(playerID: string) {
-    const msg = `tile already exists for player id: ${playerID}`;
-    super(msg);
-    this.msg = msg;
+    super(getMsg(playerID));
+    this.msg = getMsg(playerID);
 
     Object.setPrototypeOf(this, ErrTileAlreadyExists.prototype);
   }
@@ -19,4 +22,8 @@ export default class ErrTileAlreadyExists extends Error {
       },
     };
   }
+}
+
+function getMsg(playerID: string): string {
+  return `Tile already exists for player id: ${playerID}`;
 }

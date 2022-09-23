@@ -1,12 +1,14 @@
-export default class ErrNoLobby extends Error {
+import { GameError } from "./error";
+
+const msg = "Lobby DOM element not found";
+
+export default class ErrNoLobby extends Error implements GameError {
   name = "no-lobby";
 
-  msg: string;
+  unrecoverable = true;
 
   constructor() {
-    const msg = "lobby DOM element not found";
     super(msg);
-    this.msg = msg;
 
     Object.setPrototypeOf(this, ErrNoLobby.prototype);
   }
@@ -15,7 +17,7 @@ export default class ErrNoLobby extends Error {
     return {
       error: {
         name: this.name,
-        message: this.msg,
+        message: msg,
       },
     };
   }
