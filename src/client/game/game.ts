@@ -96,8 +96,14 @@ export default class Game {
   // onClickWord() is invoked when a player in an active team
   // clicks on a word on the board.
   private onClickWord(wordVal: string) {
-    if (!this.data) throw new ErrNoBoardData();
-    if (!this.socket) throw new ErrNoSocket();
+    if (!this.data) {
+      showGameError(new ErrNoBoardData());
+      return;
+    }
+    if (!this.socket) {
+      showGameError(new ErrNoSocket());
+      return;
+    }
 
     const data = <SelectedWordData>{
       gameID: this.data.gameID,
@@ -110,8 +116,14 @@ export default class Game {
   // onJoinTeam() is invoked when a player clicks one of the
   // team join buttons.
   private onJoinTeam(team: Team) {
-    if (!this.data) throw new ErrNoBoardData();
-    if (!this.socket) throw new ErrNoSocket();
+    if (!this.data) {
+      showGameError(new ErrNoBoardData());
+      return;
+    }
+    if (!this.socket) {
+      showGameError(new ErrNoSocket());
+      return;
+    }
 
     const data = <JoinTeamData>{
       gameID: this.data.gameID,
@@ -124,8 +136,14 @@ export default class Game {
   // onBeSpymaster() is invoked when a player clicks a button
   // to join a team as a spymaster.
   private onBeSpymaster(team: Team) {
-    if (!this.data) throw new ErrNoBoardData();
-    if (!this.socket) throw new ErrNoSocket();
+    if (!this.data) {
+      showGameError(new ErrNoBoardData());
+      return;
+    }
+    if (!this.socket) {
+      showGameError(new ErrNoSocket());
+      return;
+    }
 
     const resData = <BecomeSpymasterData>{
       gameID: this.data.gameID,
@@ -327,8 +345,14 @@ export default class Game {
 
     // Set up end turn button listener
     registerEndTurnBtnListener(teamID, () => {
-      if (!this.data) throw new ErrNoBoardData();
-      if (!this.socket) throw new ErrNoSocket();
+      if (!this.data) {
+        showGameError(new ErrNoBoardData());
+        return;
+      }
+      if (!this.socket) {
+        showGameError(new ErrNoSocket());
+        return;
+      }
 
       this.socket.emit(endTurnEventName, <EndTurnData>{
         gameID: this.data.gameID,
