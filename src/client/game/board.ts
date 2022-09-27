@@ -1,6 +1,6 @@
 import { DailyParticipant } from "@daily-co/daily-js";
 import { Team, TeamResult } from "../../shared/types";
-import { Call } from "../daily";
+import { Call, Tracks } from "../daily";
 
 import WordGrid from "./wordGrid";
 import { GameData } from "../../shared/events";
@@ -502,11 +502,14 @@ function getTile(participantID: string): HTMLDivElement {
 
 // updateMedia() updates the video and audio tracks for
 // the given participant.
-export function updateMedia(participantID: string, tracks: MediaStreamTrack[]) {
+export function updateMedia(participantID: string, newTracks: Tracks) {
+  // Get player's current tile.
   const participantTile = getTile(participantID);
   if (!participantTile) {
     throw new Error(`tile for participant ID ${participantID} does not exist`);
   }
+
+  // Get video tag from player's tile.
   const videoTags = participantTile.getElementsByTagName("video");
   if (!videoTags || videoTags.length === 0) {
     throw new Error(
@@ -514,10 +517,88 @@ export function updateMedia(participantID: string, tracks: MediaStreamTrack[]) {
     );
   }
   const video = videoTags[0];
-  if (!tracks || tracks.length === 0) {
-    video.srcObject = null;
+
+  // Get existing MediaStream from the video tag source object.
+  const existingStream = <MediaStream>video.srcObject;
+
+  const newVideo = newTracks.videoTrack;
+  const newAudio = newTracks.audioTrack;
+
+  // If there is no existing stream or it contains no tracks,
+  // Just create a new media stream using our new tracks.
+  // This will happen if this is the first time we're
+  // setting the tracks.
+  if (!existingStream || existingStream.getTracks().length === 0) {
+    const tracks: MediaStreamTrack[] = [];
+    if (newVideo) tracks.push(newVideo);
+    if (newAudio) tracks.push(newAudio);
+    const newStream = new MediaStream(tracks);
+    video.srcObject = newStream;
     return;
   }
-  const stream = new MediaStream(tracks);
-  video.srcObject = stream;
+
+  refreshAudioTrack(existingStream, newAudio);
+
+  // We have an extra if check here compared to the audio track
+  // handling above, because the video track also dictates
+  // whether we should hide the video DOM element.
+  if (newVideo) {
+    refreshVideoTrack(existingStream, newVideo);
+    video.classList.remove("hidden");
+  } else {
+    // If there's no video to be played, hide the element.
+    video.classList.add("hidden");
+  }
+}
+
+// refreshAudioTrack() refreshes a participant's audio track in the DOM.
+function refreshAudioTrack(
+  existingStream: MediaStream,
+  newAudioTrack: MediaStreamTrack
+) {
+  // If there is no new track, just early out
+  // and keep the old track on the stream as-is.
+  if (!newAudioTrack) return;
+  const existingTracks = existingStream.getAudioTracks();
+  refreshTrack(existingStream, existingTracks, newAudioTrack);
+}
+
+// refreshVideoTrack() refreshes a participant's video track in the DOM.
+function refreshVideoTrack(
+  existingStream: MediaStream,
+  newVideoTrack: MediaStreamTrack
+) {
+  // If there is no new track, just early out
+  // and keep the old track on the stream as-is.
+  if (!newVideoTrack) return;
+  const existingTracks = existingStream.getVideoTracks();
+  refreshTrack(existingStream, existingTracks, newVideoTrack);
+}
+
+// refreshTrack() compares the old tracks in a stream with new tracks
+// and replaces them if their ID has changed.
+function refreshTrack(
+  existingStream: MediaStream,
+  oldTracks: MediaStreamTrack[],
+  newTrack: MediaStreamTrack
+) {
+  const trackCount = oldTracks.length;
+  // If there is no matching old track,
+  // just add the new track.
+  if (trackCount === 0) {
+    existingStream.addTrack(newTrack);
+    return;
+  }
+  if (trackCount > 1) {
+    console.warn(
+      `expected up to 1 media track, but got ${trackCount}. Only using the first one.`
+    );
+  }
+  const oldTrack = oldTracks[0];
+  // If the IDs of the old and new track don't match,
+  // replace the old track with the new one.
+  if (oldTrack.id !== newTrack.id) {
+    existingStream.removeTrack(oldTrack);
+    existingStream.addTrack(newTrack);
+  }
 }
