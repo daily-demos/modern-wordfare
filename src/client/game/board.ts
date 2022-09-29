@@ -566,7 +566,6 @@ export function updateMedia(participantID: string, newTracks: Tracks) {
     if (newAudio) tracks.push(newAudio);
     const newStream = new MediaStream(tracks);
     video.srcObject = newStream;
-    video.id = participantID;
     playMedia(video);
     return;
   }
