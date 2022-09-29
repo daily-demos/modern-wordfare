@@ -509,7 +509,7 @@ export class Board {
 export function removeTile(playerID: string) {
   const ele = document.getElementById(getParticipantTileID(playerID));
   if (!ele) return;
-  // Get video tag from player's tile.
+  
   const videoTags = ele.getElementsByTagName("video");
 
   // Set all src objects to null to prevent detached streams
