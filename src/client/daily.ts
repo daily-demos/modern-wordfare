@@ -137,15 +137,18 @@ export class Call {
     if (!tracks) return mediaTracks;
 
     const vt = tracks.video;
-    const at = tracks.audio;
-
     const vs = vt?.state;
     if (vt.persistentTrack && (vs === playableState || vs === loadingState)) {
       mediaTracks.videoTrack = vt.persistentTrack;
     }
-    const as = at?.state;
-    if (at.persistentTrack && (as === playableState || as === loadingState)) {
-      mediaTracks.audioTrack = at.persistentTrack;
+
+    // Only get audio track if this is a remote participant
+    if (!p.local) {
+      const at = tracks.audio;
+      const as = at?.state;
+      if (at.persistentTrack && (as === playableState || as === loadingState)) {
+        mediaTracks.audioTrack = at.persistentTrack;
+      }
     }
     return mediaTracks;
   }
