@@ -47,32 +47,46 @@ import { Team } from "../../shared/types";
 import ErrTileAlreadyExists from "./errors/errTileAlreadyExists";
 
 import joinedAudio from "../assets/audio/joined.wav";
+import ErrNoBoardData from "./errors/errNoBoardData";
+import ErrNoSocket from "./errors/errNoSocket";
+import ErrNoBoard from "./errors/errNoBoard";
+import ErrNoCall from "./errors/errNoCall";
+import showGameError from "./errors/error";
+import ErrGeneric from "./errors/errGeneric";
 
 // Game (client-side) manages three main components of our application:
 // * The play board/space
 // * The Daily call
 // * Interaction with the game server
 export default class Game {
-  socket: Socket;
+  socket: Socket | undefined;
 
-  call: Call;
+  call: Call | undefined;
 
-  private localPlayerID: string;
+  private localPlayerID: string | undefined;
 
-  private joinedAt: number;
+  private joinedAt: number = -1;
 
-  private board: Board;
+  private board: Board | undefined;
 
-  private data: BoardData;
+  private data: BoardData | undefined;
 
   private pendingTiles: { [key: string]: ReturnType<typeof setInterval> } = {};
 
   // start() starts the game with the given board data
   start(boardData: BoardData) {
     const g = document.getElementById("game");
+    if (!g) {
+      showGameError(new ErrGeneric("Game DOM element not found"));
+      return;
+    }
     g.classList.remove("invisible");
 
     const c = document.getElementById("container");
+    if (!c) {
+      showGameError(new ErrGeneric("Game container DOM element not found"));
+      return;
+    }
     c.classList.add("gradient-bg");
     this.data = boardData;
     this.setupCall(boardData);
@@ -82,6 +96,15 @@ export default class Game {
   // onClickWord() is invoked when a player in an active team
   // clicks on a word on the board.
   private onClickWord(wordVal: string) {
+    if (!this.data) {
+      showGameError(new ErrNoBoardData());
+      return;
+    }
+    if (!this.socket) {
+      showGameError(new ErrNoSocket());
+      return;
+    }
+
     const data = <SelectedWordData>{
       gameID: this.data.gameID,
       wordValue: wordVal,
@@ -93,6 +116,15 @@ export default class Game {
   // onJoinTeam() is invoked when a player clicks one of the
   // team join buttons.
   private onJoinTeam(team: Team) {
+    if (!this.data) {
+      showGameError(new ErrNoBoardData());
+      return;
+    }
+    if (!this.socket) {
+      showGameError(new ErrNoSocket());
+      return;
+    }
+
     const data = <JoinTeamData>{
       gameID: this.data.gameID,
       sessionID: this.localPlayerID,
@@ -104,6 +136,15 @@ export default class Game {
   // onBeSpymaster() is invoked when a player clicks a button
   // to join a team as a spymaster.
   private onBeSpymaster(team: Team) {
+    if (!this.data) {
+      showGameError(new ErrNoBoardData());
+      return;
+    }
+    if (!this.socket) {
+      showGameError(new ErrNoSocket());
+      return;
+    }
+
     const resData = <BecomeSpymasterData>{
       gameID: this.data.gameID,
       sessionID: this.localPlayerID,
@@ -116,6 +157,10 @@ export default class Game {
   // an option to restart the game.
   private showGameOver(winningTeam: Team) {
     const gameOverDiv = document.getElementById("gameOver");
+    if (!gameOverDiv) {
+      showGameError(new ErrGeneric("Game over DOM element not found"));
+      return;
+    }
     gameOverDiv.classList.remove("invisible");
     const teamName = <HTMLSpanElement>(
       gameOverDiv.getElementsByClassName("teamName")[0]
@@ -145,7 +190,7 @@ export default class Game {
     });
 
     this.call.registerParticipantLeftHandler((p) => {
-      this.board.eject(p.participant.session_id);
+      this.board?.eject(p.participant.session_id);
     });
 
     this.call.registerParticipantUpdatedHandler((p) => {
@@ -156,6 +201,7 @@ export default class Game {
     });
 
     this.call.registerTrackStartedHandler((p) => {
+      if (!p.participant) return;
       const tracks = Call.getParticipantTracks(p.participant);
       try {
         updateMedia(p.participant.session_id, tracks);
@@ -165,6 +211,7 @@ export default class Game {
     });
 
     this.call.registerTrackStoppedHandler((p) => {
+      if (!p.participant) return;
       const tracks = Call.getParticipantTracks(p.participant);
       try {
         updateMedia(p.participant.session_id, tracks);
@@ -180,11 +227,11 @@ export default class Game {
 
     // Start call control setup
     registerCamBtnListener(() => {
-      this.call.toggleLocalVideo();
+      this.call?.toggleLocalVideo();
     });
 
     registerMicBtnListener(() => {
-      this.call.toggleLocalAudio();
+      this.call?.toggleLocalAudio();
     });
 
     registerInviteBtnListener(() => {
@@ -194,7 +241,7 @@ export default class Game {
     });
 
     registerLeaveBtnListener(() => {
-      this.call.leave();
+      this.call?.leave();
       document.location.href = "/";
     });
     // End call control setup
@@ -203,7 +250,7 @@ export default class Game {
     const token = bd.meetingToken;
     if (token) {
       registerMuteAllBtnListener(() => {
-        this.call.muteAll();
+        this.call?.muteAll();
       });
 
       registerRestartBtnListener(() => {
@@ -225,7 +272,7 @@ export default class Game {
     });
 
     socket.on(joinedTeamEventName, (data: JoinedTeamData) => {
-      const p = this.call.getParticipant(data.sessionID);
+      const p = this.call?.getParticipant(data.sessionID);
       if (!p) {
         console.error(`failed to find participant with ID ${data.sessionID}`);
         return;
@@ -239,7 +286,11 @@ export default class Game {
     });
 
     socket.on(newSpymasterEventName, (data: SpymasterData) => {
-      const p = this.call.getParticipant(data.spymasterID);
+      if (!this.board) {
+        showGameError(new ErrNoBoard());
+        return;
+      }
+      const p = this.call?.getParticipant(data.spymasterID);
       if (!p) {
         console.error(`failed to find participant with ID ${data.spymasterID}`);
         return;
@@ -251,10 +302,18 @@ export default class Game {
     });
 
     socket.on(nextTurnEventName, (data: TurnData) => {
+      if (!this.board) {
+        showGameError(new ErrNoBoard());
+        return;
+      }
       this.board.toggleCurrentTurn(data.currentTurn);
     });
 
     socket.on(turnResultEventName, (data: TurnResultData) => {
+      if (!this.board) {
+        showGameError(new ErrNoBoard());
+        return;
+      }
       const winningTeam = this.board.processTurnResult(
         data.team,
         data.lastRevealedWord
@@ -271,17 +330,30 @@ export default class Game {
     });
 
     socket.on(playerLeftGameEventName, (data: PlayerLeftData) => {
-      this.board.eject(data.playerID);
+      this.board?.eject(data.playerID);
     });
     // End server socket event handling
   }
 
   private moveToTeam(p: DailyParticipant, teamID: Team) {
+    if (!this.board) {
+      showGameError(new ErrNoBoard());
+      return;
+    }
     // Move participant to the team they just joined
     this.board.moveToTeam(p, teamID, true);
 
     // Set up end turn button listener
     registerEndTurnBtnListener(teamID, () => {
+      if (!this.data) {
+        showGameError(new ErrNoBoardData());
+        return;
+      }
+      if (!this.socket) {
+        showGameError(new ErrNoSocket());
+        return;
+      }
+
       this.socket.emit(endTurnEventName, <EndTurnData>{
         gameID: this.data.gameID,
         playerID: this.localPlayerID,
@@ -290,6 +362,15 @@ export default class Game {
   }
 
   private restart() {
+    if (!this.data) {
+      showGameError(new ErrNoBoardData());
+      return;
+    }
+    if (!this.socket) {
+      showGameError(new ErrNoSocket());
+      return;
+    }
+
     const newWordSet = createWordSet();
     this.socket.emit(restartGameEventName, <RestartGameData>{
       gameID: this.data.gameID,
@@ -305,6 +386,14 @@ export default class Game {
   // handleJoinedMeeting() handles the local player
   // once they have joined the Daily video call
   private handleJoinedMeeting(player: DailyParticipant) {
+    if (!this.data) {
+      showGameError(new ErrNoBoardData());
+      return;
+    }
+    if (!this.socket) {
+      showGameError(new ErrNoSocket());
+      return;
+    }
     this.joinedAt = Date.now();
     const audio = new Audio(joinedAudio);
     audio.play();
@@ -337,9 +426,13 @@ export default class Game {
 
     // Show call controls
     const controlsDOM = document.getElementById("controls");
-    controlsDOM.classList.remove("hidden");
+    controlsDOM?.classList.remove("hidden");
     const localID = this.localPlayerID;
-    const p = this.call.getParticipant(localID);
+    const p = this.call?.getParticipant(localID);
+    if (!p) {
+      showGameError(new ErrGeneric("Local participant not found"));
+      return;
+    }
     try {
       this.board.createTile(p, Team.None);
     } catch (e) {
@@ -351,6 +444,10 @@ export default class Game {
   // handleParticipantJoined() handles a remote participant
   // joining the Daily call.
   private handleParticipantJoined(p: DailyParticipant) {
+    if (!this.board) {
+      showGameError(new ErrNoBoard());
+      return;
+    }
     // If the local participant joined more than 3 seconds ago,
     // play the participant joined chime. We have this check
     // to make sure that we don't play multiple chimes in close
@@ -370,6 +467,10 @@ export default class Game {
   // processDataDump() processes game data sent from
   // the game server once a user joins the game.
   private processDataDump(data: GameData) {
+    if (!this.board) {
+      showGameError(new ErrNoBoard());
+      return;
+    }
     this.board.processDataDump(data);
 
     // Iterate through all players who are registered
@@ -380,8 +481,12 @@ export default class Game {
       // We do this in a setInterval in case the server gave us
       // all the players _before_ the Daily call made them available
       this.pendingTiles[player.id] = setInterval(() => {
+        if (!this.board) {
+          showGameError(new ErrNoBoard());
+          return;
+        }
         // Get Daily participant for this player ID
-        const participant = this.call.getParticipant(player.id);
+        const participant = this.call?.getParticipant(player.id);
         if (!participant) {
           return;
         }
@@ -399,8 +504,30 @@ export default class Game {
   // handleGameRestarted() restarts the game with
   // the given game data.
   private handleGameRestarted(data: GameRestartedData) {
+    if (!this.board) {
+      showGameError(new ErrNoBoard());
+      return;
+    }
+    if (!this.data) {
+      showGameError(new ErrNoBoardData());
+      return;
+    }
+    if (!this.call) {
+      showGameError(new ErrNoCall());
+      return;
+    }
+    if (!this.socket) {
+      showGameError(new ErrNoSocket());
+      return;
+    }
+
+    if (!this.localPlayerID) {
+      showGameError(new ErrGeneric("Local player not initialized"));
+      return;
+    }
+
     // Remove game over screen
-    document.getElementById("gameOver").classList.add("invisible");
+    document.getElementById("gameOver")?.classList.add("invisible");
 
     // Move all participant tiles back to observers
     this.board.moveToObservers(this.call.getParticipants());

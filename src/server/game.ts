@@ -38,7 +38,7 @@ export class Game {
 
   players: Player[] = [];
 
-  private spymasters: { [key in Team]?: string } = {
+  private spymasters: { [key in Team]?: string | null } = {
     team1: null,
     team2: null,
   };
@@ -79,7 +79,10 @@ export class Game {
       const w = wordSet[i];
       const team = wordKindToTeam(w.kind);
       if (team !== Team.None) {
-        this.teamResults[team].wordsLeft += 1;
+        const results = this.teamResults[team];
+        if (results) {
+          results.wordsLeft += 1;
+        }
       }
     }
   }
@@ -128,7 +131,7 @@ export class Game {
       throw new SpymasterExists(team);
     }
 
-    let player: Player;
+    let player: Player | undefined;
 
     // Check if player is already a member of a team
     for (let i = 0; i < this.players.length; i += 1) {
@@ -202,7 +205,7 @@ export class Game {
 
   // selectWord() attempts to select the given word by the given player ID
   selectWord(wordVal: string, playerID: string): TurnResultData {
-    let word: Word;
+    let word: Word | undefined;
 
     // Iterate through all words in the game and try to find the one
     // the player is trying to select.
@@ -227,7 +230,7 @@ export class Game {
     }
 
     // Find the player ID which is selecting the word
-    let player: Player;
+    let player: Player | undefined;
     for (let i = 0; i < this.players.length; i += 1) {
       const p = this.players[i];
       if (p.id === playerID) {
@@ -254,8 +257,11 @@ export class Game {
 
     const wordTeam = wordKindToTeam(word.kind);
     if (wordTeam !== Team.None) {
-      this.teamResults[wordTeam].wordsLeft -= 1;
-    } else if (word.kind === WordKind.Assassin) {
+      const results = this.teamResults[wordTeam];
+      if (results) {
+        results.wordsLeft -= 1;
+      }
+    } else if (word.kind === WordKind.Assassin && teamRes) {
       teamRes.isAssassinated = true;
     }
 
@@ -311,7 +317,10 @@ export class Game {
       const w = newWordSet[i];
       const team = wordKindToTeam(w.kind);
       if (team !== Team.None) {
-        this.teamResults[team].wordsLeft += 1;
+        const results = this.teamResults[team];
+        if (results) {
+          results.wordsLeft += 1;
+        }
       }
     }
     this.state = GameState.Pending;

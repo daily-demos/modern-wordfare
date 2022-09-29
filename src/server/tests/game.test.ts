@@ -40,14 +40,14 @@ describe("Spymaster tests", () => {
     game.addPlayer(pid, Team.Team1);
     game.setSpymaster(pid, Team.Team2);
 
-    let player: Player;
+    let player: Player | undefined;
     for (let i = 0; i < game.players.length; i += 1) {
       const p = game.players[i];
       if (p.id === pid) {
         player = p;
       }
     }
-    expect(player.isSpymaster).toBe(true);
+    expect(player?.isSpymaster).toBe(true);
     // eslint-disable-next-line prefer-destructuring,@typescript-eslint/dot-notation
     const spymasters = game["spymasters"];
     expect(spymasters.team2).toBe(pid);

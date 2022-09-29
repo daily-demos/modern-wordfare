@@ -36,7 +36,7 @@ export default class GameOrchestrator {
   }
 
   // getGame() retrieves a game from storage
-  async getGame(gameID: string): Promise<Game> {
+  async getGame(gameID: string): Promise<Game | undefined> {
     return this.storeClient.getGame(gameID);
   }
 
@@ -74,6 +74,9 @@ export default class GameOrchestrator {
 
     // Find matching game using socket mapping info
     const game = await this.getGame(playerInfo.gameID);
+    if (!game) {
+      throw new GameNotFound(playerInfo.gameID);
+    }
 
     // Remove player from the game and delete socket mapping.
     game.removePlayer(playerInfo.playerID);

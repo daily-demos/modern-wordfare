@@ -3,10 +3,13 @@ import { isValidName } from "../shared/input";
 import { JoinGameRequest, JoinGameResponse } from "../shared/types";
 import showError from "./error";
 import { BoardData } from "./game/board";
+import ErrNoLobby from "./game/errors/errNoLobby";
 import Game from "./game/game";
 
 const lobbyDiv = document.getElementById("lobby");
 const joinForm = document.getElementById("join-game-form");
+
+const msgNoJoinForm = "Join form DOM element not found";
 
 // initGame() starts a game using the given
 // board data
@@ -27,6 +30,9 @@ export default async function initJoinProcess(params: any) {
   }
   // No player name was provided, show join form
   showJoin();
+  if (!joinForm) {
+    throw new Error(msgNoJoinForm);
+  }
   joinForm.onsubmit = async (e) => {
     e.preventDefault();
     hideJoin();
@@ -39,7 +45,11 @@ export default async function initJoinProcess(params: any) {
       tryJoinGame(params.gameID, inputPlayerName);
     } catch (error) {
       showJoin();
-      showError(error.toString());
+      const msg =
+        error instanceof Error
+          ? error.message
+          : "Failed to validate input and join game";
+      showError(msg);
     }
   };
 }
@@ -91,11 +101,17 @@ async function joinGame(gameID: string): Promise<JoinGameResponse> {
 }
 
 function hideJoin() {
-  lobbyDiv.classList.add("invisible");
-  joinForm.setAttribute("disabled", "true");
+  lobbyDiv?.classList.add("invisible");
+  joinForm?.setAttribute("disabled", "true");
 }
 
 function showJoin() {
+  if (!joinForm) {
+    throw new Error(msgNoJoinForm);
+  }
+  if (!lobbyDiv) {
+    throw new ErrNoLobby();
+  }
   lobbyDiv.classList.remove("invisible");
   joinForm.classList.remove("invisible");
   joinForm.setAttribute("disabled", "false");

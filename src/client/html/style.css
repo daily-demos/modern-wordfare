@@ -21,7 +21,7 @@
   --black: #1f1f1f;
   --grid-black-bg: rgba(0, 0, 0, 0.1);
   --grid-red-bg: rgba(255, 0, 0, 0.1);
-  --red-bright: #ff0000;
+  --red-bright: #f63135;
   --red-dark: #97150d;
   --gold: #e3c421;
   --peach: #ffeed5;
@@ -687,7 +687,7 @@ header {
   margin-top: 24px;
 }
 
-#gameOver {
+.gamePopup {
   position: absolute;
   align-content: center;
   text-align: center;
@@ -705,6 +705,14 @@ header {
 
 #gameOver .container {
   background: var(--gold);
+}
+
+#gameError .container {
+  background: var(--red-bright);
+  color: var(--white);
+}
+
+.gamePopup .container {
   background-size: cover;
   align-items: center;
   padding: 16px;
@@ -714,17 +722,23 @@ header {
   border-radius: 16px;
   color: var(--black);
   font-weight: 600;
-  width: 200px;
-  height: 150px;
+  min-width: 200px;
+  max-width: 400px;
   color: var(--black);
 }
 
-#gameOver button {
+.gamePopup h4 {
+  font-size: 16pt;
+  color: var(--white);
+}
+
+.gamePopup button {
   background: var(--white);
   background-size: cover;
   align-items: center;
   margin: 3px;
-  width: 100%;
+  padding: 0 5px 0 5px;
+  max-width: 200px;
   height: 42px;
   border: 2px solid var(--black);
   box-shadow: 0px 4px 0px var(--black);
@@ -734,7 +748,7 @@ header {
   font-family: var(--font-family);
 }
 
-#gameOver button:hover {
+.gamePopup button:hover {
   background-color: var(--blue-bright);
   color: var(--white);
 }

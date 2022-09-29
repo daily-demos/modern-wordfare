@@ -48,7 +48,7 @@ function pickEmoji(mood: Mood): string {
       return sadEmojis[idx];
     }
     default: {
-      return null;
+      return "";
     }
   }
 }

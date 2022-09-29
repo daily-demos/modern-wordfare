@@ -10,7 +10,9 @@ describe("Memory storage tests", () => {
     await m.storeGame(simpleGame);
 
     // Retrieve game
-    const gotGame = await m.getGame(simpleGame.id);
+    let gotGame = await m.getGame(simpleGame.id);
+    expect(gotGame).toBeDefined();
+    gotGame = <Game>gotGame;
     expect(gotGame.id).toBe(simpleGame.id);
     expect(gotGame.currentTurn).toBe(simpleGame.currentTurn);
     expect(gotGame.dailyRoomName).toBe(simpleGame.dailyRoomName);
@@ -23,19 +25,24 @@ describe("Memory storage tests", () => {
     await m.storeGame(simpleGame);
 
     // Retrieve game
-    const gotGame = await m.getGame(simpleGame.id);
-
+    let gotGame = await m.getGame(simpleGame.id);
+    expect(gotGame).toBeDefined();
+    gotGame = <Game>gotGame;
     gotGame.wordSet.push(new Word("some-word", WordKind.Neutral));
 
     // Retrieving again should not contain the new word
     let gotGameAgain = await m.getGame(simpleGame.id);
+    expect(gotGameAgain).toBeDefined();
+    gotGameAgain = <Game>gotGameAgain;
     expect(gotGameAgain.wordSet.length).toBe(0);
 
     // Now, store the update:
-    m.storeGame(gotGame);
+    m.storeGame(<Game>gotGame);
 
     // And retrieve again
     gotGameAgain = await m.getGame(simpleGame.id);
+    expect(gotGameAgain).toBeDefined();
+    gotGameAgain = <Game>gotGameAgain;
     expect(gotGameAgain.wordSet).toEqual(gotGame.wordSet);
   });
 

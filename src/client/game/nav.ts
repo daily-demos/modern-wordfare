@@ -1,12 +1,13 @@
 import { Team } from "../../shared/types";
 
-const endTurnBtns: { [key in Team]?: HTMLButtonElement } = {
+const endTurnBtns: { [key in Team]?: HTMLButtonElement | null } = {
   team1: null,
   team2: null,
 };
 
 export function registerCamBtnListener(f: () => void) {
   const toggleCamBtn = document.getElementById("toggleCam");
+  if (!toggleCamBtn) return;
   toggleCamBtn.onclick = () => {
     f();
   };
@@ -14,6 +15,7 @@ export function registerCamBtnListener(f: () => void) {
 
 export function registerMicBtnListener(f: () => void) {
   const toggleMicBtn = document.getElementById("toggleMic");
+  if (!toggleMicBtn) return;
   toggleMicBtn.onclick = () => {
     f();
   };
@@ -21,6 +23,7 @@ export function registerMicBtnListener(f: () => void) {
 
 export function updateCamBtnState(isOn: boolean) {
   const btn = document.getElementById("toggleCam");
+  if (!btn) return;
   if (isOn) {
     btn.classList.remove("cam-off");
     btn.classList.add("cam-on");
@@ -32,6 +35,7 @@ export function updateCamBtnState(isOn: boolean) {
 
 export function updateMicBtnState(isOn: boolean) {
   const btn = document.getElementById("toggleMic");
+  if (!btn) return;
   if (isOn) {
     btn.classList.remove("mic-off");
     btn.classList.add("mic-on");
@@ -43,6 +47,7 @@ export function updateMicBtnState(isOn: boolean) {
 
 export function registerLeaveBtnListener(f: () => void) {
   const leaveBtn = document.getElementById("leave");
+  if (!leaveBtn) return;
   leaveBtn.onclick = () => {
     f();
   };
@@ -50,6 +55,7 @@ export function registerLeaveBtnListener(f: () => void) {
 
 export function registerInviteBtnListener(f: () => void) {
   const toggleMicBtn = document.getElementById("invite");
+  if (!toggleMicBtn) return;
   toggleMicBtn.onclick = () => {
     f();
   };
@@ -57,6 +63,7 @@ export function registerInviteBtnListener(f: () => void) {
 
 export function registerRestartBtnListener(f: () => void) {
   const restartBtn = document.getElementById("restart");
+  if (!restartBtn) return;
   restartBtn.classList.remove("invisible");
   restartBtn.onclick = () => {
     f();
@@ -65,6 +72,7 @@ export function registerRestartBtnListener(f: () => void) {
 
 export function registerMuteAllBtnListener(f: () => void) {
   const muteBtn = document.getElementById("muteAll");
+  if (!muteBtn) return;
   muteBtn.classList.remove("invisible");
   muteBtn.onclick = () => {
     f();
@@ -77,13 +85,15 @@ export function registerEndTurnBtnListener(team: Team, f: () => void) {
   if (!endTurnBtns[team]) {
     setEndTurnBtn(team);
   }
-  endTurnBtns[team].onclick = () => {
+  const btn = <HTMLButtonElement>endTurnBtns[team];
+  btn.onclick = () => {
     f();
   };
 }
 
 export function registerJoinBtnListener(team: Team, f: () => void) {
   const teamDiv = document.getElementById(team);
+  if (!teamDiv) return;
   const btn = <HTMLButtonElement>teamDiv.getElementsByClassName("join")[0];
   btn.onclick = () => {
     f();
@@ -93,6 +103,7 @@ export function registerJoinBtnListener(team: Team, f: () => void) {
 
 export function registerBeSpymasterBtnListener(team: Team, f: () => void) {
   const teamDiv = document.getElementById(team);
+  if (!teamDiv) return;
   const btn = <HTMLButtonElement>(
     teamDiv.getElementsByClassName("beSpymaster")[0]
   );
@@ -178,15 +189,16 @@ export function toggleEndTurnButton(activeTeam: Team, playerTeam: Team) {
   if (!endTurnBtns[Team.Team2]) setEndTurnBtn(Team.Team2);
 
   if (activeTeam === playerTeam) {
-    endTurnBtns[activeTeam].classList.remove("invisible");
+    endTurnBtns[activeTeam]?.classList.remove("invisible");
   } else {
-    endTurnBtns[playerTeam].classList.add("invisible");
-    endTurnBtns[activeTeam].classList.add("invisible");
+    endTurnBtns[playerTeam]?.classList.add("invisible");
+    endTurnBtns[activeTeam]?.classList.add("invisible");
   }
 }
 
 function setEndTurnBtn(team: Team) {
   const teamDiv = document.getElementById(team);
+  if (!teamDiv) return;
   const btn = <HTMLButtonElement>teamDiv.getElementsByClassName("endTurn")[0];
   endTurnBtns[team] = btn;
 }

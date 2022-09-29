@@ -33,6 +33,8 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     initCreateProcess();
   } catch (e) {
-    showError(e.toString());
+    const msg =
+      e instanceof Error ? e.message : "Failed to join or create game";
+    showError(msg);
   }
 });

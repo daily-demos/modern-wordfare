@@ -13,7 +13,7 @@ export class Word {
 
   readonly kind: WordKind;
 
-  isRevealed: boolean;
+  isRevealed: boolean = false;
 
   constructor(val: string, kind: WordKind) {
     this.value = val;

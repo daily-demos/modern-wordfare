@@ -5,7 +5,7 @@ import { COOKIE_SIGNING_SECRET } from "./env";
 
 type Cookies = { [key in string]?: string };
 
-let signingSecret = COOKIE_SIGNING_SECRET;
+let signingSecret: string = COOKIE_SIGNING_SECRET || "";
 
 // setupCookieParser() has our application use the cookie parser
 // middleware. This will allow us to sign cookies.
@@ -13,7 +13,7 @@ export function setupCookieParser(app: Application) {
   // This can be provided in the `COOKIE_SIGNING_SECRET`
   // environment variable. But if not, we'll just generate
   // a secret at runtime.
-  if (!signingSecret) {
+  if (signingSecret === "") {
     const buf = crypto.randomBytes(32);
     signingSecret = buf.toString();
   }
@@ -34,8 +34,8 @@ export function getGameHostCookie(cookies: string, gameID: string): number {
   if (parts.length !== 2) {
     return -1;
   }
-  const val = parts.pop().split("; ").shift();
-  const decodedCookie = decodeURIComponent(val);
+  const val = parts.pop()?.split("; ").shift();
+  const decodedCookie = val ? decodeURIComponent(val) : "";
 
   // We expect the cookie to be signed. If cookie parser returns
   // false or an identical value to what was passed in, something
@@ -76,6 +76,6 @@ export function isGameHostFromSignedCookies(
   gameCreatedAt: number
 ): boolean {
   const c = cookies[getGameHostCookieName(gameID)];
-  const parsed: number = +c;
+  const parsed: number = c ? +c : -1;
   return isGameHostValueValid(parsed, gameCreatedAt);
 }
