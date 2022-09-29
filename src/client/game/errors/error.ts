@@ -10,6 +10,7 @@ const oopsMessages = [
 
 export interface GameError extends Error {
   unrecoverable: boolean;
+  getButton?: (onclick: () => void) => HTMLButtonElement;
 }
 
 export default function showGameError(error: GameError) {
@@ -17,7 +18,7 @@ export default function showGameError(error: GameError) {
   console.error(error);
 
   const errDiv = <HTMLDivElement>document.getElementById("gameError");
-
+  if (!errDiv.classList.contains("invisible")) return;
   // Set subheading
   const subheadEle = <HTMLHeadingElement>errDiv.getElementsByTagName("h4")[0];
   const idx = rand(0, oopsMessages.length - 1);
@@ -31,14 +32,37 @@ export default function showGameError(error: GameError) {
     msg = `Please try re-joining the game. (Error details: ${msg})`;
   }
   msgEle.innerText = msg;
+  const defaultButton = <HTMLButtonElement>(
+    errDiv.getElementsByTagName("button")[0]
+  );
 
-  // Set up Close button
-  const button = <HTMLButtonElement>errDiv.getElementsByTagName("button")[0];
-  button.onclick = () => {
+  const onClickShared = () => {
     subheadEle.innerText = "";
     msgEle.innerText = "";
     errDiv.classList.add("invisible");
   };
+  // See if this error defines a custom button
+  if (error.getButton) {
+    // If there is a custom button, attach that to the DOM
+    const container = <HTMLDivElement>(
+      errDiv.getElementsByClassName("container")[0]
+    );
+    defaultButton.classList.add("invisible");
+
+    // define additional onClick cleanup
+    const oc = () => {
+      onClickShared();
+      container.removeChild(defaultButton);
+    };
+    const button = error.getButton(oc);
+    container.appendChild(button);
+  } else {
+    // Set up default Close button
+    defaultButton.classList.remove("invisible");
+    defaultButton.onclick = () => {
+      onClickShared();
+    };
+  }
 
   // Display the error DIV
   errDiv.classList.remove("invisible");
