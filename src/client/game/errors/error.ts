@@ -10,7 +10,7 @@ const oopsMessages = [
 
 export interface GameError extends Error {
   unrecoverable: boolean;
-  getButton?: (onclick: () => void) => HTMLButtonElement;
+  getButton?: (onclick: (btn: HTMLButtonElement) => void) => HTMLButtonElement;
 }
 
 export default function showGameError(error: GameError) {
@@ -50,9 +50,9 @@ export default function showGameError(error: GameError) {
     defaultButton.classList.add("invisible");
 
     // define additional onClick cleanup
-    const oc = () => {
+    const oc = (button: HTMLButtonElement) => {
       onClickShared();
-      container.removeChild(defaultButton);
+      container.removeChild(button);
     };
     const button = error.getButton(oc);
     container.appendChild(button);
