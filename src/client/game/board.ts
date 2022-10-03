@@ -508,7 +508,19 @@ export class Board {
 // removeTile() removes a play tile, if any.
 export function removeTile(playerID: string) {
   const ele = document.getElementById(getParticipantTileID(playerID));
-  ele?.remove();
+  if (!ele) return;
+  
+  const videoTags = ele.getElementsByTagName("video");
+
+  // Set all src objects to null to prevent detached streams
+  // There should only ever be ONE element per participant div,
+  // but iterate over all just in case.
+  for (let i = 0; i < videoTags.length; i += 1) {
+    const vt = videoTags[i];
+    vt.srcObject = null;
+  }
+
+  ele.remove();
 }
 
 // getParticipantTileID() returns an ID for the participant
