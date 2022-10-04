@@ -190,7 +190,7 @@ export default class Game {
     });
 
     this.call.registerParticipantLeftHandler((p) => {
-      this.board?.eject(p.participant.session_id);
+      this.board?.eject(p.session_id);
     });
 
     this.call.registerParticipantUpdatedHandler((p) => {
