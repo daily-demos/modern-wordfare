@@ -1,6 +1,5 @@
 import DailyIframe, {
   DailyCall,
-  DailyEventObjectParticipant,
   DailyParticipant,
   DailyEventObjectTrack,
 } from "@daily-co/daily-js";
@@ -9,7 +8,7 @@ import { videoTileSize } from "./config";
 // Define handler types that the game class will use to specify
 // custom behavior based on call events
 export type JoinHandler = (e: DailyParticipant) => void;
-export type LeaveHandler = (e: DailyEventObjectParticipant) => void;
+export type LeaveHandler = (e: DailyParticipant) => void;
 export type TrackStartedHandler = (e: DailyEventObjectTrack) => void;
 export type TrackStoppedHandler = (e: DailyEventObjectTrack) => void;
 export type ParticipantUpdatedHandler = (e: DailyParticipant) => void;
@@ -108,7 +107,7 @@ export class Call {
   registerParticipantLeftHandler(h: LeaveHandler) {
     this.callObject.on("participant-left", (e) => {
       if (!e) return;
-      h(e);
+      h(e.participant);
     });
   }
 

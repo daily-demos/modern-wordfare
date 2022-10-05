@@ -24,6 +24,7 @@ import { flyEmojis, Mood } from "../util/effects";
 import ErrNoTeamDOM from "./errors/errNoTeamDOM";
 import showGameError from "./errors/error";
 import ErrGeneric from "./errors/errGeneric";
+import ErrMediaAutoplay from "./errors/errMediaPlay";
 
 export interface BoardData {
   roomURL: string;
@@ -465,7 +466,6 @@ export class Board {
     participantTile.className = "tile";
 
     const video = document.createElement("video");
-    video.autoplay = true;
     if (p.local) {
       video.muted = true;
     }
@@ -509,7 +509,7 @@ export class Board {
 export function removeTile(playerID: string) {
   const ele = document.getElementById(getParticipantTileID(playerID));
   if (!ele) return;
-  
+
   const videoTags = ele.getElementsByTagName("video");
 
   // Set all src objects to null to prevent detached streams
@@ -578,45 +578,76 @@ export function updateMedia(participantID: string, newTracks: Tracks) {
     if (newAudio) tracks.push(newAudio);
     const newStream = new MediaStream(tracks);
     video.srcObject = newStream;
+    playMedia(video);
     return;
   }
 
-  refreshAudioTrack(existingStream, newAudio);
+  // This boolean will define whether we play the video element again
+  // This should be `true` if any of the tracks have changed.
+  let needsPlay = false;
+  needsPlay = refreshAudioTrack(existingStream, newAudio);
 
   // We have an extra if check here compared to the audio track
   // handling above, because the video track also dictates
   // whether we should hide the video DOM element.
   if (newVideo) {
-    refreshVideoTrack(existingStream, newVideo);
+    if (refreshVideoTrack(existingStream, newVideo) && !needsPlay) {
+      needsPlay = true;
+    }
+
     video.classList.remove("hidden");
   } else {
     // If there's no video to be played, hide the element.
     video.classList.add("hidden");
   }
+  if (needsPlay) {
+    playMedia(video);
+  }
+}
+
+// playMedia() tries to call play() on the video
+// element if it is not already playing.
+function playMedia(video: HTMLVideoElement) {
+  const isPlaying =
+    !video.paused &&
+    !video.ended &&
+    video.currentTime > 0 &&
+    video.readyState > video.HAVE_CURRENT_DATA;
+
+  if (isPlaying) return;
+
+  video.play().catch((e) => {
+    if (e instanceof Error && e.name === "NotAllowedError") {
+      showGameError(new ErrMediaAutoplay());
+      return;
+    }
+
+    console.warn("Failed to play media.", e);
+  });
 }
 
 // refreshAudioTrack() refreshes a participant's audio track in the DOM.
 function refreshAudioTrack(
   existingStream: MediaStream,
   newAudioTrack: MediaStreamTrack | null
-) {
+): boolean {
   // If there is no new track, just early out
   // and keep the old track on the stream as-is.
-  if (!newAudioTrack) return;
+  if (!newAudioTrack) return false;
   const existingTracks = existingStream.getAudioTracks();
-  refreshTrack(existingStream, existingTracks, newAudioTrack);
+  return refreshTrack(existingStream, existingTracks, newAudioTrack);
 }
 
 // refreshVideoTrack() refreshes a participant's video track in the DOM.
 function refreshVideoTrack(
   existingStream: MediaStream,
   newVideoTrack: MediaStreamTrack | null
-) {
+): boolean {
   // If there is no new track, just early out
   // and keep the old track on the stream as-is.
-  if (!newVideoTrack) return;
+  if (!newVideoTrack) return false;
   const existingTracks = existingStream.getVideoTracks();
-  refreshTrack(existingStream, existingTracks, newVideoTrack);
+  return refreshTrack(existingStream, existingTracks, newVideoTrack);
 }
 
 // refreshTrack() compares the old tracks in a stream with new tracks
@@ -625,13 +656,13 @@ function refreshTrack(
   existingStream: MediaStream,
   oldTracks: MediaStreamTrack[],
   newTrack: MediaStreamTrack
-) {
+): boolean {
   const trackCount = oldTracks.length;
   // If there is no matching old track,
   // just add the new track.
   if (trackCount === 0) {
     existingStream.addTrack(newTrack);
-    return;
+    return true;
   }
   if (trackCount > 1) {
     console.warn(
@@ -644,5 +675,7 @@ function refreshTrack(
   if (oldTrack.id !== newTrack.id) {
     existingStream.removeTrack(oldTrack);
     existingStream.addTrack(newTrack);
+    return true;
   }
+  return false;
 }
