@@ -1,7 +1,7 @@
-import express, { Request, Response } from "express";
 import { createServer } from "http";
 
 import { dirname, join } from "path";
+import express, { Request, Response } from "express";
 import { Server } from "socket.io";
 
 import {
@@ -56,7 +56,7 @@ import {
 // Fail early if the server is not appropriately configured.
 if (!DAILY_API_KEY) {
   throw new Error(
-    "failed to start server: Daily API key missing from configuration. Please check your .env file."
+    "failed to start server: Daily API key missing from configuration. Please check your .env file.",
   );
 }
 
@@ -102,7 +102,7 @@ function startServer() {
       const isHost = isGameHostFromSignedCookies(
         req.signedCookies,
         game.id,
-        game.createdAt
+        game.createdAt,
       );
 
       // If they're not a host, just return normal game data
@@ -253,7 +253,7 @@ function startServer() {
         })
         .catch((e) => {
           console.error(
-            `failed to restart game ${data.gameID}: ${e.toString()}`
+            `failed to restart game ${data.gameID}: ${e.toString()}`,
           );
           socket.to(socket.id).emit(errorEventName, e);
         });

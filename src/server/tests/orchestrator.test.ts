@@ -11,7 +11,7 @@ describe("Orchestrator game join and leave tests", () => {
     const o = new GameOrchestrator(new Memory());
 
     await expect(
-      o.joinGame("gameID", "playerID", Team.Team1, "socketID")
+      o.joinGame("gameID", "playerID", Team.Team1, "socketID"),
     ).rejects.toThrow(GameNotFound);
   });
 

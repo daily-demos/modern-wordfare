@@ -14,7 +14,7 @@ export default class ErrMediaAutoplay extends Error implements GameError {
 
   // eslint-disable-next-line class-methods-use-this
   getButton(
-    additionalOnClick: (btn: HTMLButtonElement) => void
+    additionalOnClick: (btn: HTMLButtonElement) => void,
   ): HTMLButtonElement {
     // Create Button element
     const button = document.createElement("button");

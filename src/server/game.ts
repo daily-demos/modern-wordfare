@@ -62,7 +62,7 @@ export class Game {
     name: string,
     roomURL: string,
     roomName: string,
-    wordSet: Word[]
+    wordSet: Word[],
   ) {
     this.state = GameState.Pending;
     this.name = name;

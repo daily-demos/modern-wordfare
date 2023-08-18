@@ -51,7 +51,7 @@ export default function initCreateProcess() {
 function createGame(
   gameName: string,
   playerName: string,
-  wordSet: Word[]
+  wordSet: Word[],
 ): Promise<string> {
   const reqData = <CreateGameRequest>{
     gameName,

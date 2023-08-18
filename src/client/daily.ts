@@ -32,8 +32,6 @@ export class Call {
       subscribeToTracksAutomatically: true,
       userName,
       dailyConfig: {
-        experimentalChromeVideoMuteLightOff: true,
-        camSimulcastEncodings: [{ maxBitrate: 600000, maxFramerate: 30 }],
         // Our tiles will always be 100px x 100px, so set the track
         // constraints to match
         userMediaVideoConstraints: {
@@ -92,6 +90,8 @@ export class Call {
     this.callObject.on("joined-meeting", (e) => {
       const p = e?.participants.local;
       if (!p) return;
+      const sim = this.callObject.getSendSettings();
+      console.log("send settings:", sim);
       h(p);
     });
   }

@@ -7,7 +7,7 @@ export default class InvalidName extends Error {
 
   constructor(name: string) {
     const msg = `name "${sanitize(
-      name
+      name,
     )}" is invalid; must contain only alphanumeric characters, spaces, or dashes, and be ${nameMinLength}-${nameMaxLength} characters long`;
     super(msg);
     this.msg = msg;

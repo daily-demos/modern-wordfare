@@ -1,6 +1,6 @@
+import crypto from "crypto";
 import cookieParser from "cookie-parser";
 import { Application } from "express";
-import crypto from "crypto";
 import { COOKIE_SIGNING_SECRET } from "./env";
 
 type Cookies = { [key in string]?: string };
@@ -58,7 +58,7 @@ export function getGameHostCookie(cookies: string, gameID: string): number {
 // just being extra permissive here).
 export function isGameHostValueValid(
   cookieCreatedAt: number,
-  gameCreatedAt: number
+  gameCreatedAt: number,
 ): boolean {
   const sec = 1000;
   const earliest = gameCreatedAt;
@@ -73,7 +73,7 @@ export function isGameHostValueValid(
 export function isGameHostFromSignedCookies(
   cookies: Cookies,
   gameID: string,
-  gameCreatedAt: number
+  gameCreatedAt: number,
 ): boolean {
   const c = cookies[getGameHostCookieName(gameID)];
   const parsed: number = c ? +c : -1;

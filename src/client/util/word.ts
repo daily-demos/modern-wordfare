@@ -39,8 +39,8 @@ export default function createWordSet(): Word[] {
 
 function buildWordSet(
   allWords: string[],
-  count: Number,
-  kind: WordKind
+  count: number,
+  kind: WordKind,
 ): Word[] {
   const chosenWords: Word[] = [];
   for (let i = 0; i < count; i += 1) {
@@ -52,11 +52,11 @@ function buildWordSet(
   return chosenWords;
 }
 
-function chooseRandomWords(allWords: string[], count: Number): string[] {
+function chooseRandomWords(allWords: string[], count: number): string[] {
   const l = allWords.length;
   if (l < count) {
     throw new Error(
-      `world list needs at least ${count}, but only contains ${l}`
+      `world list needs at least ${count}, but only contains ${l}`,
     );
   }
   const chosenWords: string[] = [];
