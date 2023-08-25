@@ -31,6 +31,17 @@ export class Call {
       url,
       subscribeToTracksAutomatically: true,
       userName,
+      sendSettings: {
+        video: {
+          encodings: {
+            low: {
+              maxBitrate: 150000,
+              maxFramerate: 30,
+              scaleResolutionDownBy: 1,
+            }
+          }
+        }
+      },
       dailyConfig: {
         // Our tiles will always be 100px x 100px, so set the track
         // constraints to match
@@ -90,8 +101,6 @@ export class Call {
     this.callObject.on("joined-meeting", (e) => {
       const p = e?.participants.local;
       if (!p) return;
-      const sim = this.callObject.getSendSettings();
-      console.log("send settings:", sim);
       h(p);
     });
   }
