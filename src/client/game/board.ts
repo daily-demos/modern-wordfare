@@ -551,7 +551,7 @@ export function updateAudioLevel(participantID: string, audioLevel: number) {
     return;
   }
 
-  // Set opacity to visually reasonable level based on audio level
+  // Set opacity to visually reasonable value based on audio level
   let opacity = audioLevel / 0.08;
   // Clamp opacity to always be between 0 and 1
   opacity = Math.min(Math.max(opacity, 0), 1);
