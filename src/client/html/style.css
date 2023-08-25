@@ -603,6 +603,17 @@ header {
   border-radius: 16px;
 }
 
+.tiles .tile .audio-indicator {
+  width: 100px;
+  height: 100px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 16px;
+  transition-duration: 200ms;
+  transition-property: box-shadow;
+}
+
 .team {
   display: flex;
   flex-direction: column;

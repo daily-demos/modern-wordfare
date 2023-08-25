@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client";
 import { DailyParticipant } from "@daily-co/daily-js";
-import { Board, BoardData, updateMedia } from "./board";
+import { Board, BoardData, updateAudioLevel, updateMedia } from "./board";
 import {
   BecomeSpymasterData,
   becomeSpymasterEventName,
@@ -218,6 +218,13 @@ export default class Game {
       } catch (e) {
         console.warn(e);
       }
+    });
+
+    this.call.registerRemoteParticipantsAudioLevelHandler((e) => {
+      const levels = e.participantsAudioLevel;
+      Object.entries(levels).forEach(([participantID, audioLevel]) => {
+        updateAudioLevel(participantID, audioLevel);
+      });
     });
 
     // End call event handler registration

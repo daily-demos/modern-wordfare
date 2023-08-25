@@ -2,6 +2,7 @@ import DailyIframe, {
   DailyCall,
   DailyParticipant,
   DailyEventObjectTrack,
+  DailyEventObjectRemoteParticipantsAudioLevel,
 } from "@daily-co/daily-js";
 import { videoTileSize } from "./config";
 
@@ -12,6 +13,10 @@ export type LeaveHandler = (e: DailyParticipant) => void;
 export type TrackStartedHandler = (e: DailyEventObjectTrack) => void;
 export type TrackStoppedHandler = (e: DailyEventObjectTrack) => void;
 export type ParticipantUpdatedHandler = (e: DailyParticipant) => void;
+export type RemoteAudioLevelHandler = (
+  e: DailyEventObjectRemoteParticipantsAudioLevel,
+) => void;
+
 export type Tracks = {
   videoTrack: MediaStreamTrack | null;
   audioTrack: MediaStreamTrack | null;
@@ -137,6 +142,15 @@ export class Call {
 
   registerTrackStoppedHandler(h: TrackStoppedHandler) {
     this.callObject.on("track-stopped", (e) => {
+      if (!e) return;
+      h(e);
+    });
+  }
+
+  registerRemoteParticipantsAudioLevelHandler(h: RemoteAudioLevelHandler) {
+    // Start audio level observer only once game explicitly asks for it
+    this.callObject.startRemoteParticipantsAudioLevelObserver(200);
+    this.callObject.on("remote-participants-audio-level", (e) => {
       if (!e) return;
       h(e);
     });
