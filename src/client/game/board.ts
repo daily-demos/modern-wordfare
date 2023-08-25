@@ -560,7 +560,7 @@ export function updateAudioLevel(participantID: string, audioLevel: number) {
     participantTile.getElementsByClassName("audio-indicator")[0]
   );
 
-  // Update the glow around the participant tile.
+  // Update the inner glow shown within the participant tile.
   audioIndicator.style.setProperty(
     "box-shadow",
     `inset 0 0 1px 3px rgba(227, 196, 33, ${opacity})`,
