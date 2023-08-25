@@ -38,9 +38,9 @@ export class Call {
               maxBitrate: 150000,
               maxFramerate: 30,
               scaleResolutionDownBy: 1,
-            }
-          }
-        }
+            },
+          },
+        },
       },
       dailyConfig: {
         // Our tiles will always be 100px x 100px, so set the track
