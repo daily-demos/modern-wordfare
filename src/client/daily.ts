@@ -31,9 +31,18 @@ export class Call {
       url,
       subscribeToTracksAutomatically: true,
       userName,
+      sendSettings: {
+        video: {
+          encodings: {
+            low: {
+              maxBitrate: 150000,
+              maxFramerate: 30,
+              scaleResolutionDownBy: 1,
+            },
+          },
+        },
+      },
       dailyConfig: {
-        experimentalChromeVideoMuteLightOff: true,
-        camSimulcastEncodings: [{ maxBitrate: 600000, maxFramerate: 30 }],
         // Our tiles will always be 100px x 100px, so set the track
         // constraints to match
         userMediaVideoConstraints: {

@@ -236,7 +236,7 @@ export default class Game {
 
     registerInviteBtnListener(() => {
       navigator.clipboard.writeText(
-        `${window.location.origin}?gameID=${bd.gameID}`
+        `${window.location.origin}?gameID=${bd.gameID}`,
       );
     });
 
@@ -316,7 +316,7 @@ export default class Game {
       }
       const winningTeam = this.board.processTurnResult(
         data.team,
-        data.lastRevealedWord
+        data.lastRevealedWord,
       );
       // If there is a winning team, display
       // the game over UI
@@ -412,7 +412,7 @@ export default class Game {
       },
       (team: Team) => {
         this.onBeSpymaster(team);
-      }
+      },
     );
 
     const data = <JoinGameData>{
@@ -547,7 +547,7 @@ export default class Game {
       },
       (team: Team) => {
         this.onBeSpymaster(team);
-      }
+      },
     );
     this.board.showBoardElements();
 

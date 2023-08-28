@@ -71,7 +71,7 @@ export class Board {
     localPlayerID: string,
     onClickWord: OnClickWord,
     onJoinTeam: OnJoinTeam,
-    onBeSpymaster: OnBeSpymaster
+    onBeSpymaster: OnBeSpymaster,
   ) {
     this.localPlayerID = localPlayerID;
 
@@ -545,7 +545,7 @@ export function updateMedia(participantID: string, newTracks: Tracks) {
   const participantTile = getTile(participantID);
   if (!participantTile) {
     showGameError(
-      new ErrGeneric(`tile for participant ID ${participantID} does not exist`)
+      new ErrGeneric(`tile for participant ID ${participantID} does not exist`),
     );
     return;
   }
@@ -555,8 +555,8 @@ export function updateMedia(participantID: string, newTracks: Tracks) {
   if (!videoTags || videoTags.length === 0) {
     showGameError(
       new ErrGeneric(
-        `video tile for participant ID ${participantID} does not exist`
-      )
+        `video tile for participant ID ${participantID} does not exist`,
+      ),
     );
     return;
   }
@@ -629,7 +629,7 @@ function playMedia(video: HTMLVideoElement) {
 // refreshAudioTrack() refreshes a participant's audio track in the DOM.
 function refreshAudioTrack(
   existingStream: MediaStream,
-  newAudioTrack: MediaStreamTrack | null
+  newAudioTrack: MediaStreamTrack | null,
 ): boolean {
   // If there is no new track, just early out
   // and keep the old track on the stream as-is.
@@ -641,7 +641,7 @@ function refreshAudioTrack(
 // refreshVideoTrack() refreshes a participant's video track in the DOM.
 function refreshVideoTrack(
   existingStream: MediaStream,
-  newVideoTrack: MediaStreamTrack | null
+  newVideoTrack: MediaStreamTrack | null,
 ): boolean {
   // If there is no new track, just early out
   // and keep the old track on the stream as-is.
@@ -655,7 +655,7 @@ function refreshVideoTrack(
 function refreshTrack(
   existingStream: MediaStream,
   oldTracks: MediaStreamTrack[],
-  newTrack: MediaStreamTrack
+  newTrack: MediaStreamTrack,
 ): boolean {
   const trackCount = oldTracks.length;
   // If there is no matching old track,
@@ -666,7 +666,7 @@ function refreshTrack(
   }
   if (trackCount > 1) {
     console.warn(
-      `expected up to 1 media track, but got ${trackCount}. Only using the first one.`
+      `expected up to 1 media track, but got ${trackCount}. Only using the first one.`,
     );
   }
   const oldTrack = oldTracks[0];

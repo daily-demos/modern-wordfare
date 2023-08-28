@@ -46,7 +46,7 @@ export default class GameOrchestrator {
     gameID: string,
     playerID: string,
     team: Team,
-    socketID: string
+    socketID: string,
   ): Promise<Game> {
     const game = await this.getGame(gameID);
     if (!game) {
@@ -90,7 +90,7 @@ export default class GameOrchestrator {
     socketID: string,
     gameID: string,
     newWordSet: Word[],
-    gameHostCookieVal: number
+    gameHostCookieVal: number,
   ) {
     // First, find the game itself
     const game = await this.getGame(gameID);
@@ -115,7 +115,7 @@ export default class GameOrchestrator {
     gameID: string,
     playerID: string,
     team: Team,
-    socketID: string
+    socketID: string,
   ): Promise<{ spymaster: Player; currentTurn: Team }> {
     const game = await this.getGame(gameID);
     if (!game) {
@@ -141,7 +141,7 @@ export default class GameOrchestrator {
   async selectGameWord(
     gameID: string,
     wordVal: string,
-    playerID: string
+    playerID: string,
   ): Promise<TurnResultData> {
     // Retrieve the requested game
     const game = await this.getGame(gameID);
