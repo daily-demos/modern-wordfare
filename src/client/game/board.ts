@@ -555,6 +555,7 @@ export function updateAudioLevel(participantID: string, audioLevel: number) {
   let opacity = audioLevel / 0.08;
   // Clamp opacity to always be between 0 and 1
   opacity = Math.min(Math.max(opacity, 0), 1);
+  opacity = +opacity.toFixed(2);
 
   const audioIndicator = <HTMLDivElement>(
     participantTile.getElementsByClassName("audio-indicator")[0]
