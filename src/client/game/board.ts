@@ -561,10 +561,7 @@ export function updateAudioLevel(participantID: string, audioLevel: number) {
   );
 
   // Update the inner glow shown within the participant tile.
-  audioIndicator.style.setProperty(
-    "box-shadow",
-    `inset 0 0 1px 3px rgba(227, 196, 33, ${opacity})`,
-  );
+  audioIndicator.style.setProperty("opacity", `${opacity}`);
 }
 
 // updateMedia() updates the video and audio tracks for
