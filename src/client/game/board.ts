@@ -471,6 +471,10 @@ export class Board {
     }
     participantTile.appendChild(video);
 
+    const audioIndicator = document.createElement("div");
+    audioIndicator.className = "audio-indicator";
+    participantTile.appendChild(audioIndicator);
+
     const nameTag = document.createElement("div");
     nameTag.className = "name";
     nameTag.innerText = name;
@@ -536,6 +540,32 @@ function getTile(participantID: string): HTMLDivElement {
     document.getElementById(participantTileID)
   );
   return participantTile;
+}
+
+export function updateAudioLevel(participantID: string, audioLevel: number) {
+  const participantTile = getTile(participantID);
+  if (!participantTile) {
+    showGameError(
+      new ErrGeneric(`tile for participant ID ${participantID} does not exist`),
+    );
+    return;
+  }
+
+  let opacity = 0;
+  // Audio level will be 0 when player is muted.
+  if (audioLevel !== 0) {
+    // Set opacity to visually reasonable value based on audio level
+    opacity = audioLevel / 0.08;
+    // Clamp opacity to always be between 0 and 1
+    opacity = Math.min(Math.max(opacity, 0), 1);
+    opacity = +opacity.toFixed(2);
+  }
+  const audioIndicator = <HTMLDivElement>(
+    participantTile.getElementsByClassName("audio-indicator")[0]
+  );
+
+  // Update the inner glow shown within the participant tile.
+  audioIndicator.style.setProperty("opacity", `${opacity}`);
 }
 
 // updateMedia() updates the video and audio tracks for
